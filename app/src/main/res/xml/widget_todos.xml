@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Today's tasks, tickable without opening the app.
+
+  targetCellWidth/Height are the Android 12+ way of sizing a widget and are what modern launchers
+  actually honour; minWidth/minHeight remain as the fallback for older grids. resizeMode is set on
+  every widget because a productivity widget the user cannot make taller is a widget that shows
+  three items forever.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:description="@string/widget_todos_description"
+    android:previewLayout="@layout/widget_preview"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

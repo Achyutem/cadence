@@ -76,6 +76,7 @@ class TodayViewModel(
     private val habitDao: HabitDao,
     private val recurrence: RecurrenceDao,
     private val settings: SettingsRepository,
+    private val onDataChanged: suspend () -> Unit,
 ) : ViewModel() {
 
     /**
@@ -202,6 +203,7 @@ class TodayViewModel(
                     updatedAt = at,
                 )
         )
+        onDataChanged()
     }
 
     fun decrementHabit(habit: Habit) = viewModelScope.launch {
@@ -213,6 +215,7 @@ class TodayViewModel(
         habitDao.upsertEntry(
             existing.copy(value = next, completed = entity.isValueComplete(next), updatedAt = at)
         )
+        onDataChanged()
     }
 
     fun setCompleted(task: Task, completed: Boolean) = viewModelScope.launch {
@@ -223,6 +226,7 @@ class TodayViewModel(
             }
         }
         tasks.setCompleted(task.id, completed, if (completed) at else null)
+        onDataChanged()
     }
 
     fun addTask(
@@ -249,6 +253,7 @@ class TodayViewModel(
                 updatedAt = at,
             )
         )
+        onDataChanged()
     }
 
     companion object {
@@ -261,6 +266,7 @@ class TodayViewModel(
                 container.habitDao,
                 container.recurrenceDao,
                 container.settingsRepository,
+                container::refreshWidgets,
             )
         }
     }

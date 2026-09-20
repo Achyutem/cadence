@@ -46,6 +46,7 @@ class TodosViewModel(
     private val tasks: TaskDao,
     private val settings: SettingsRepository,
     private val clock: CadenceClock,
+    private val onDataChanged: suspend () -> Unit,
 ) : ViewModel() {
 
     private val filter = MutableStateFlow(TaskFilter.TODAY)
@@ -135,6 +136,7 @@ class TodosViewModel(
                 updatedAt = now,
             )
         )
+        onDataChanged()
     }
 
     fun setCompleted(task: Task, completed: Boolean) = viewModelScope.launch {
@@ -148,9 +150,13 @@ class TodosViewModel(
             }
         }
         tasks.setCompleted(task.id, completed, if (completed) now else null)
+        onDataChanged()
     }
 
-    fun delete(task: Task) = viewModelScope.launch { tasks.deleteById(task.id) }
+    fun delete(task: Task) = viewModelScope.launch {
+        tasks.deleteById(task.id)
+        onDataChanged()
+    }
 
     companion object {
         /**
@@ -160,7 +166,12 @@ class TodosViewModel(
         private const val SORT_STEP = 100
 
         val Factory = cadenceViewModelFactory { container ->
-            TodosViewModel(container.taskDao, container.settingsRepository, container.clock)
+            TodosViewModel(
+                container.taskDao,
+                container.settingsRepository,
+                container.clock,
+                container::refreshWidgets,
+            )
         }
     }
 }

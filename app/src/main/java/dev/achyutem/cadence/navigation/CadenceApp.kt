@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +34,7 @@ import dev.achyutem.cadence.core.designsystem.theme.CadenceTheme
 import dev.achyutem.cadence.core.designsystem.token.Motion
 import dev.achyutem.cadence.core.designsystem.token.Spacing
 import androidx.navigation.toRoute
+import dev.achyutem.cadence.feature.breathing.BreathingScreen
 import dev.achyutem.cadence.feature.habits.HabitDetailScreen
 import dev.achyutem.cadence.feature.habits.HabitsScreen
 import dev.achyutem.cadence.feature.notes.NoteEditorScreen
@@ -58,6 +60,10 @@ fun CadenceApp(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
 
+    // Raised by a screen that wants the dock out of the way — currently only a running
+    // breathing session.
+    var immersive by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+
     val isTopLevel = remember(currentDestination) {
         currentDestination != null && TopLevelDestination.entries.any { currentDestination.matches(it) }
     }
@@ -82,13 +88,16 @@ fun CadenceApp(
         color = MaterialTheme.colorScheme.background,
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            CadenceNavHost(navController = navController)
+            CadenceNavHost(
+                navController = navController,
+                onImmersiveChange = { immersive = it },
+            )
 
             // The dock belongs to the top-level destinations only. A detail screen is a
             // different mode with its own toolbar, and leaving a navigation bar floating over it
             // would invite tapping away from an unsaved edit.
             AnimatedVisibility(
-                visible = isTopLevel,
+                visible = isTopLevel && !immersive,
                 enter = fadeIn(tween(CadenceTheme.duration(Motion.QUICK))) +
                     slideInVertically(tween(CadenceTheme.duration(Motion.STANDARD))) { it / 2 },
                 exit = fadeOut(tween(CadenceTheme.duration(Motion.MICRO))) +
@@ -111,7 +120,10 @@ fun CadenceApp(
 }
 
 @Composable
-private fun CadenceNavHost(navController: NavHostController) {
+private fun CadenceNavHost(
+    navController: NavHostController,
+    onImmersiveChange: (Boolean) -> Unit,
+) {
     // Top-level tabs are siblings, not a stack: a cross-fade with a small upward drift reads as
     // "swap", where a horizontal slide would wrongly imply hierarchy. Durations run through the
     // theme so reduced-motion collapses them to an instant cut.
@@ -149,6 +161,7 @@ private fun CadenceNavHost(navController: NavHostController) {
         composable<CadenceRoute.Notes> {
             NotesScreen(onOpenNote = { noteId -> navController.navigate(CadenceRoute.NoteDetail(noteId)) })
         }
+        composable<CadenceRoute.Breathing> { BreathingScreen(onImmersiveChange = onImmersiveChange) }
         composable<CadenceRoute.Settings> { SettingsScreen() }
 
         composable<CadenceRoute.HabitDetail> { entry ->
@@ -188,5 +201,6 @@ private fun NavDestination.matches(destination: TopLevelDestination): Boolean =
         TopLevelDestination.TODOS -> hasRoute(CadenceRoute.Todos::class)
         TopLevelDestination.HABITS -> hasRoute(CadenceRoute.Habits::class)
         TopLevelDestination.NOTES -> hasRoute(CadenceRoute.Notes::class)
+        TopLevelDestination.BREATHING -> hasRoute(CadenceRoute.Breathing::class)
         TopLevelDestination.SETTINGS -> hasRoute(CadenceRoute.Settings::class)
     }

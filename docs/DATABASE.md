@@ -1,6 +1,6 @@
 # Database
 
-Room over SQLite. Version **2**. Schemas exported to `app/schemas/` and committed.
+Room over SQLite. Version **3**. Schemas exported to `app/schemas/` and committed.
 
 ## Storage contract
 
@@ -103,6 +103,15 @@ Added in v2. `content` is raw Markdown; `preview` is a write-time cache of it. S
 [`NOTES.md`](NOTES.md) for why the text stays authoritative and why the cache is the one
 denormalised field in the schema.
 
+### `breathing_sessions`
+`id · date · kind · durationSeconds · roundsCompleted · roundsPlanned · longestHoldSeconds ·
+completed · createdAt`
+
+Added in v3. `completed` distinguishes finishing a table from stopping early, and **both are
+kept** — for a CO₂ or O₂ table the round you stopped at is the measurement. `longestHoldSeconds`
+is stored rather than derived because it is the one number that cannot be recomputed from the
+exercise definition: it depends on where the user actually stopped.
+
 ### `tags`, `task_tags`
 Simple many-to-many, both sides `ON DELETE CASCADE`.
 
@@ -119,6 +128,8 @@ Simple many-to-many, both sides `ON DELETE CASCADE`.
 ## Migrations so far
 
 **v1 → v2** — added the `notes` table.
+
+**v2 → v3** — added the `breathing_sessions` table.
 
 Written by hand, and it must match the schema Room expects exactly (column order, types, NOT NULL,
 DEFAULT) or Room's identity check fails at open time *on an upgraded install while passing on a

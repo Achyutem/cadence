@@ -8,12 +8,14 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import dev.achyutem.cadence.core.database.converter.CadenceTypeConverters
+import dev.achyutem.cadence.core.database.dao.BreathingDao
 import dev.achyutem.cadence.core.database.dao.CheckInDao
 import dev.achyutem.cadence.core.database.dao.HabitDao
 import dev.achyutem.cadence.core.database.dao.NoteDao
 import dev.achyutem.cadence.core.database.dao.RecurrenceDao
 import dev.achyutem.cadence.core.database.dao.TagDao
 import dev.achyutem.cadence.core.database.dao.TaskDao
+import dev.achyutem.cadence.core.database.entity.BreathingSessionEntity
 import dev.achyutem.cadence.core.database.entity.DailyCheckInEntity
 import dev.achyutem.cadence.core.database.entity.HabitEntity
 import dev.achyutem.cadence.core.database.entity.HabitEntryEntity
@@ -44,12 +46,13 @@ import dev.achyutem.cadence.core.database.entity.TaskTagCrossRef
         HabitEntryEntity::class,
         DailyCheckInEntity::class,
         NoteEntity::class,
+        BreathingSessionEntity::class,
         RecurrenceRuleEntity::class,
         ReminderEntity::class,
         TagEntity::class,
         TaskTagCrossRef::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 @TypeConverters(CadenceTypeConverters::class)
@@ -61,6 +64,7 @@ abstract class CadenceDatabase : RoomDatabase() {
     abstract fun recurrenceDao(): RecurrenceDao
     abstract fun tagDao(): TagDao
     abstract fun noteDao(): NoteDao
+    abstract fun breathingDao(): BreathingDao
 
     companion object {
         const val NAME = "cadence.db"
@@ -96,8 +100,35 @@ abstract class CadenceDatabase : RoomDatabase() {
             }
         }
 
+        /** v2 → v3: added the `breathing_sessions` table. */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(connection: SupportSQLiteDatabase) {
+                connection.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `breathing_sessions` (
+                        `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        `date` TEXT NOT NULL,
+                        `kind` TEXT NOT NULL,
+                        `durationSeconds` INTEGER NOT NULL,
+                        `roundsCompleted` INTEGER NOT NULL,
+                        `roundsPlanned` INTEGER NOT NULL,
+                        `longestHoldSeconds` INTEGER NOT NULL,
+                        `completed` INTEGER NOT NULL,
+                        `createdAt` INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+                connection.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_breathing_sessions_date` ON `breathing_sessions` (`date`)"
+                )
+                connection.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_breathing_sessions_kind` ON `breathing_sessions` (`kind`)"
+                )
+            }
+        }
+
         /** Every migration, in order. Append here; never reorder or edit a shipped one. */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2)
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
 
         fun build(context: Context): CadenceDatabase =
             Room.databaseBuilder(context.applicationContext, CadenceDatabase::class.java, NAME)

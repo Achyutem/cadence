@@ -73,6 +73,25 @@ document needs an explicit argued update — not a quiet exception.
 30. **The backup format is independent of the Room schema.** It is a contract with the user's
     future self; it changes only deliberately, and it is versioned.
 
+## Widgets
+
+31. **Widgets read the app's own DAOs and domain functions.** No widget cache, no parallel query
+    layer, no second definition of "due today". A number on the home screen is computed by the
+    same function as the number in the app.
+32. **Interactive means it does not open the app.** Ticking a task or stepping a habit writes
+    directly and refreshes. Never fake an interaction the platform cannot honour.
+33. **Every write path refreshes widgets.** A stale widget is a widget nobody trusts. Refresh
+    failures are swallowed — they must never take down the write that triggered them.
+
+## Breathing
+
+34. **The safety notice is permanent, not dismissible**, and is written as instructions. A
+    breath-hold blackout arrives with no warning sensation.
+35. **CO₂ table rest never reaches zero.** A table that decrements to nothing is one continuous
+    breath-hold. The floor is enforced in the domain and asserted in tests.
+36. **Skipping a hold is always available and never credited.** People should come up when they
+    need to.
+
 ## Design
 
 23. **Accent colours the active elements only** — navigation, progress, completion, selection,

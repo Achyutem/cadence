@@ -2,6 +2,8 @@ package dev.achyutem.cadence.domain.backup
 
 import androidx.room.withTransaction
 import dev.achyutem.cadence.core.database.CadenceDatabase
+import dev.achyutem.cadence.core.database.entity.BreathingKind
+import dev.achyutem.cadence.core.database.entity.BreathingSessionEntity
 import dev.achyutem.cadence.core.database.entity.DailyCheckInEntity
 import dev.achyutem.cadence.core.database.entity.HabitEntity
 import dev.achyutem.cadence.core.database.entity.HabitEntryEntity
@@ -143,6 +145,7 @@ class BackupEngine(
             recurrenceRules = database.recurrenceDao().getAllRulesForBackup().map { it.toBackup() },
             reminders = database.recurrenceDao().getAllRemindersForBackup().map { it.toBackup() },
             notes = database.noteDao().getAll().map { it.toBackup() },
+            breathingSessions = database.breathingDao().getAllForBackup().map { it.toBackup() },
             tags = database.tagDao().getAllForBackup().map { BackupTag(it.id, it.name) },
             taskTags = database.tagDao().getAllCrossRefsForBackup().map { BackupTaskTag(it.taskId, it.tagId) },
         )
@@ -162,6 +165,7 @@ class BackupEngine(
         database.habitDao().deleteAllHabits()
         database.checkInDao().deleteAll()
         database.noteDao().deleteAll()
+        database.breathingDao().deleteAll()
         database.tagDao().deleteAllTags()
         database.recurrenceDao().deleteAllReminders()
         database.recurrenceDao().deleteAllRules()
@@ -180,6 +184,7 @@ class BackupEngine(
 
         database.checkInDao().insertAll(file.checkIns.map { it.toEntity() })
         database.noteDao().insertAll(file.notes.map { it.toEntity() })
+        database.breathingDao().insertAll(file.breathingSessions.map { it.toEntity() })
         database.tagDao().insertAll(file.tags.map { TagEntity(it.id, it.name) })
         database.tagDao().insertCrossRefs(file.taskTags.map { TaskTagCrossRef(it.taskId, it.tagId) })
     }
@@ -345,6 +350,21 @@ private fun ReminderEntity.toBackup() = BackupReminder(
 
 private fun BackupReminder.toEntity() = ReminderEntity(
     id = id, timeOfDay = LocalTime.parse(timeOfDay), leadMinutes = leadMinutes, enabled = enabled,
+)
+
+private fun BreathingSessionEntity.toBackup() = BackupBreathingSession(
+    id = id, date = date.toString(), kind = kind.name,
+    durationSeconds = durationSeconds, roundsCompleted = roundsCompleted,
+    roundsPlanned = roundsPlanned, longestHoldSeconds = longestHoldSeconds,
+    completed = completed, createdAt = createdAt.toString(),
+)
+
+private fun BackupBreathingSession.toEntity() = BreathingSessionEntity(
+    id = id, date = LocalDate.parse(date),
+    kind = kind.toEnumOr(BreathingKind.BOX),
+    durationSeconds = durationSeconds, roundsCompleted = roundsCompleted,
+    roundsPlanned = roundsPlanned, longestHoldSeconds = longestHoldSeconds,
+    completed = completed, createdAt = Instant.parse(createdAt),
 )
 
 private fun NoteEntity.toBackup() = BackupNote(

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The launcher's widget picker renders this before the widget has any data. Glance cannot supply
+  a composable preview to the picker, so this is a static stand-in that matches the real widget's
+  shape and tone rather than showing an empty rectangle.
+
+  Every view here must be one RemoteViews permits — the launcher inflates this in its own process.
+  A plain <View> is NOT on that list, which is why the accent bar is an ImageView: using <View>
+  makes the picker show "Can't load widget", with no error anywhere in logcat.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_preview_background"
+    android:padding="14dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="#171717" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/widget_preview_bar"
+        android:scaleType="fitXY"
+        android:contentDescription="@null" />
+</LinearLayout>

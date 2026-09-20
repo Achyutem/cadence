@@ -5,11 +5,13 @@ import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Repeat
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Air
 import androidx.compose.material.icons.outlined.StickyNote2
 import androidx.compose.material.icons.rounded.Today
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Air
 import androidx.compose.material.icons.rounded.StickyNote2
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.Serializable
@@ -30,6 +32,8 @@ sealed interface CadenceRoute {
     @Serializable data object Habits : CadenceRoute
 
     @Serializable data object Notes : CadenceRoute
+
+    @Serializable data object Breathing : CadenceRoute
 
     @Serializable data object Settings : CadenceRoute
 
@@ -84,6 +88,13 @@ enum class TopLevelDestination(
         labelRes = dev.achyutem.cadence.R.string.nav_notes,
         icon = Icons.Outlined.StickyNote2,
         selectedIcon = Icons.Rounded.StickyNote2,
+    ),
+    BREATHING(
+        route = CadenceRoute.Breathing,
+        key = "breathing",
+        labelRes = dev.achyutem.cadence.R.string.nav_breathing,
+        icon = Icons.Outlined.Air,
+        selectedIcon = Icons.Rounded.Air,
     ),
     SETTINGS(
         route = CadenceRoute.Settings,

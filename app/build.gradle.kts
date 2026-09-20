@@ -80,11 +80,11 @@ ksp {
 }
 
 dependencies {
-    // WorkManager and Glance are declared in the version catalog but deliberately NOT depended
-    // on yet. WorkManager's manifest merges in ACCESS_NETWORK_STATE, WAKE_LOCK,
-    // FOREGROUND_SERVICE and RECEIVE_BOOT_COMPLETED — four permissions this app does not need
-    // until reminders exist (Phase 5), one of which is network-related and would undercut the
-    // privacy guarantee for no benefit. They arrive with the features that use them.
+    // WorkManager is declared in the version catalog but deliberately NOT depended on yet. Its
+    // manifest merges in ACCESS_NETWORK_STATE, WAKE_LOCK, FOREGROUND_SERVICE and
+    // RECEIVE_BOOT_COMPLETED — four permissions this app does not need until reminders exist,
+    // one of which is network-related and would undercut the privacy guarantee for no benefit.
+    // It arrives with the feature that uses it.
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
@@ -106,6 +106,9 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
 
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)

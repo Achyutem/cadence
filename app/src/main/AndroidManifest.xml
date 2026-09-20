@@ -1,11 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!--
-      Deliberately minimal permission set. Cadence is local-first:
-      there is no INTERNET permission and there never should be.
-      POST_NOTIFICATIONS / SCHEDULE_EXACT_ALARM are declared in Phase 5.
+      Deliberately minimal permission set. Cadence is local-first: there is no INTERNET
+      permission and there never should be. POST_NOTIFICATIONS / SCHEDULE_EXACT_ALARM arrive
+      with reminders.
+
+      Glance depends on WorkManager, which merges ACCESS_NETWORK_STATE into any app that uses
+      it — so it can honour network constraints on work requests. Cadence never sets one, and
+      on an app that advertises having no network access it is exactly the entry a careful user
+      checks. Removed here, and verified against the built artifact rather than this file:
+
+          aapt2 dump permissions app/build/outputs/apk/release/app-release-unsigned.apk
+
+      WAKE_LOCK, FOREGROUND_SERVICE and RECEIVE_BOOT_COMPLETED are left in place: WorkManager
+      genuinely uses them to run and to restore scheduled work after a reboot, and removing a
+      permission a library relies on trades a cosmetic win for a runtime crash.
     -->
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"
+        tools:node="remove" />
 
     <application
         android:name=".CadenceApplication"
@@ -29,6 +44,80 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+          Widget receivers.
+
+          All are `exported="false"`: the system's AppWidgetHost binds them through the framework,
+          so nothing outside the app ever needs to send them an intent directly. Leaving a widget
+          receiver exported is a small but real surface for other apps to poke.
+        -->
+        <receiver
+            android:name=".widget.TodayWidgetReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_today" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.TodoListWidgetReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_todos" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.HabitsWidgetReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_habits" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.SingleHabitWidgetReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_habit" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.HeatmapWidgetReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_heatmap" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.NextTaskWidgetReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_next" />
+        </receiver>
+
     </application>
 
 </manifest>

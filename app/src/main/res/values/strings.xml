@@ -7,6 +7,7 @@
     <string name="nav_todos">Todos</string>
     <string name="nav_habits">Habits</string>
     <string name="nav_notes">Notes</string>
+    <string name="nav_breathing">Breathe</string>
     <string name="nav_settings">Settings</string>
 
     <!-- Today -->
@@ -178,4 +179,32 @@
         <item quantity="one">%1$d day streak</item>
         <item quantity="other">%1$d day streak</item>
     </plurals>
+
+    <!-- Breathing -->
+    <string name="breathing_title">Breathe</string>
+    <string name="breathing_exercises">Exercises</string>
+    <string name="breathing_safety_title">Before you start</string>
+    <string name="breathing_safety_body">Never practise breath holds in or near water, and never while driving. A blackout can arrive without warning. Train sitting or lying down, stop at any dizziness or tingling, and do not push maximal holds alone.</string>
+    <string name="breathing_round">Round %1$d of %2$d</string>
+    <string name="breathing_pause">Pause</string>
+    <string name="breathing_resume">Resume</string>
+    <string name="breathing_skip">Skip</string>
+    <string name="breathing_stop">Stop session</string>
+    <string name="breathing_done">Done</string>
+    <string name="breathing_complete">Session complete</string>
+    <string name="breathing_complete_summary">%1$s of breathing</string>
+    <string name="breathing_phase_prepare">Get comfortable</string>
+    <string name="breathing_phase_inhale">Breathe in</string>
+    <string name="breathing_phase_hold">Hold</string>
+    <string name="breathing_phase_exhale">Breathe out</string>
+    <string name="breathing_phase_hold_empty">Hold empty</string>
+    <string name="breathing_phase_recover">Breathe freely</string>
+
+    <!-- Widget descriptions, shown in the launcher's widget picker -->
+    <string name="widget_today_description">Progress, then what is left of the day.</string>
+    <string name="widget_todos_description">Today\u2019s tasks. Tick them without opening the app.</string>
+    <string name="widget_habits_description">Today\u2019s habits, with a stepper on each.</string>
+    <string name="widget_habit_description">One habit, its streak, and a stepper.</string>
+    <string name="widget_heatmap_description">Thirteen weeks of activity.</string>
+    <string name="widget_next_description">The next thing due.</string>
 </resources>

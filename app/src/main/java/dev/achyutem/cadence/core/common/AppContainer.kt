@@ -41,6 +41,22 @@ class AppContainer(
         )
     }
 
+    /**
+     * Refreshes every home-screen widget.
+     *
+     * Called by ViewModels after a write. Without this the widgets only update when *they* are
+     * the thing that changed — complete a task in the app and the home screen would keep showing
+     * it outstanding until the next 30-minute refresh, which is exactly the kind of staleness
+     * that makes people stop trusting a widget.
+     *
+     * Failures are swallowed: a widget that cannot be updated must never take down the write that
+     * triggered it.
+     */
+    suspend fun refreshWidgets() {
+        runCatching { dev.achyutem.cadence.widget.CadenceWidgets.updateAll(context) }
+            .onFailure { android.util.Log.w("CadenceWidgets", "widget refresh failed", it) }
+    }
+
     val taskDao get() = database.taskDao()
     val habitDao get() = database.habitDao()
     val checkInDao get() = database.checkInDao()

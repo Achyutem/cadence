@@ -34,6 +34,7 @@ data class BackupFile(
     @SerialName("recurrence_rules") val recurrenceRules: List<BackupRecurrenceRule> = emptyList(),
     val reminders: List<BackupReminder> = emptyList(),
     val notes: List<BackupNote> = emptyList(),
+    @SerialName("breathing_sessions") val breathingSessions: List<BackupBreathingSession> = emptyList(),
     val tags: List<BackupTag> = emptyList(),
     @SerialName("task_tags") val taskTags: List<BackupTaskTag> = emptyList(),
 ) {
@@ -45,7 +46,7 @@ data class BackupFile(
     val totalRecords: Int
         get() = tasks.size + taskOccurrences.size + habits.size + habitEntries.size +
             checkIns.size + recurrenceRules.size + reminders.size + notes.size +
-            tags.size + taskTags.size
+            breathingSessions.size + tags.size + taskTags.size
 }
 
 @Serializable
@@ -173,6 +174,19 @@ data class BackupNote(
     @SerialName("sort_order") val sortOrder: Int = 0,
     @SerialName("created_at") val createdAt: String,
     @SerialName("updated_at") val updatedAt: String,
+)
+
+@Serializable
+data class BackupBreathingSession(
+    val id: Long,
+    val date: String,
+    val kind: String,
+    @SerialName("duration_seconds") val durationSeconds: Int,
+    @SerialName("rounds_completed") val roundsCompleted: Int,
+    @SerialName("rounds_planned") val roundsPlanned: Int,
+    @SerialName("longest_hold_seconds") val longestHoldSeconds: Int,
+    val completed: Boolean,
+    @SerialName("created_at") val createdAt: String,
 )
 
 @Serializable

@@ -51,7 +51,11 @@ data class DockItem(
     val selectedIcon: ImageVector = icon,
 )
 
-private val TabWidth = 54.dp
+/**
+ * Sized so six tabs fit a 360dp screen with room to spare: 6 × 50 + 12 padding = 312dp. The tap
+ * target stays 40dp tall, well above the 48dp minimum once the surrounding dock height is counted.
+ */
+private val TabWidth = 50.dp
 private val DockHeight = 56.dp
 private val IndicatorHeight = 40.dp
 

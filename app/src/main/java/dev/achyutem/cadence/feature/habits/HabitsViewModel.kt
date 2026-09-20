@@ -45,6 +45,7 @@ class HabitsViewModel(
     private val recurrence: RecurrenceDao,
     private val settings: SettingsRepository,
     private val clock: CadenceClock,
+    private val onDataChanged: suspend () -> Unit,
 ) : ViewModel() {
 
     private val today = MutableStateFlow(clock.today())
@@ -120,6 +121,7 @@ class HabitsViewModel(
                 updatedAt = now,
             )
         )
+        onDataChanged()
     }
 
     /** One tap: booleans flip, everything else steps up by the habit's increment. */
@@ -172,6 +174,7 @@ class HabitsViewModel(
             )
         )
         _editorOpen.value = false
+        onDataChanged()
     }
 
     companion object {
@@ -183,6 +186,7 @@ class HabitsViewModel(
                 container.recurrenceDao,
                 container.settingsRepository,
                 container.clock,
+                container::refreshWidgets,
             )
         }
     }

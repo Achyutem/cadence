@@ -11,7 +11,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * All five destinations are reachable from the dock.
+ * All six destinations are reachable from the dock.
  *
  * Tabs are found by content description rather than by text. That is the contract, not a
  * workaround: the dock draws no labels, so the description is the only name a screen reader has,
@@ -34,6 +34,9 @@ class NavigationTest {
         composeRule.onNodeWithContentDescription("Notes").performClick()
         composeRule.onNodeWithText("Notes").assertIsDisplayed()
 
+        composeRule.onNodeWithContentDescription("Breathe").performClick()
+        composeRule.onNodeWithText("EXERCISES").assertIsDisplayed()
+
         composeRule.onNodeWithContentDescription("Settings").performClick()
         composeRule.onNodeWithText("APPEARANCE").assertIsDisplayed()
 
@@ -43,8 +46,8 @@ class NavigationTest {
 
     @Test
     fun everyTabIsNamedForScreenReaders() {
-        // Including the selected one: no tab draws a visible label, so all five must be described.
-        listOf("Today", "Todos", "Habits", "Notes", "Settings").forEach { name ->
+        // Including the selected one: no tab draws a visible label, so all six must be described.
+        listOf("Today", "Todos", "Habits", "Notes", "Breathe", "Settings").forEach { name ->
             composeRule.onNodeWithContentDescription(name).assertIsDisplayed()
         }
     }
@@ -57,6 +60,9 @@ class NavigationTest {
 
     @Test
     fun returningToATabRestoresIt() {
+        composeRule.onNodeWithContentDescription("Breathe").performClick()
+        composeRule.onNodeWithText("EXERCISES").assertIsDisplayed()
+
         composeRule.onNodeWithContentDescription("Settings").performClick()
         composeRule.onNodeWithText("APPEARANCE").assertIsDisplayed()
 
