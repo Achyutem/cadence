@@ -4,14 +4,15 @@ A local-first personal productivity app for Android, tasks, habits, calendar, da
 reminders, check-ins, heatmaps and home-screen widgets, with **no account, no backend and no
 network access**.
 
-> **Status: tasks, habits, notes, breathing and six interactive widgets are working.** Calendar,
-> reminders and insights are next. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+> **Status: feature complete for daily use.** See [`docs/ROADMAP.md`](docs/ROADMAP.md) for what
+> is deliberately still open.
 
-**Working today:** Today · task capture and completion with subtasks · habits in four metric types
-with streaks, consistency and a contribution heatmap · Markdown notes · breath training (box,
-static apnea, CO₂ and O₂ tables) · six home-screen widgets you can tick and step without opening
-the app · one shared recurrence engine · light/dark × five accents × Material You · JSON export
-and import.
+**Working today:** Today · tasks with subtasks, priorities, scheduling and full editing · habits in
+four metric types with streaks, consistency and a contribution heatmap · calendar in month, week
+and day views · reminders with notification actions that work without opening the app · Markdown
+notes · breath training (box, static apnea, CO₂ and O₂ tables) · daily check-in · local insights
+engine · six interactive home-screen widgets · one shared recurrence engine · light/dark × five
+accents × Material You · JSON export and import.
 
 ## Build
 
@@ -59,7 +60,7 @@ Lint runs with `warningsAsErrors`; every suppression in `app/lint.xml` carries a
 | [`docs/BREATHING.md`](docs/BREATHING.md) | The four exercises, and the safety decisions behind them |
 | [`docs/BACKUP.md`](docs/BACKUP.md) | Export/import format and the replace policy |
 | [`docs/RECURRENCE.md`](docs/RECURRENCE.md) | The shared recurrence engine |
-| [`docs/NOTIFICATIONS.md`](docs/NOTIFICATIONS.md) | Reminder scheduling and its edge cases |
+| [`docs/REMINDERS.md`](docs/REMINDERS.md) | Reminder scheduling, and why a reminder is a local time |
 | [`docs/WIDGETS.md`](docs/WIDGETS.md) | Widget architecture |
 | [`docs/INSIGHTS.md`](docs/INSIGHTS.md) | Local analytics, and the rules that keep it honest |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | Phased plan and definition of done per phase |

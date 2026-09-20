@@ -44,6 +44,8 @@ sealed interface CadenceRoute {
     /** [noteId] of 0 means "a new note", the editor creates the row on first save. */
     @Serializable data class NoteDetail(val noteId: Long) : CadenceRoute
 
+    @Serializable data object Insights : CadenceRoute
+
     /** [epochDay] rather than a formatted string: no parsing, no locale, no ambiguity. */
     @Serializable data class Calendar(val epochDay: Long? = null) : CadenceRoute
 }

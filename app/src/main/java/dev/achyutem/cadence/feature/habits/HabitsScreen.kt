@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,8 +31,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.achyutem.cadence.R
 import dev.achyutem.cadence.core.designsystem.component.ButtonTone
 import dev.achyutem.cadence.core.designsystem.component.CadenceButton
+import dev.achyutem.cadence.core.designsystem.component.CadenceIconButton
 import dev.achyutem.cadence.core.designsystem.component.FullScreenEmptyState
 import dev.achyutem.cadence.core.designsystem.component.SectionHeader
+import dev.achyutem.cadence.core.designsystem.component.rememberReorderState
+import dev.achyutem.cadence.core.designsystem.component.reorderable
+import dev.achyutem.cadence.core.designsystem.component.reorderableItem
 import dev.achyutem.cadence.core.designsystem.theme.CadencePreviewTheme
 import dev.achyutem.cadence.core.designsystem.theme.tabularFigures
 import dev.achyutem.cadence.core.designsystem.token.Spacing
@@ -39,6 +45,7 @@ import dev.achyutem.cadence.domain.habit.Habit
 @Composable
 fun HabitsScreen(
     onOpenHabit: (Long) -> Unit,
+    onOpenInsights: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HabitsViewModel = viewModel(factory = HabitsViewModel.Factory),
 ) {
@@ -56,6 +63,9 @@ fun HabitsScreen(
             onIncrement = viewModel::increment,
             onDecrement = viewModel::decrement,
             onOpenHabit = onOpenHabit,
+            onOpenInsights = onOpenInsights,
+            onMove = viewModel::moveHabit,
+            onSettle = viewModel::commitOrder,
             onAddClick = viewModel::openEditor,
         )
 
@@ -75,6 +85,9 @@ private fun HabitsContent(
     onIncrement: (Habit) -> Unit,
     onDecrement: (Habit) -> Unit,
     onOpenHabit: (Long) -> Unit,
+    onOpenInsights: () -> Unit,
+    onMove: (Int, Int) -> Unit,
+    onSettle: () -> Unit,
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -100,12 +113,19 @@ private fun HabitsContent(
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
-            CadenceButton(
-                text = stringResource(R.string.habits_add),
-                onClick = onAddClick,
-                tone = ButtonTone.Primary,
-                icon = Icons.Rounded.Add,
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
+                CadenceIconButton(
+                    icon = Icons.Rounded.Insights,
+                    contentDescription = stringResource(R.string.insights_open),
+                    onClick = onOpenInsights,
+                )
+                CadenceButton(
+                    text = stringResource(R.string.habits_add),
+                    onClick = onAddClick,
+                    tone = ButtonTone.Primary,
+                    icon = Icons.Rounded.Add,
+                )
+            }
         }
 
         when {
@@ -123,8 +143,16 @@ private fun HabitsContent(
                 },
             )
 
-            else -> LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+            else -> {
+            val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+            val reorder = rememberReorderState(
+                listState = listState,
+                onMove = onMove,
+                onSettle = onSettle,
+            )
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize().reorderable(reorder),
                 contentPadding = PaddingValues(
                     start = Spacing.screenGutter,
                     end = Spacing.screenGutter,
@@ -145,12 +173,16 @@ private fun HabitsContent(
                     Spacer(Modifier.height(Spacing.xxs))
                 }
 
-                items(state.scheduled, key = { "h${it.id}" }) { habit ->
+                itemsIndexed(state.scheduled, key = { _, habit -> "h${habit.id}" }) { index, habit ->
                     HabitRow(
                         habit = habit,
                         onIncrement = { onIncrement(habit) },
                         onDecrement = { onDecrement(habit) },
                         onClick = { onOpenHabit(habit.id) },
+                        // Header and counter occupy the first slot, so row index is offset by one.
+                        modifier = Modifier
+                            .animateItem()
+                            .reorderableItem(reorder, index + 1),
                     )
                 }
 
@@ -170,6 +202,7 @@ private fun HabitsContent(
                     }
                 }
             }
+            }
         }
     }
 }
@@ -182,6 +215,9 @@ private fun HabitsPreview() = CadencePreviewTheme {
         onIncrement = {},
         onDecrement = {},
         onOpenHabit = {},
+        onOpenInsights = {},
+        onMove = { _, _ -> },
+        onSettle = {},
         onAddClick = {},
     )
 }

@@ -35,8 +35,10 @@ import dev.achyutem.cadence.core.designsystem.token.Motion
 import dev.achyutem.cadence.core.designsystem.token.Spacing
 import androidx.navigation.toRoute
 import dev.achyutem.cadence.feature.breathing.BreathingScreen
+import dev.achyutem.cadence.feature.calendar.CalendarScreen
 import dev.achyutem.cadence.feature.habits.HabitDetailScreen
 import dev.achyutem.cadence.feature.habits.HabitsScreen
+import dev.achyutem.cadence.feature.insights.InsightsScreen
 import dev.achyutem.cadence.feature.notes.NoteEditorScreen
 import dev.achyutem.cadence.feature.notes.NotesScreen
 import dev.achyutem.cadence.feature.taskdetail.TaskDetailScreen
@@ -156,19 +158,34 @@ private fun CadenceNavHost(
             TodayScreen(
                 onOpenHabit = { id -> navController.navigate(CadenceRoute.HabitDetail(id)) },
                 onOpenTask = { id -> navController.navigate(CadenceRoute.TaskDetail(id)) },
+                onOpenCalendar = { navController.navigate(CadenceRoute.Calendar()) },
             )
         }
         composable<CadenceRoute.Todos> {
             TodosScreen(onOpenTask = { id -> navController.navigate(CadenceRoute.TaskDetail(id)) })
         }
         composable<CadenceRoute.Habits> {
-            HabitsScreen(onOpenHabit = { id -> navController.navigate(CadenceRoute.HabitDetail(id)) })
+            HabitsScreen(
+                onOpenHabit = { id -> navController.navigate(CadenceRoute.HabitDetail(id)) },
+                onOpenInsights = { navController.navigate(CadenceRoute.Insights) },
+            )
         }
         composable<CadenceRoute.Notes> {
             NotesScreen(onOpenNote = { noteId -> navController.navigate(CadenceRoute.NoteDetail(noteId)) })
         }
         composable<CadenceRoute.Breathing> { BreathingScreen(onImmersiveChange = onImmersiveChange) }
         composable<CadenceRoute.Settings> { SettingsScreen() }
+
+        composable<CadenceRoute.Insights> {
+            InsightsScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable<CadenceRoute.Calendar> {
+            CalendarScreen(
+                onBack = { navController.popBackStack() },
+                onOpenTask = { id -> navController.navigate(CadenceRoute.TaskDetail(id)) },
+            )
+        }
 
         composable<CadenceRoute.TaskDetail> { entry ->
             val route = entry.toRoute<CadenceRoute.TaskDetail>()

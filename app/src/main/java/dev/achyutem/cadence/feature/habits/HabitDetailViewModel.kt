@@ -31,6 +31,7 @@ import java.time.LocalDate
 data class HabitDetailUiState(
     val habit: Habit? = null,
     val rule: RecurrenceRuleEntity? = null,
+    val reminder: dev.achyutem.cadence.core.database.entity.ReminderEntity? = null,
     val currentStreak: Int = 0,
     val bestStreak: Int = 0,
     val monthRate: CompletionRate = CompletionRate(0, 0),
@@ -50,11 +51,16 @@ class HabitDetailViewModel(
     private val recurrence: RecurrenceDao,
     private val settings: SettingsRepository,
     private val clock: CadenceClock,
+    private val onDataChanged: suspend () -> Unit,
 ) : ViewModel() {
 
     private val today = MutableStateFlow(clock.today())
 
-    val uiState: StateFlow<HabitDetailUiState> = today.flatMapLatest { date ->
+    /** Bumped after a write so the combine below re-reads rules and reminders, which are not Flows. */
+    private val refreshKey = MutableStateFlow(0)
+
+    val uiState: StateFlow<HabitDetailUiState> = combine(today, refreshKey) { date, _ -> date }
+        .flatMapLatest { date ->
         // One bounded window feeds the heatmap *and* every statistic, so the screen issues one
         // range query rather than one per number on it.
         val windowStart = date.minusDays(HEATMAP_DAYS - 1)
@@ -74,6 +80,7 @@ class HabitDetailViewModel(
             HabitDetailUiState(
                 habit = entity.toHabit(entry = todayEntry),
                 rule = rule,
+                reminder = entity.reminderId?.let { recurrence.getReminder(it) },
                 currentStreak = HabitStatistics.currentStreak(entries, rule, entity.startDate, date),
                 bestStreak = HabitStatistics.bestStreak(entries, rule, entity.startDate, date),
                 monthRate = HabitStatistics.completionRate(
@@ -96,6 +103,56 @@ class HabitDetailViewModel(
         initialValue = HabitDetailUiState(),
     )
 
+    private fun edit(block: (dev.achyutem.cadence.core.database.entity.HabitEntity) -> dev.achyutem.cadence.core.database.entity.HabitEntity) =
+        viewModelScope.launch {
+            val current = habits.getById(habitId) ?: return@launch
+            habits.update(block(current).copy(updatedAt = clock.now()))
+            bump()
+        }
+
+    fun setName(value: String) = edit { it.copy(name = value.trim().ifEmpty { it.name }) }
+
+    /**
+     * Change the target.
+     *
+     * Past entries keep the `completed` they were written with, so raising a target never
+     * retroactively un-completes a day that genuinely met the old one. See `HabitEntities.kt`.
+     */
+    fun setTarget(value: Double) = edit { it.copy(targetValue = value.coerceAtLeast(1.0)) }
+
+    fun setUnit(value: String) = edit { it.copy(unit = value.trim().ifEmpty { null }) }
+
+    fun setGoalDirection(direction: dev.achyutem.cadence.core.database.entity.HabitGoalDirection) =
+        edit { it.copy(goalDirection = direction) }
+
+    /** A new rule row, for the same reason tasks get one: old occurrences stay reconstructible. */
+    fun setRecurrence(rule: dev.achyutem.cadence.core.database.entity.RecurrenceRuleEntity?) =
+        viewModelScope.launch {
+            val current = habits.getById(habitId) ?: return@launch
+            val newId = rule?.let { recurrence.insertRule(it) }
+            habits.update(current.copy(recurrenceRuleId = newId, updatedAt = clock.now()))
+            current.recurrenceRuleId?.let { old ->
+                recurrence.getRule(old)?.let { recurrence.deleteRule(it) }
+            }
+            bump()
+        }
+
+    fun setReminder(reminder: dev.achyutem.cadence.core.database.entity.ReminderEntity?) =
+        viewModelScope.launch {
+            val current = habits.getById(habitId) ?: return@launch
+            val newId = reminder?.let { recurrence.insertReminder(it) }
+            habits.update(current.copy(reminderId = newId, updatedAt = clock.now()))
+            current.reminderId?.let { old ->
+                recurrence.getReminder(old)?.let { recurrence.deleteReminder(it) }
+            }
+            bump()
+        }
+
+    private suspend fun bump() {
+        refreshKey.value++
+        onDataChanged()
+    }
+
     fun archive(onDone: () -> Unit) = viewModelScope.launch {
         habits.setArchived(habitId, archived = true, at = clock.now())
         onDone()
@@ -103,6 +160,7 @@ class HabitDetailViewModel(
 
     fun delete(onDone: () -> Unit) = viewModelScope.launch {
         habits.getById(habitId)?.let { habits.delete(it) }
+        onDataChanged()
         onDone()
     }
 
@@ -119,6 +177,7 @@ class HabitDetailViewModel(
                     container.recurrenceDao,
                     container.settingsRepository,
                     container.clock,
+                    container::refreshWidgets,
                 )
             }
         }

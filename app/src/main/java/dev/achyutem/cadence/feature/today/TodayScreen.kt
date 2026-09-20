@@ -2,6 +2,7 @@ package dev.achyutem.cadence.feature.today
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +37,7 @@ import dev.achyutem.cadence.core.datastore.TimeFormat
 import dev.achyutem.cadence.core.designsystem.component.ButtonTone
 import dev.achyutem.cadence.core.designsystem.component.CadenceButton
 import dev.achyutem.cadence.core.designsystem.component.CadenceCard
+import dev.achyutem.cadence.core.designsystem.component.CadenceIconButton
 import dev.achyutem.cadence.core.designsystem.component.CadenceProgressBar
 import dev.achyutem.cadence.core.designsystem.component.EmptyState
 import dev.achyutem.cadence.core.designsystem.component.SectionHeader
@@ -64,6 +67,7 @@ import java.time.LocalDate
 fun TodayScreen(
     onOpenHabit: (Long) -> Unit,
     onOpenTask: (Long) -> Unit,
+    onOpenCalendar: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TodayViewModel = viewModel(factory = TodayViewModel.Factory),
 ) {
@@ -85,6 +89,7 @@ fun TodayScreen(
             onOpenHabit = onOpenHabit,
             onOpenTask = onOpenTask,
             onCheckIn = viewModel::setCheckIn,
+            onOpenCalendar = onOpenCalendar,
             onAddClick = { quickAddVisible = true },
         )
         QuickAddBar(
@@ -107,6 +112,7 @@ private fun TodayContent(
     onOpenHabit: (Long) -> Unit,
     onOpenTask: (Long) -> Unit,
     onCheckIn: (mood: Int?, energy: Int?) -> Unit,
+    onOpenCalendar: () -> Unit,
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -124,7 +130,16 @@ private fun TodayContent(
         ),
     ) {
         item(key = "header") {
-            DateHeader(date = state.date, dayPart = state.dayPart, name = state.displayName)
+            Row(verticalAlignment = Alignment.Top) {
+                Box(modifier = Modifier.weight(1f)) {
+                    DateHeader(date = state.date, dayPart = state.dayPart, name = state.displayName)
+                }
+                CadenceIconButton(
+                    icon = Icons.Rounded.CalendarMonth,
+                    contentDescription = stringResource(R.string.calendar_open),
+                    onClick = onOpenCalendar,
+                )
+            }
             Spacer(Modifier.height(Spacing.lg))
         }
 
@@ -365,6 +380,7 @@ private fun TodayPreviewLight() = CadencePreviewTheme {
         onOpenHabit = {},
         onOpenTask = {},
         onCheckIn = { _, _ -> },
+        onOpenCalendar = {},
         onAddClick = {},
     )
 }

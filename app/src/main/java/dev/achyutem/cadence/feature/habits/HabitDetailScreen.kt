@@ -2,11 +2,13 @@ package dev.achyutem.cadence.feature.habits
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -19,6 +21,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
@@ -30,7 +35,9 @@ import dev.achyutem.cadence.R
 import dev.achyutem.cadence.core.designsystem.component.ButtonTone
 import dev.achyutem.cadence.core.designsystem.component.CadenceCard
 import dev.achyutem.cadence.core.designsystem.component.CadenceIconButton
+import dev.achyutem.cadence.core.designsystem.component.CadenceTimePickerDialog
 import dev.achyutem.cadence.core.designsystem.component.Heatmap
+import dev.achyutem.cadence.core.designsystem.component.RecurrencePickerSheet
 import dev.achyutem.cadence.core.designsystem.component.HeatmapLegend
 import dev.achyutem.cadence.core.designsystem.component.SectionHeader
 import dev.achyutem.cadence.core.designsystem.theme.CadenceTheme
@@ -57,6 +64,9 @@ fun HabitDetailScreen(
     ),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val habitOrNull = state.habit
+    var showRecurrence by remember { mutableStateOf(false) }
+    var showReminderTime by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -92,16 +102,9 @@ fun HabitDetailScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = Spacing.screenGutter),
         ) {
-            Text(
-                text = habit.name,
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = state.rule?.describe() ?: stringResource(R.string.habit_schedule_daily),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            // The name is edited in place. Opening a separate editor to change one word is the
+            // kind of friction that stops people fixing a typo they see every day.
+            EditableName(value = habit.name, onValueChange = viewModel::setName)
 
             Spacer(Modifier.height(Spacing.lg))
 
@@ -122,6 +125,38 @@ fun HabitDetailScreen(
 
             Spacer(Modifier.height(Spacing.lg))
 
+            SectionHeader(title = stringResource(R.string.habit_settings))
+            Spacer(Modifier.height(Spacing.xxs))
+            SettingRow(
+                label = stringResource(R.string.habit_schedule),
+                value = state.rule?.describe() ?: stringResource(R.string.habit_schedule_daily),
+                onClick = { showRecurrence = true },
+            )
+            if (habit.type != dev.achyutem.cadence.core.database.entity.HabitType.BOOLEAN) {
+                SettingRow(
+                    label = stringResource(R.string.habit_target_placeholder),
+                    value = habit.targetValue.trim() + (habit.unit?.let { " $it" } ?: ""),
+                    onClick = {
+                        // Steps through the useful targets rather than opening a keyboard for a
+                        // number most people set once.
+                        val next = when {
+                            habit.targetValue < 3 -> habit.targetValue + 1
+                            habit.targetValue < 10 -> habit.targetValue + 1
+                            habit.targetValue < 60 -> habit.targetValue + 5
+                            else -> 1.0
+                        }
+                        viewModel.setTarget(next)
+                    },
+                )
+            }
+            SettingRow(
+                label = stringResource(R.string.task_field_reminder),
+                value = state.reminder?.timeOfDay?.toString()
+                    ?: stringResource(R.string.task_field_none),
+                onClick = { showReminderTime = true },
+            )
+
+            Spacer(Modifier.height(Spacing.lg))
             SectionHeader(title = stringResource(R.string.habit_activity))
             Spacer(Modifier.height(Spacing.xs))
             CadenceCard(contentPadding = Spacing.sm) {
@@ -176,6 +211,70 @@ fun HabitDetailScreen(
             Spacer(Modifier.height(Spacing.dockClearance))
         }
     }
+
+    if (showRecurrence && habitOrNull != null) {
+        RecurrencePickerSheet(
+            current = state.rule,
+            anchor = habitOrNull.startDate,
+            weekStart = state.preferences.weekStartsOn,
+            onDismiss = { showRecurrence = false },
+            onSelect = viewModel::setRecurrence,
+        )
+    }
+    if (showReminderTime) {
+        CadenceTimePickerDialog(
+            initial = state.reminder?.timeOfDay,
+            use24Hour = state.preferences.timeFormat != dev.achyutem.cadence.core.datastore.TimeFormat.TWELVE_HOUR,
+            onDismiss = { showReminderTime = false },
+            onSelect = { time ->
+                viewModel.setReminder(
+                    time?.let {
+                        dev.achyutem.cadence.core.database.entity.ReminderEntity(timeOfDay = it)
+                    }
+                )
+            },
+        )
+    }
+}
+
+/** A tappable label and value, matching the task detail rows. */
+@Composable
+private fun SettingRow(label: String, value: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(dev.achyutem.cadence.core.designsystem.token.Radius.shapeSm)
+            .clickable(onClick = onClick)
+            .padding(vertical = Spacing.sm, horizontal = Spacing.xxs),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun EditableName(value: String, onValueChange: (String) -> Unit) {
+    var text by remember(value) { mutableStateOf(value) }
+    androidx.compose.foundation.text.BasicTextField(
+        value = text,
+        onValueChange = { text = it; onValueChange(it) },
+        singleLine = true,
+        textStyle = MaterialTheme.typography.headlineMedium.copy(
+            color = MaterialTheme.colorScheme.onSurface,
+        ),
+        cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 /** A single number with a label above and a caption below. */

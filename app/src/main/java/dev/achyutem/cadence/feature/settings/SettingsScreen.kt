@@ -47,6 +47,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -150,7 +151,7 @@ fun SettingsScreen(
                 context.startActivity(
                     android.content.Intent(
                         android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
-                        android.net.Uri.parse("package:${context.packageName}"),
+                        "package:${context.packageName}".toUri(),
                     ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                 )
             }

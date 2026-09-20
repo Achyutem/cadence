@@ -50,7 +50,18 @@ class HabitsViewModel(
 
     private val today = MutableStateFlow(clock.today())
 
-    val uiState: StateFlow<HabitsUiState> = today.flatMapLatest { date ->
+    /**
+     * Local reorder while a drag is in progress.
+     *
+     * The list is reordered in memory on every swap and written once on release, so dragging
+     * across ten rows is one transaction rather than ten, and the list never flickers as the
+     * database echoes each intermediate state back through the Flow.
+     */
+    private val pendingOrder = MutableStateFlow<List<Long>?>(null)
+
+
+    val uiState: StateFlow<HabitsUiState> = combine(today, pendingOrder) { date, _ -> date }
+        .flatMapLatest { date ->
         combine(
             habits.observeActive(),
             habits.observeEntriesOn(date),
@@ -69,12 +80,18 @@ class HabitsViewModel(
                 )
             }
 
+            val order = pendingOrder.value
+            val ordered = if (order == null) built else {
+                val byId = built.associateBy { it.id }
+                order.mapNotNull(byId::get) + built.filter { it.id !in order }
+            }
+
             HabitsUiState(
                 date = date,
-                scheduled = built.filter { it.scheduledToday },
+                scheduled = ordered.filter { it.scheduledToday },
                 // Habits not due today are still shown, below and dimmed. Hiding them entirely
                 // makes the list look like it lost something; showing them as due is a lie.
-                notScheduledToday = built.filterNot { it.scheduledToday },
+                notScheduledToday = ordered.filterNot { it.scheduledToday },
                 preferences = preferences,
                 loading = false,
             )
@@ -135,6 +152,24 @@ class HabitsViewModel(
 
     fun decrement(habit: Habit) {
         setValue(habit, (habit.todayValue - habit.incrementStep).coerceAtLeast(0.0))
+    }
+
+    fun moveHabit(from: Int, to: Int) {
+        val current = pendingOrder.value
+            ?: uiState.value.scheduled.map { it.id }
+        if (from !in current.indices || to !in current.indices) return
+        pendingOrder.value = current.toMutableList().apply { add(to, removeAt(from)) }
+    }
+
+    fun commitOrder() = viewModelScope.launch {
+        val order = pendingOrder.value ?: return@launch
+        pendingOrder.value = null
+        val now = clock.now()
+        order.forEachIndexed { index, id ->
+            val habit = habits.getById(id) ?: return@forEachIndexed
+            habits.update(habit.copy(sortOrder = (index + 1) * SORT_STEP, updatedAt = now))
+        }
+        onDataChanged()
     }
 
     fun archive(habit: Habit) = viewModelScope.launch {

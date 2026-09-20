@@ -60,6 +60,20 @@
             </intent-filter>
         </activity>
 
+        <!--
+          The single-habit widget's configuration screen. Exported because the launcher starts it
+          on the user's behalf when a widget is placed; it takes no input beyond the widget id and
+          writes only that widget's own state.
+        -->
+        <activity
+            android:name=".widget.SingleHabitConfigActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Cadence">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <receiver
             android:name=".core.notifications.ReminderReceiver"
             android:exported="false" />

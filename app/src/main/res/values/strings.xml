@@ -96,6 +96,7 @@
     <string name="habit_average">Average</string>
     <string name="habit_this_month">This month</string>
     <string name="habit_activity">Activity</string>
+    <string name="habit_settings">Settings</string>
     <string name="habit_no_data">Not enough history yet</string>
     <string name="habit_no_data_short">Not yet</string>
     <string name="habits_empty_description">Track anything you want to keep up: done/not done, a count, an amount, or minutes.</string>
@@ -224,7 +225,6 @@
     <string name="notification_habit_body">Due today</string>
     <string name="notification_check_in_title">How was today?</string>
     <string name="notification_check_in_body">Mood, energy, and anything worth remembering.</string>
-    <string name="notification_snoozed">Snoozed for 10 minutes</string>
 
     <!-- Reminder settings -->
     <string name="settings_notifications">Notifications</string>
@@ -260,7 +260,6 @@
     <string name="recurrence_unit_years">years</string>
 
     <!-- Task detail -->
-    <string name="task_detail_title">Task</string>
     <string name="task_title_placeholder">What needs to be done?</string>
     <string name="task_notes_placeholder">Notes</string>
     <string name="task_field_date">Date</string>
@@ -273,7 +272,6 @@
     <string name="task_subtasks">Subtasks</string>
     <string name="task_add_subtask">Add a subtask</string>
     <string name="task_delete">Delete task</string>
-    <string name="task_deleted">Task deleted</string>
     <string name="reminder_at_time">At the start time</string>
     <string name="reminder_before">%1$d min before</string>
     <string name="reminder_at">At %1$s</string>
@@ -289,6 +287,35 @@
     <string name="checkin_mood_3">Okay</string>
     <string name="checkin_mood_4">Good</string>
     <string name="checkin_mood_5">Great</string>
-    <string name="checkin_history">Recent days</string>
-    <string name="checkin_note_placeholder">Anything worth remembering?</string>
+
+    <!-- Calendar -->
+    <string name="calendar_month">Month</string>
+    <string name="calendar_week">Week</string>
+    <string name="calendar_day">Day</string>
+    <string name="calendar_previous">Previous</string>
+    <string name="calendar_next">Next</string>
+    <string name="calendar_untimed">No time</string>
+    <string name="calendar_open">Open calendar</string>
+    <string name="calendar_empty_title">Nothing on this day</string>
+    <string name="calendar_empty_description">Tasks scheduled for this date will appear here.</string>
+
+    <!-- Insights -->
+    <string name="insights_title">Patterns</string>
+    <string name="insights_open">See patterns</string>
+    <string name="insights_observation">Observation</string>
+    <string name="insights_pattern">Tendency</string>
+    <string name="insights_footer">These are patterns in your own data, worked out on this device. They describe what happened together, not what caused what.</string>
+    <string name="insights_empty_title">Not enough history yet</string>
+
+    <string name="widget_config_title">Which habit?</string>
+    <string name="widget_config_empty">Create a habit first, then this widget can show it.</string>
+
+    <plurals name="insights_intro">
+        <item quantity="one">From the single day you have recorded.</item>
+        <item quantity="other">From the last %1$d days you have recorded.</item>
+    </plurals>
+    <plurals name="insights_empty_description">
+        <item quantity="one">One day recorded so far. Patterns need a few weeks before they mean anything, so nothing is shown until then.</item>
+        <item quantity="other">%1$d days recorded so far. Patterns need a few weeks before they mean anything, so nothing is shown until then.</item>
+    </plurals>
 </resources>
