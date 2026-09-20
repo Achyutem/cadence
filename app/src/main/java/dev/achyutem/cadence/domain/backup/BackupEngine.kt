@@ -19,12 +19,15 @@ import dev.achyutem.cadence.core.database.entity.TaskOccurrenceEntity
 import dev.achyutem.cadence.core.database.entity.TaskPriority
 import dev.achyutem.cadence.core.database.entity.TaskTagCrossRef
 import dev.achyutem.cadence.core.datastore.AccentColor
+import dev.achyutem.cadence.core.datastore.ButtonShape
 import dev.achyutem.cadence.core.datastore.CompletedTaskBehavior
 import dev.achyutem.cadence.core.datastore.SettingsRepository
 import dev.achyutem.cadence.core.datastore.ThemeMode
 import dev.achyutem.cadence.core.datastore.TimeFormat
 import dev.achyutem.cadence.core.datastore.UserPreferences
 import dev.achyutem.cadence.core.time.CadenceClock
+import dev.achyutem.cadence.domain.breathing.BreathField
+import dev.achyutem.cadence.domain.breathing.BreathingPreferences
 import dev.achyutem.cadence.domain.notes.Markdown
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -220,7 +223,22 @@ private fun UserPreferences.toBackup() = BackupPreferences(
     quietHoursStart = quietHoursStart.toString(),
     quietHoursEnd = quietHoursEnd.toString(),
     showCompletedOnToday = showCompletedOnToday,
-    checkInPromptEnabled = checkInPromptEnabled,
+    buttonShape = buttonShape.name,
+    breathing = BackupBreathing(
+        soundEnabled = breathing.soundEnabled,
+        boxSeconds = breathing.boxSeconds,
+        boxRounds = breathing.boxRounds,
+        staticBreatheUpSeconds = breathing.staticBreatheUpSeconds,
+        staticHoldSeconds = breathing.staticHoldSeconds,
+        co2HoldSeconds = breathing.co2HoldSeconds,
+        co2StartRestSeconds = breathing.co2StartRestSeconds,
+        co2RestDecrementSeconds = breathing.co2RestDecrementSeconds,
+        co2Rounds = breathing.co2Rounds,
+        o2RestSeconds = breathing.o2RestSeconds,
+        o2StartHoldSeconds = breathing.o2StartHoldSeconds,
+        o2HoldIncrementSeconds = breathing.o2HoldIncrementSeconds,
+        o2Rounds = breathing.o2Rounds,
+    ),
 )
 
 /** Every field falls back to its default if the file holds something unrecognised. */
@@ -239,7 +257,23 @@ private fun BackupPreferences.toUserPreferences() = UserPreferences(
     quietHoursStart = quietHoursStart.toLocalTimeOr(LocalTime.of(22, 0)),
     quietHoursEnd = quietHoursEnd.toLocalTimeOr(LocalTime.of(7, 0)),
     showCompletedOnToday = showCompletedOnToday,
-    checkInPromptEnabled = checkInPromptEnabled,
+    buttonShape = buttonShape.toEnumOr(ButtonShape.ROUNDED),
+    breathing = BreathingPreferences(
+        soundEnabled = breathing.soundEnabled,
+        boxSeconds = BreathField.BOX_SECONDS.clamp(breathing.boxSeconds),
+        boxRounds = BreathField.ROUNDS.clamp(breathing.boxRounds),
+        staticBreatheUpSeconds = BreathField.BREATHE_UP.clamp(breathing.staticBreatheUpSeconds),
+        staticHoldSeconds = BreathField.HOLD.clamp(breathing.staticHoldSeconds),
+        co2HoldSeconds = BreathField.HOLD.clamp(breathing.co2HoldSeconds),
+        co2StartRestSeconds = BreathField.START_REST.clamp(breathing.co2StartRestSeconds),
+        co2RestDecrementSeconds =
+            BreathField.REST_DECREMENT.clamp(breathing.co2RestDecrementSeconds),
+        co2Rounds = BreathField.ROUNDS.clamp(breathing.co2Rounds),
+        o2RestSeconds = BreathField.REST.clamp(breathing.o2RestSeconds),
+        o2StartHoldSeconds = BreathField.START_HOLD.clamp(breathing.o2StartHoldSeconds),
+        o2HoldIncrementSeconds = BreathField.HOLD_INCREMENT.clamp(breathing.o2HoldIncrementSeconds),
+        o2Rounds = BreathField.ROUNDS.clamp(breathing.o2Rounds),
+    ),
 )
 
 private inline fun <reified T : Enum<T>> String.toEnumOr(fallback: T): T =

@@ -50,7 +50,6 @@ import dev.achyutem.cadence.core.time.formatDayAndMonth
 import dev.achyutem.cadence.core.time.formatWeekdayFull
 import dev.achyutem.cadence.domain.habit.Habit
 import dev.achyutem.cadence.domain.task.Task
-import dev.achyutem.cadence.feature.checkin.CheckInCard
 import dev.achyutem.cadence.feature.habits.HabitRow
 import dev.achyutem.cadence.feature.todos.QuickAddBar
 import dev.achyutem.cadence.feature.todos.TaskRow
@@ -88,7 +87,6 @@ fun TodayScreen(
             onDecrementHabit = viewModel::decrementHabit,
             onOpenHabit = onOpenHabit,
             onOpenTask = onOpenTask,
-            onCheckIn = viewModel::setCheckIn,
             onOpenCalendar = onOpenCalendar,
             onAddClick = { quickAddVisible = true },
         )
@@ -111,7 +109,6 @@ private fun TodayContent(
     onDecrementHabit: (Habit) -> Unit,
     onOpenHabit: (Long) -> Unit,
     onOpenTask: (Long) -> Unit,
-    onCheckIn: (mood: Int?, energy: Int?) -> Unit,
     onOpenCalendar: () -> Unit,
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -209,19 +206,6 @@ private fun TodayContent(
                     onToggleSubtask = onToggle,
                     onClick = { onOpenTask(task.id) },
                     use24Hour = use24Hour,
-                )
-            }
-        }
-
-        if (state.preferences.checkInPromptEnabled) {
-            item(key = "checkin") {
-                Spacer(Modifier.height(Spacing.lg))
-                SectionHeader(title = stringResource(R.string.checkin_section))
-                Spacer(Modifier.height(Spacing.xs))
-                CheckInCard(
-                    entry = state.checkIn,
-                    onMood = { onCheckIn(it, null) },
-                    onEnergy = { onCheckIn(null, it) },
                 )
             }
         }
@@ -379,7 +363,6 @@ private fun TodayPreviewLight() = CadencePreviewTheme {
         onDecrementHabit = {},
         onOpenHabit = {},
         onOpenTask = {},
-        onCheckIn = { _, _ -> },
         onOpenCalendar = {},
         onAddClick = {},
     )

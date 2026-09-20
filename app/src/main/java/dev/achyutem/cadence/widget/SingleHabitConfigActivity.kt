@@ -23,9 +23,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -34,6 +38,7 @@ import dev.achyutem.cadence.R
 import dev.achyutem.cadence.core.database.entity.HabitEntity
 import dev.achyutem.cadence.core.datastore.UserPreferences
 import dev.achyutem.cadence.core.designsystem.component.FullScreenEmptyState
+import dev.achyutem.cadence.core.designsystem.component.SegmentedControl
 import dev.achyutem.cadence.core.designsystem.theme.CadenceTheme
 import dev.achyutem.cadence.core.designsystem.token.Borders
 import dev.achyutem.cadence.core.designsystem.token.Radius
@@ -55,9 +60,12 @@ import kotlinx.coroutines.launch
  * habit due today. Configuration is how you point a *second* one somewhere else, not a gate in
  * front of the first.
  */
-class SingleHabitConfigActivity : ComponentActivity() {
+open class SingleHabitConfigActivity : ComponentActivity() {
 
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
+
+    /** Whether this configuration screen also offers a week/month choice. */
+    protected open val offersPeriod: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -110,18 +118,41 @@ class SingleHabitConfigActivity : ComponentActivity() {
                             description = stringResource(R.string.widget_config_empty),
                         )
                     } else {
-                        HabitChoices(habits = list, onChoose = ::choose)
+                        var period by remember { mutableStateOf(HabitCalendarPeriod.MONTH) }
+                        if (offersPeriod) {
+                            SegmentedControl(
+                                options = HabitCalendarPeriod.entries,
+                                selected = period,
+                                onSelect = { period = it },
+                                label = {
+                                    stringResource(
+                                        if (it == HabitCalendarPeriod.WEEK) {
+                                            R.string.widget_config_week
+                                        } else {
+                                            R.string.widget_config_month
+                                        }
+                                    )
+                                },
+                                modifier = Modifier.padding(horizontal = Spacing.screenGutter),
+                            )
+                            Spacer(Modifier.height(Spacing.md))
+                        }
+                        HabitChoices(habits = list) { habit -> choose(habit, period) }
                     }
                 }
             }
         }
     }
 
-    private fun choose(habit: HabitEntity) {
+    protected open suspend fun apply(glanceId: GlanceId, habitId: Long, period: HabitCalendarPeriod) {
+        SingleHabitWidget.configure(this, glanceId, habitId)
+    }
+
+    private fun choose(habit: HabitEntity, period: HabitCalendarPeriod) {
         lifecycleScope.launch {
             val glanceId = GlanceAppWidgetManager(this@SingleHabitConfigActivity)
                 .getGlanceIdBy(appWidgetId)
-            SingleHabitWidget.configure(this@SingleHabitConfigActivity, glanceId, habit.id)
+            apply(glanceId, habit.id, period)
             setResult(
                 RESULT_OK,
                 Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId),

@@ -2,6 +2,8 @@ package dev.achyutem.cadence
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -44,8 +46,14 @@ class NotesFlowTest {
 
         composeRule.onNodeWithContentDescription("Back").performClick()
 
-        composeRule.waitForIdle()
         // No save button: if autosave did not flush on the way out, this note would not exist.
-        composeRule.onNodeWithText(title).assertIsDisplayed()
+        //
+        // Matched as "at least one" rather than "exactly one". While the editor is fading out its
+        // title field and the list row briefly carry the same text, and a single-node assertion
+        // fails on the overlap for a reason that has nothing to do with persistence.
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText(title).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodesWithText(title).onFirst().assertIsDisplayed()
     }
 }

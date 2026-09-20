@@ -90,16 +90,6 @@ class ReminderScheduler(
             }
         }
 
-        // The optional evening check-in prompt.
-        if (preferences.checkInPromptEnabled) {
-            var date = today
-            while (date <= horizonEnd) {
-                val trigger = date.atTime(CHECK_IN_HOUR, 0).atZone(zone).toInstant()
-                reminders += ScheduledReminder(ReminderTarget.CHECK_IN, 0, date, trigger)
-                date = date.plusDays(1)
-            }
-        }
-
         // Cancel the horizon, then lay it down again.
         cancelHorizon(today, horizonEnd)
 
@@ -179,6 +169,5 @@ class ReminderScheduler(
          */
         const val HORIZON_DAYS = 7L
 
-        const val CHECK_IN_HOUR = 21
     }
 }

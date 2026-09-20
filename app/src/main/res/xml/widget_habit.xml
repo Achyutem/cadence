@@ -13,7 +13,7 @@
     android:targetCellWidth="2"
     android:targetCellHeight="2"
     android:description="@string/widget_habit_description"
-    android:previewLayout="@layout/widget_preview"
+    android:previewLayout="@layout/widget_preview_habit"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="1800000"
     android:configure="dev.achyutem.cadence.widget.SingleHabitConfigActivity"

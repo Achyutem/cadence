@@ -74,7 +74,6 @@ aapt2 dump permissions app/build/outputs/apk/release/app-release-unsigned.apk
 |---|---|---|
 | Task reminders | HIGH | timed tasks |
 | Habit reminders | DEFAULT | habit prompts |
-| Daily check-in | LOW | the optional evening nudge |
 
 Separate channels so the user can silence habit nudges without losing task reminders, that
 choice belongs to them, in system settings, not to an in-app toggle we invented.

@@ -6,16 +6,23 @@ import dev.achyutem.cadence.core.common.cadenceViewModelFactory
 import dev.achyutem.cadence.core.database.dao.BreathingDao
 import dev.achyutem.cadence.core.database.entity.BreathingKind
 import dev.achyutem.cadence.core.database.entity.BreathingSessionEntity
+import dev.achyutem.cadence.core.datastore.SettingsRepository
 import dev.achyutem.cadence.core.time.CadenceClock
+import dev.achyutem.cadence.domain.breathing.BreathCue
 import dev.achyutem.cadence.domain.breathing.BreathPhase
 import dev.achyutem.cadence.domain.breathing.BreathPhaseKind
 import dev.achyutem.cadence.domain.breathing.BreathingExercise
+import dev.achyutem.cadence.domain.breathing.BreathingPreferences
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -60,11 +67,30 @@ data class BreathingUiState(
 
 class BreathingViewModel(
     private val sessions: BreathingDao,
+    private val settings: SettingsRepository,
     private val clock: CadenceClock,
 ) : ViewModel() {
 
     private val _run = MutableStateFlow<BreathingRun?>(null)
     val run: StateFlow<BreathingRun?> = _run.asStateFlow()
+
+    /**
+     * Sounds the session wants to make.
+     *
+     * A hot flow rather than part of the state: a cue is an event that happens once, and a state
+     * field would replay the last beep on every recomposition and every screen rotation. `replay`
+     * is 0 and the buffer exists only so that emitting from the ticker never suspends.
+     */
+    private val _cues = MutableSharedFlow<BreathCue>(extraBufferCapacity = 8)
+    val cues: SharedFlow<BreathCue> = _cues.asSharedFlow()
+
+    val breathing: StateFlow<BreathingPreferences> = settings.preferences
+        .map { it.breathing }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            BreathingPreferences.Default,
+        )
 
     val longestHold: StateFlow<Int?> = sessions.observeLongestHold()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -75,6 +101,27 @@ class BreathingViewModel(
     private var ticker: Job? = null
     private var longestHoldThisRun = 0
 
+    /**
+     * Save one exercise's numbers without starting it.
+     *
+     * Editing is persisted on every change rather than behind a Save button, so the numbers you
+     * left an exercise on are the numbers it has next week.
+     */
+    fun save(exercise: BreathingExercise) = viewModelScope.launch {
+        settings.setBreathing(breathing.value.with(exercise))
+    }
+
+    fun setSoundEnabled(enabled: Boolean) = viewModelScope.launch {
+        settings.setBreathingSoundEnabled(enabled)
+    }
+
+    /**
+     * Begin a session.
+     *
+     * Once this returns the session runs itself to the end: every phase of every round is already
+     * in [BreathingRun.phases], and the ticker walks them without waiting for input. Pause, skip
+     * and stop exist, but nothing has to be touched to get from the first round to the last.
+     */
     fun start(exercise: BreathingExercise) {
         ticker?.cancel()
         val phases = exercise.expand()
@@ -85,6 +132,7 @@ class BreathingViewModel(
             phaseIndex = 0,
             secondsLeft = phases.first().seconds,
         )
+        _cues.tryEmit(BreathCue.forPhase(phases.first().kind))
         runTicker()
     }
 
@@ -110,32 +158,39 @@ class BreathingViewModel(
     }
 
     private fun advanceOneSecond() {
-        _run.update { current ->
-            if (current == null) return@update null
-            val remaining = current.secondsLeft - 1
-            val elapsed = current.elapsedSeconds + 1
+        val current = _run.value ?: return
+        val remaining = current.secondsLeft - 1
+        val elapsed = current.elapsedSeconds + 1
 
-            if (remaining > 0) {
-                return@update current.copy(secondsLeft = remaining, elapsedSeconds = elapsed)
+        if (remaining > 0) {
+            _run.value = current.copy(secondsLeft = remaining, elapsedSeconds = elapsed)
+            if (remaining <= BreathCue.COUNTDOWN_SECONDS &&
+                current.phase.seconds >= BreathCue.MIN_COUNTDOWN_PHASE_SECONDS
+            ) {
+                _cues.tryEmit(BreathCue.COUNTDOWN)
             }
+            return
+        }
 
-            // Phase finished. Record the hold before moving on, so a session abandoned during the
-            // next phase still keeps the hold the user actually achieved.
-            if (current.phase.kind == BreathPhaseKind.HOLD_FULL) {
-                longestHoldThisRun = maxOf(longestHoldThisRun, current.phase.seconds)
-            }
+        // Phase finished. Record the hold before moving on, so a session abandoned during the
+        // next phase still keeps the hold the user actually achieved.
+        if (current.phase.kind == BreathPhaseKind.HOLD_FULL) {
+            longestHoldThisRun = maxOf(longestHoldThisRun, current.phase.seconds)
+        }
 
-            val nextIndex = current.phaseIndex + 1
-            if (nextIndex >= current.phases.size) {
-                finish(current.copy(elapsedSeconds = elapsed), completed = true)
-                current.copy(secondsLeft = 0, elapsedSeconds = elapsed, finished = true)
-            } else {
-                current.copy(
-                    phaseIndex = nextIndex,
-                    secondsLeft = current.phases[nextIndex].seconds,
-                    elapsedSeconds = elapsed,
-                )
-            }
+        val nextIndex = current.phaseIndex + 1
+        if (nextIndex >= current.phases.size) {
+            finish(current.copy(elapsedSeconds = elapsed), completed = true)
+            _run.value = current.copy(secondsLeft = 0, elapsedSeconds = elapsed, finished = true)
+            _cues.tryEmit(BreathCue.FINISH)
+        } else {
+            val next = current.phases[nextIndex]
+            _run.value = current.copy(
+                phaseIndex = nextIndex,
+                secondsLeft = next.seconds,
+                elapsedSeconds = elapsed,
+            )
+            _cues.tryEmit(BreathCue.forPhase(next.kind))
         }
     }
 
@@ -151,15 +206,16 @@ class BreathingViewModel(
      * not credit it.
      */
     fun skipPhase() {
-        _run.update { current ->
-            if (current == null) return@update null
-            val nextIndex = current.phaseIndex + 1
-            if (nextIndex >= current.phases.size) {
-                finish(current, completed = true)
-                current.copy(finished = true, secondsLeft = 0)
-            } else {
-                current.copy(phaseIndex = nextIndex, secondsLeft = current.phases[nextIndex].seconds)
-            }
+        val current = _run.value ?: return
+        val nextIndex = current.phaseIndex + 1
+        if (nextIndex >= current.phases.size) {
+            finish(current, completed = true)
+            _run.value = current.copy(finished = true, secondsLeft = 0)
+            _cues.tryEmit(BreathCue.FINISH)
+        } else {
+            val next = current.phases[nextIndex]
+            _run.value = current.copy(phaseIndex = nextIndex, secondsLeft = next.seconds)
+            _cues.tryEmit(BreathCue.forPhase(next.kind))
         }
     }
 
@@ -204,7 +260,11 @@ class BreathingViewModel(
         private const val MIN_LOGGED_SECONDS = 10
 
         val Factory = cadenceViewModelFactory { container ->
-            BreathingViewModel(container.database.breathingDao(), container.clock)
+            BreathingViewModel(
+                sessions = container.database.breathingDao(),
+                settings = container.settingsRepository,
+                clock = container.clock,
+            )
         }
     }
 }

@@ -97,6 +97,7 @@ fun CadenceButton(
         ButtonTone.Danger -> BorderStroke(Borders.hairline, CadenceTheme.colors.border)
         else -> null
     }
+    val shape = CadenceTheme.controlShape
     val height = if (size == ButtonSize.Small) 32.dp else 38.dp
     val horizontal = if (size == ButtonSize.Small) Spacing.sm else Spacing.md
     val alpha = if (enabled) 1f else 0.45f
@@ -106,9 +107,9 @@ fun CadenceButton(
             .scale(scale)
             .height(height)
             .defaultMinSize(minWidth = height)
-            .clip(Radius.shapeSm)
+            .clip(shape)
             .background(background.copy(alpha = background.alpha * alpha))
-            .then(if (border != null) Modifier.border(border, Radius.shapeSm) else Modifier)
+            .then(if (border != null) Modifier.border(border, shape) else Modifier)
             .clickable(
                 enabled = enabled,
                 interactionSource = interactionSource,
@@ -167,7 +168,7 @@ fun CadenceIconButton(
     Box(
         modifier = modifier
             .size(38.dp)
-            .clip(Radius.shapeSm)
+            .clip(CadenceTheme.controlShape)
             .clickable(
                 enabled = enabled,
                 interactionSource = interactionSource,

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Picker preview for the Next up widget.
+
+  Glance cannot hand the launcher a composable preview, so every widget gets a static layout that
+  resembles its real output. The launcher inflates these in its own process, so only views
+  RemoteViews permits may appear here; a plain <View> makes the picker show "Can't load widget".
+
+  The sample text is deliberately literal: it is scaffolding for a picture of the widget, never
+  user-facing copy, so translating it would be meaningless. Hence the HardcodedText suppression.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_preview_background"
+    android:padding="14dp"
+    tools:ignore="HardcodedText">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NEXT"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.08"
+        android:textColor="#737373" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Review the design doc"
+        android:maxLines="2"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="#171717" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="16:30"
+        android:textSize="12sp"
+        android:textColor="#3B5BF0" />
+</LinearLayout>

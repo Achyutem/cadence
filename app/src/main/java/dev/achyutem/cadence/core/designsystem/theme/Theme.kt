@@ -16,7 +16,9 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import androidx.compose.ui.graphics.Shape
 import dev.achyutem.cadence.core.datastore.AccentColor
+import dev.achyutem.cadence.core.datastore.ButtonShape
 import dev.achyutem.cadence.core.datastore.ThemeMode
 import dev.achyutem.cadence.core.datastore.UserPreferences
 import dev.achyutem.cadence.core.designsystem.token.Radius
@@ -36,6 +38,14 @@ val LocalMotionScale = compositionLocalOf { 1f }
 /** The active preferences, readable from anywhere for formatting decisions (12/24h, week start). */
 val LocalUserPreferences = compositionLocalOf { UserPreferences.Default }
 
+/**
+ * The shape buttons and segmented chips use.
+ *
+ * Published as its own local rather than read from [LocalUserPreferences] at each call site, so a
+ * control cannot accidentally hard-code a radius and drift from the setting.
+ */
+val LocalControlShape = compositionLocalOf<Shape> { Radius.shapeSm }
+
 private val CadenceShapes = Shapes(
     extraSmall = Radius.shapeXs,
     small = Radius.shapeSm,
@@ -50,6 +60,10 @@ object CadenceTheme {
 
     val preferences: UserPreferences
         @Composable @ReadOnlyComposable get() = LocalUserPreferences.current
+
+    /** The user's chosen button and chip shape. */
+    val controlShape: Shape
+        @Composable @ReadOnlyComposable get() = LocalControlShape.current
 
     /** Scale a duration token by the motion preference. */
     @Composable @ReadOnlyComposable
@@ -106,8 +120,14 @@ fun CadenceTheme(
         }
     }
 
+    val controlShape = when (preferences.buttonShape) {
+        ButtonShape.ROUNDED -> Radius.shapeSm
+        ButtonShape.PILL -> Radius.pill
+    }
+
     CompositionLocalProvider(
         LocalCadenceColors provides extendedColors,
+        LocalControlShape provides controlShape,
         LocalMotionScale provides motionScale,
         LocalUserPreferences provides preferences,
     ) {

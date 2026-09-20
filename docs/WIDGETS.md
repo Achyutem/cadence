@@ -1,6 +1,6 @@
 # Widgets
 
-Six widgets, all interactive where it makes sense, built on one shared layer.
+Seven widgets, all interactive where it makes sense, built on one shared layer.
 
 ## The shared layer
 
@@ -27,7 +27,7 @@ This is the payoff for a decision made back in the design system. Glance renders
 launcher's process and **cannot run Material's colour generation**, so a seed-generated palette
 would be unavailable here, and widgets would have to approximate the app's colours.
 
-Because `AccentPalette` is five fixed pairs of plain values, the same accent resolves identically
+Because `AccentPalette` is ten fixed pairs of plain values, the same accent resolves identically
 in both places. See `docs/DESIGN_SYSTEM.md`.
 
 Light/dark is handed to Glance as a pair so the launcher picks per its own configuration, a
@@ -36,18 +36,42 @@ on someone else's surface. An explicit app override collapses both sides of the 
 
 ## The widgets
 
-| Widget | Sizes | Interactive |
-|---|---|---|
-| Today | S / M / L | tick tasks, step habits |
-| Todo list | M / L | tick tasks |
-| Habits | M / L | step each habit |
-| Single habit | 2×2 | step, ± |
-| Heatmap | M / L |, |
-| Next task | 2×1 | tick |
+| Widget | Picker name | Sizes | Interactive |
+|---|---|---|---|
+| Today | Today | S / M / L | tick tasks, step habits |
+| Todo list | Tasks | M / L | tick tasks |
+| Habits | Habits | M / L | step each habit |
+| Single habit | Single habit | 2×2 | step, ± |
+| Heatmap | Activity | M / L / wide | no |
+| Next task | Next up | 2×1 | tick |
+| Habit calendar | Habit calendar | 4×3, resizable | step |
 
-Today, Todo list, Habits and Heatmap use `SizeMode.Responsive`: one composition that reads
-`LocalSize`, rather than three widget classes. There is no way for the medium layout to drift from
-the large one, because they are the same code.
+Today, Todo list and Habits use `SizeMode.Responsive`: one composition that reads `LocalSize`,
+rather than three widget classes. There is no way for the medium layout to drift from the large
+one, because they are the same code.
+
+The two grid widgets, Activity and Habit calendar, use `SizeMode.Exact` instead. Their cells scale
+continuously with the widget, and `SizeMode.Responsive` reports the nearest *declared* bucket
+rather than the real size, so a grid sized from it draws for 250dp while sitting in a 360dp
+widget.
+
+Every receiver carries an `android:label`. Without one the picker lists seven rows all called
+"Cadence", distinguishable only by their descriptions, and each widget has its own preview layout
+for the same reason: one shared placeholder made every entry look identical.
+
+## The habit calendar
+
+A habit as a real calendar rather than a rolling window: weekday columns, leading blanks for the
+first week, one cell per day of the month, in week or month mode chosen at configuration time.
+
+It exists alongside the Activity heatmap because the two answer different questions. Thirteen
+rolling weeks answers "how consistent have I been"; a month grid aligned to weekday columns
+answers "how is *this month* going", which is the view that lines up with a monthly goal.
+
+Row height is derived from the widget's height and divided by the number of week rows, so a taller
+widget draws a taller grid instead of the same small one floating in white space. Day numbers
+appear once a cell is at least 22dp; below that the colour alone carries the information, which is
+all a heat grid needs.
 
 ## Interactivity
 
@@ -63,7 +87,7 @@ keep showing it outstanding until the next periodic refresh, which is exactly th
 makes people stop trusting a widget. Failures are swallowed: a widget that cannot be updated must
 never take down the write that triggered it.
 
-## Two Glance traps worth writing down
+## Three Glance traps worth writing down
 
 **`defaultWeight()` takes no weight value.** A progress bar built from two weighted cells in a row
 always splits 50/50 regardless of the progress passed in; a bar that looks plausible in code and
@@ -73,6 +97,21 @@ primitive here that can express a fraction.
 **`RemoteViews` will not inflate a plain `<View>`.** A preview layout using one shows
 "Can't load widget" in the picker, with the real cause only visible in logcat as
 `Class not allowed to be inflated android.view.View`. Use `ImageView` for a decorative bar.
+
+**A Glance container holds at most ten children, and drops the rest in silence.** Glance renders
+each container as one of its pre-generated layouts, and those ship in sizes `0children` through
+`10children` only; there is no error, no log line, and no clipping indicator. A week row written
+as seven cells with six spacers between them is thirteen children, so it rendered Monday to Friday
+and stopped, and the thirteen-week heatmap rendered five weeks.
+
+Two consequences for any grid here:
+
+- Gaps are padding on the cells, never `Spacer` siblings, so seven columns are seven children.
+- Anything wider than ten columns is nested. The heatmap is an outer row of two groups, each
+  holding up to seven week columns, each of which is a column of seven days.
+
+Cells claim their share of the width with `defaultWeight()` rather than a computed `dp`, which
+also makes the grid fill the widget at any size.
 
 ## The heatmap widget is 13 weeks, not a year
 

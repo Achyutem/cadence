@@ -88,6 +88,8 @@ fun <T> SegmentedControl(
         // Critically damped: the chip arrives exactly where it is going without wobbling past it.
         // A bouncier spring here would be the single most annoying animation in the app, because
         // this control is used constantly and its movement is always horizontal and short.
+        val chipShape = CadenceTheme.controlShape
+
         val indicatorOffset by animateDpAsState(
             targetValue = itemWidth * selectedIndex,
             animationSpec = if (CadenceTheme.duration(Motion.STANDARD) == 0) {
@@ -108,9 +110,9 @@ fun <T> SegmentedControl(
                 .offset { IntOffset(indicatorOffset.roundToPx(), 0) }
                 .width(itemWidth)
                 .height(TouchTarget.control)
-                .clip(Radius.shapeSm)
+                .clip(chipShape)
                 .background(CadenceTheme.colors.segmentSelected)
-                .border(Borders.hairline, CadenceTheme.colors.border, Radius.shapeSm),
+                .border(Borders.hairline, CadenceTheme.colors.border, chipShape),
         )
 
         Row(

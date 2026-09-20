@@ -2,11 +2,14 @@ package dev.achyutem.cadence.feature.notes
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -39,15 +43,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -57,15 +63,23 @@ import dev.achyutem.cadence.core.designsystem.component.ButtonTone
 import dev.achyutem.cadence.core.designsystem.component.CadenceDivider
 import dev.achyutem.cadence.core.designsystem.component.CadenceIconButton
 import dev.achyutem.cadence.core.designsystem.component.MarkdownText
+import dev.achyutem.cadence.core.designsystem.theme.CadenceTheme
 import dev.achyutem.cadence.core.designsystem.token.Motion
 import dev.achyutem.cadence.core.designsystem.token.Spacing
-import dev.achyutem.cadence.core.designsystem.theme.CadenceTheme
 
 /**
  * The note editor.
  *
- * Two modes over one document: a plain Markdown text field, and a rendered preview whose
- * checkboxes are tappable. There is no save button; see [NoteEditorViewModel].
+ * Two modes over one document, and which one you land in depends on what is there. A note with
+ * content opens in **view mode**, because most of the time a note is opened to be read and landing
+ * in an editor with a cursor in someone's prose invites accidental edits. A new or empty note opens
+ * straight into editing, because there is nothing to read.
+ *
+ * Touching the body moves you into editing. Ticking a checkbox does not: that is reading
+ * behaviour, and dropping someone into a text editor because they checked a box is the wrong
+ * response.
+ *
+ * There is no save button. See [NoteEditorViewModel].
  */
 @Composable
 fun NoteEditorScreen(
@@ -78,14 +92,34 @@ fun NoteEditorScreen(
     ),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    // Read here: `transitionSpec` below runs outside composition and cannot call into the theme.
+    // Read here: `transitionSpec` runs outside composition and cannot call into the theme.
     val modeFadeMillis = CadenceTheme.duration(Motion.QUICK)
 
-    // Whatever route the user takes out of this screen, back gesture, toolbar, process moving to
-    // the background; the pending debounce is flushed first.
-    DisposableEffect(Unit) {
-        onDispose { viewModel.saveNow() }
+    /**
+     * The body's text and selection.
+     *
+     * Hoisted to the screen so the format bar, which has to live outside the scrolling content to
+     * stay above the keyboard, can act on the current selection. Keyed on the note so opening a
+     * different one starts fresh rather than inheriting the last caret.
+     */
+    var body by remember(noteId, state.loading) {
+        mutableStateOf(TextFieldValue(state.content, TextRange(state.content.length)))
     }
+
+    // The model can change the body without the field doing it: a checkbox toggled in preview, or
+    // a list continued. Sync in that direction only, and clamp the caret so it cannot land past
+    // the end of shorter text.
+    LaunchedEffect(state.content) {
+        if (body.text != state.content) {
+            body = body.copy(
+                text = state.content,
+                selection = TextRange(body.selection.start.coerceIn(0, state.content.length)),
+            )
+        }
+    }
+
+    // Whatever route the user takes out of this screen, the pending autosave is flushed first.
+    DisposableEffect(Unit) { onDispose { viewModel.saveNow() } }
     BackHandler {
         viewModel.saveNow()
         onBack()
@@ -133,52 +167,86 @@ fun NoteEditorScreen(
                 label = "editorMode",
             ) { preview ->
                 if (preview) {
-                    MarkdownText(
-                        source = state.content,
-                        onToggleTask = viewModel::toggleTaskAtLine,
-                    )
+                    // The tap target extends well past the rendered text. Without a minimum
+                    // height, a short note leaves a large dead area, and a note made entirely of
+                    // task rows has no tappable text at all, because each row belongs to its own
+                    // checkbox. Either case would leave the toolbar toggle as the only way in.
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 320.dp)
+                            .clickable(
+                                // No ripple: this is a whole page of text, not a button.
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = viewModel::beginEditing,
+                            ),
+                    ) {
+                        MarkdownText(
+                            source = state.content,
+                            onToggleTask = viewModel::toggleTaskAtLine,
+                        )
+                    }
                 } else {
-                    MarkdownEditor(
-                        value = state.content,
-                        onValueChange = viewModel::setContent,
+                    MarkdownBody(
+                        value = body,
+                        onValueChange = { next ->
+                            val continued = continueListIfNewline(body, next, viewModel::continueList)
+                            if (continued != null) {
+                                body = continued
+                            } else {
+                                body = next
+                                viewModel.setContent(next.text)
+                            }
+                        },
                     )
                 }
             }
+
             Spacer(Modifier.height(Spacing.huge))
+        }
+
+        // Pinned below the scrolling content and inside the screen's imePadding, so it rides
+        // above the keyboard rather than being buried behind it. Hidden in view mode, where
+        // there is nothing to format.
+        AnimatedVisibility(
+            visible = !state.previewMode,
+            enter = fadeIn(tween(modeFadeMillis)),
+            exit = fadeOut(tween(modeFadeMillis)),
+        ) {
+            Column {
+                CadenceDivider()
+                FormatBar(
+                    onApply = { transform ->
+                        val next = transform(body)
+                        body = next
+                        viewModel.setContent(next.text)
+                    },
+                )
+            }
         }
     }
 }
 
-/** A borderless text field that looks like the text it holds, used for the note's heading. */
-@Composable
-private fun PlainTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    textStyle: androidx.compose.ui.text.TextStyle,
-    modifier: Modifier = Modifier,
-    singleLine: Boolean = false,
-) {
-    BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        singleLine = singleLine,
-        textStyle = textStyle.copy(color = MaterialTheme.colorScheme.onSurface),
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-        decorationBox = { inner ->
-            Box {
-                if (value.isEmpty()) {
-                    Text(
-                        text = placeholder,
-                        style = textStyle,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                inner()
-            }
-        },
-        modifier = modifier.fillMaxWidth(),
-    )
+/**
+ * Detect that the user just pressed Enter, and continue the list if the caret was in one.
+ *
+ * Returns the replacement field value, or null when this was an ordinary edit the field should
+ * handle itself. The model is updated by [onContinue], which also owns the autosave.
+ */
+private fun continueListIfNewline(
+    previous: TextFieldValue,
+    next: TextFieldValue,
+    onContinue: (caret: Int) -> Pair<String, Int>?,
+): TextFieldValue? {
+    val insertedOneChar = next.text.length == previous.text.length + 1
+    val caret = next.selection.start
+    if (!insertedOneChar || !next.selection.collapsed || caret <= 0) return null
+    if (next.text[caret - 1] != '\n') return null
+
+    // The caret in the *old* text is where Enter was pressed.
+    val (text, newCaret) = onContinue(caret - 1) ?: return null
+    return TextFieldValue(text, TextRange(newCaret))
 }
 
 @Composable
@@ -226,64 +294,66 @@ private fun EditorToolbar(
     }
 }
 
-/**
- * The Markdown text field plus its formatting bar.
- *
- * The bar operates on the current selection: with text selected it wraps it, with nothing
- * selected it inserts the markers and places the caret between them, so tapping **B** and typing
- * does what you expect either way. That behaviour is the whole reason to keep a
- * [TextFieldValue] here rather than a plain string: without the selection there is nothing to
- * wrap and nowhere sensible to leave the caret.
- */
+/** A borderless text field that looks like the text it holds, used for the note's heading. */
 @Composable
-private fun MarkdownEditor(
+private fun PlainTextField(
     value: String,
     onValueChange: (String) -> Unit,
+    placeholder: String,
+    textStyle: TextStyle,
+    modifier: Modifier = Modifier,
+    singleLine: Boolean = false,
 ) {
-    var fieldValue by remember(value == "") {
-        mutableStateOf(TextFieldValue(value, TextRange(value.length)))
-    }
-    // Keep the field in step when the model changes underneath it (a preview checkbox toggle).
-    if (fieldValue.text != value) {
-        fieldValue = fieldValue.copy(text = value, selection = TextRange(value.length.coerceAtMost(value.length)))
-    }
-
-    fun apply(transform: (TextFieldValue) -> TextFieldValue) {
-        val next = transform(fieldValue)
-        fieldValue = next
-        onValueChange(next.text)
-    }
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        BasicTextField(
-            value = fieldValue,
-            onValueChange = {
-                fieldValue = it
-                onValueChange(it.text)
-            },
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface,
-            ),
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-            decorationBox = { inner ->
-                Box {
-                    if (fieldValue.text.isEmpty()) {
-                        Text(
-                            text = stringResource(R.string.note_body_placeholder),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    inner()
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = singleLine,
+        textStyle = textStyle.copy(color = MaterialTheme.colorScheme.onSurface),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        decorationBox = { inner ->
+            Box {
+                if (value.isEmpty()) {
+                    Text(
+                        text = placeholder,
+                        style = textStyle,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(320.dp),
-        )
-        Spacer(Modifier.height(Spacing.xs))
-        FormatBar(onApply = ::apply)
-    }
+                inner()
+            }
+        },
+        modifier = modifier.fillMaxWidth(),
+    )
+}
+
+@Composable
+private fun MarkdownBody(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+) {
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        textStyle = MaterialTheme.typography.bodyLarge.copy(
+            color = MaterialTheme.colorScheme.onSurface,
+        ),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        decorationBox = { inner ->
+            Box {
+                if (value.text.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.note_body_placeholder),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                inner()
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 240.dp),
+    )
 }
 
 @Composable
@@ -291,7 +361,8 @@ private fun FormatBar(onApply: ((TextFieldValue) -> TextFieldValue) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .navigationBarsPadding(),
+            .navigationBarsPadding()
+            .padding(horizontal = Spacing.sm, vertical = Spacing.xxs),
         horizontalArrangement = Arrangement.spacedBy(Spacing.xxs),
         verticalAlignment = Alignment.CenterVertically,
     ) {

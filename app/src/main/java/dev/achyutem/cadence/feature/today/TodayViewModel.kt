@@ -49,7 +49,6 @@ data class TodayUiState(
     val visibleTasks: List<Task> = emptyList(),
     val overdue: List<Task> = emptyList(),
     val habits: List<Habit> = emptyList(),
-    val checkIn: dev.achyutem.cadence.core.database.entity.DailyCheckInEntity? = null,
     val preferences: UserPreferences = UserPreferences.Default,
     val loading: Boolean = true,
 ) {
@@ -75,7 +74,6 @@ class TodayViewModel(
     private val clock: CadenceClock,
     private val tasks: TaskDao,
     private val habitDao: HabitDao,
-    private val checkInDao: dev.achyutem.cadence.core.database.dao.CheckInDao,
     private val recurrence: RecurrenceDao,
     private val settings: SettingsRepository,
     private val onDataChanged: suspend () -> Unit,
@@ -130,7 +128,6 @@ class TodayViewModel(
                 tasks.observeAllSubtasks(),
                 habitDao.observeActive(),
                 habitDao.observeEntriesOn(date),
-                checkInDao.observeOn(date),
             ) { values ->
                 @Suppress("UNCHECKED_CAST")
                 val scheduled = values[0] as List<TaskEntity>
@@ -142,7 +139,6 @@ class TodayViewModel(
                 val activeHabits = values[3] as List<HabitEntity>
                 @Suppress("UNCHECKED_CAST")
                 val habitEntries = values[4] as List<HabitEntryEntity>
-                val checkIn = values[5] as dev.achyutem.cadence.core.database.entity.DailyCheckInEntity?
                 val childrenByParent = subtasks.groupBy { it.parentTaskId }
                 fun TaskEntity.build(): Task = toTask(childrenByParent[id].orEmpty())
 
@@ -164,7 +160,6 @@ class TodayViewModel(
                     visibleTasks = if (hideCompleted) ordered.filterNot { it.completed } else ordered,
                     overdue = overdue.map { it.build() }.filterNot { it.completed },
                     habits = buildHabits(activeHabits, habitEntries, date),
-                    checkIn = checkIn,
                     preferences = preferences,
                     loading = false,
                 )
@@ -223,29 +218,6 @@ class TodayViewModel(
         onDataChanged()
     }
 
-    /**
-     * Record a mood or an energy level.
-     *
-     * Creates the day's check-in if there is not one yet, defaulting the other axis to the
-     * midpoint. Tapping one thing must be enough; requiring both would turn a gesture into a form.
-     */
-    fun setCheckIn(mood: Int?, energy: Int?) = viewModelScope.launch {
-        val date = clock.today()
-        val at = clock.now()
-        val existing = checkInDao.getOn(date)
-        val base = existing ?: dev.achyutem.cadence.core.database.entity.DailyCheckInEntity(
-            date = date, mood = 3, energy = 3, createdAt = at, updatedAt = at,
-        )
-        checkInDao.upsert(
-            base.copy(
-                mood = mood ?: base.mood,
-                energy = energy ?: base.energy,
-                updatedAt = at,
-            )
-        )
-        onDataChanged()
-    }
-
     fun setCompleted(task: Task, completed: Boolean) = viewModelScope.launch {
         val at = clock.now()
         if (task.hasSubtasks) {
@@ -292,7 +264,6 @@ class TodayViewModel(
                 container.clock,
                 container.taskDao,
                 container.habitDao,
-                container.checkInDao,
                 container.recurrenceDao,
                 container.settingsRepository,
                 container::refreshWidgets,

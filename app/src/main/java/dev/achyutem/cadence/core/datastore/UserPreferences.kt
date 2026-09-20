@@ -1,5 +1,6 @@
 package dev.achyutem.cadence.core.datastore
 
+import dev.achyutem.cadence.domain.breathing.BreathingPreferences
 import java.time.DayOfWeek
 import java.time.LocalTime
 
@@ -11,7 +12,16 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK }
  * A future custom accent would add one `CUSTOM` case carrying a seed, without changing anything
  * that reads this type.
  */
-enum class AccentColor { BLUE, PURPLE, GREEN, ORANGE, PINK }
+enum class AccentColor { BLUE, INDIGO, VIOLET, MAGENTA, ROSE, AMBER, EMERALD, TEAL, CYAN, SLATE }
+
+/**
+ * The shape of buttons and the segmented control.
+ *
+ * Purely a taste setting. Rounded rectangles read as precise and technical; pills read softer and
+ * friendlier. Neither is more correct, so it is the user's call rather than a decision baked into
+ * the design system.
+ */
+enum class ButtonShape { ROUNDED, PILL }
 
 /** What happens to a task the moment it is ticked off. */
 enum class CompletedTaskBehavior {
@@ -46,6 +56,7 @@ data class UserPreferences(
     val accentColor: AccentColor = AccentColor.BLUE,
     /** Material You. Off by default: Cadence has its own visual identity. */
     val useDynamicColor: Boolean = false,
+    val buttonShape: ButtonShape = ButtonShape.ROUNDED,
     /** Honours the system "remove animations" setting when true; user can force it on. */
     val reducedMotion: Boolean = false,
 
@@ -63,7 +74,9 @@ data class UserPreferences(
 
     // Today
     val showCompletedOnToday: Boolean = true,
-    val checkInPromptEnabled: Boolean = true,
+
+    /** How the user has configured the four breathing exercises, and whether they make sound. */
+    val breathing: BreathingPreferences = BreathingPreferences.Default,
 ) {
     companion object {
         val Default = UserPreferences()

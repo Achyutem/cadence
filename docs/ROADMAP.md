@@ -104,11 +104,12 @@ adapts to accent and scheme.
 
 ---
 
-## Phase 7, Daily check-in
+## Phase 7, Daily check-in (cut)
 
-Mood, energy, optional note, history and visual trends.
-
-**Done when:** it is genuinely skippable and never reads as another task.
+A mood and energy prompt on Today. Built, then removed: asking how you are feeling every evening
+turned out to be exactly the kind of small daily obligation this app is supposed to reduce, and
+the data it produced was too thin to earn an insight. The `daily_check_ins` table and its backup
+section are still read on import so older backups restore cleanly; nothing writes to them.
 
 ---
 

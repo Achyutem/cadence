@@ -20,9 +20,8 @@ everywhere else. Pleasant to open six times a day.
 ## Screens
 
 **Today**, the most important screen and the start destination. Date, greeting, progress, what
-is happening soon, unfinished scheduled tasks, habits, and an optional check-in. Priority order:
-things happening soon → incomplete scheduled tasks → important tasks → habits → remaining tasks →
-reflection.
+is happening soon, unfinished scheduled tasks, and habits. Priority order: things happening soon
+→ incomplete scheduled tasks → important tasks → habits → remaining tasks.
 
 **Todos**, the full task list: create, edit, complete, subtask, prioritise, schedule, reorder.
 Creation is one tap and one line of text.
@@ -51,10 +50,11 @@ coffees" works as naturally as "at least eight glasses".
 Habit history is stored per day, so streaks, rates, averages and heatmaps are all reconstructions
 of what actually happened, and correcting a past day corrects everything downstream.
 
-## Daily check-in
+## Daily check-in, removed
 
-Mood (1–5), energy (1–5), an optional note. Always skippable, never nagged about, never scored.
-It is a reflection tool, not a medical instrument, and not another task.
+An evening mood and energy prompt shipped briefly and was taken out again. A question the app asks
+you every day is an obligation however gently it is worded, and "how are you feeling?" on a screen
+whose job is to reduce daily overhead was the wrong trade. See `docs/ROADMAP.md`.
 
 ## Deliberate non-goals
 

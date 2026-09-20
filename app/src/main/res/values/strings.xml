@@ -129,10 +129,18 @@
 
     <!-- Accent colour names, used as accessibility labels for the swatches -->
     <string name="accent_blue">Blue</string>
-    <string name="accent_purple">Purple</string>
-    <string name="accent_green">Green</string>
-    <string name="accent_orange">Orange</string>
-    <string name="accent_pink">Pink</string>
+    <string name="accent_indigo">Indigo</string>
+    <string name="accent_violet">Violet</string>
+    <string name="accent_magenta">Magenta</string>
+    <string name="accent_rose">Rose</string>
+    <string name="accent_amber">Amber</string>
+    <string name="accent_emerald">Emerald</string>
+    <string name="accent_teal">Teal</string>
+    <string name="accent_cyan">Cyan</string>
+    <string name="accent_slate">Slate</string>
+    <string name="settings_button_shape">Button shape</string>
+    <string name="button_shape_rounded">Rounded</string>
+    <string name="button_shape_pill">Pill</string>
 
     <!--
       A quantity string, not a format string: "1 of 1 tasks complete" is wrong in English and
@@ -203,6 +211,35 @@
     <string name="breathing_phase_hold_empty">Hold empty</string>
     <string name="breathing_phase_recover">Breathe freely</string>
 
+    <string name="breathing_setup_start">Start</string>
+    <string name="breathing_setup_reset">Reset to default</string>
+    <string name="breathing_setup_total">%1$s total</string>
+    <string name="breathing_setup_plan">Plan</string>
+    <string name="breathing_setup_auto">Runs on its own, round to round. Sound tells you when to move.</string>
+    <string name="breathing_sound_on">Turn sound off</string>
+    <string name="breathing_sound_off">Turn sound on</string>
+    <string name="breathing_field_less">Less %1$s</string>
+    <string name="breathing_field_more">More %1$s</string>
+    <string name="breathing_field_rounds">Rounds</string>
+    <string name="breathing_field_box_seconds">Each side</string>
+    <string name="breathing_field_breathe_up">Breathe up</string>
+    <string name="breathing_field_hold">Hold</string>
+    <string name="breathing_field_start_hold">First hold</string>
+    <string name="breathing_field_hold_increment">Hold grows by</string>
+    <string name="breathing_field_rest">Rest</string>
+    <string name="breathing_field_start_rest">First rest</string>
+    <string name="breathing_field_rest_decrement">Rest shrinks by</string>
+    <string name="breathing_plan_round">%1$d</string>
+
+    <!-- Widget names, shown in the launcher's widget picker -->
+    <string name="widget_today_label">Today</string>
+    <string name="widget_todos_label">Tasks</string>
+    <string name="widget_habits_label">Habits</string>
+    <string name="widget_habit_label">Single habit</string>
+    <string name="widget_heatmap_label">Activity</string>
+    <string name="widget_next_label">Next up</string>
+    <string name="widget_calendar_label">Habit calendar</string>
+
     <!-- Widget descriptions, shown in the launcher's widget picker -->
     <string name="widget_today_description">Progress, then what is left of the day.</string>
     <string name="widget_todos_description">Today\u2019s tasks. Tick them without opening the app.</string>
@@ -216,15 +253,11 @@
     <string name="channel_tasks_description">Reminders for tasks you have scheduled.</string>
     <string name="channel_habits">Habit reminders</string>
     <string name="channel_habits_description">Nudges for habits due today.</string>
-    <string name="channel_check_in">Daily check-in</string>
-    <string name="channel_check_in_description">An optional evening prompt to reflect on the day.</string>
 
     <string name="notification_action_complete">Complete</string>
     <string name="notification_action_snooze">Snooze</string>
     <string name="notification_habit_title">%1$s</string>
     <string name="notification_habit_body">Due today</string>
-    <string name="notification_check_in_title">How was today?</string>
-    <string name="notification_check_in_body">Mood, energy, and anything worth remembering.</string>
 
     <!-- Reminder settings -->
     <string name="settings_notifications">Notifications</string>
@@ -234,8 +267,6 @@
     <string name="settings_exact_alarms_body">Without this, reminders may arrive late when the device is idle.</string>
     <string name="settings_quiet_hours">Quiet hours</string>
     <string name="settings_quiet_hours_body">Reminders inside this window wait until it ends rather than being dropped.</string>
-    <string name="settings_check_in_reminder">Evening check-in prompt</string>
-    <string name="settings_check_in_reminder_body">A quiet nudge at 9pm to record how the day went.</string>
     <string name="action_grant">Allow</string>
 
     <!-- Pickers -->
@@ -277,16 +308,6 @@
     <string name="reminder_at">At %1$s</string>
 
     <!-- Check-in -->
-    <string name="checkin_section">Check in</string>
-    <string name="checkin_prompt">How are you feeling?</string>
-    <string name="checkin_recorded">Today\u2019s check-in</string>
-    <string name="checkin_energy">Energy</string>
-    <string name="checkin_energy_level">Energy level %1$d of 5</string>
-    <string name="checkin_mood_1">Rough</string>
-    <string name="checkin_mood_2">Low</string>
-    <string name="checkin_mood_3">Okay</string>
-    <string name="checkin_mood_4">Good</string>
-    <string name="checkin_mood_5">Great</string>
 
     <!-- Calendar -->
     <string name="calendar_month">Month</string>
@@ -308,6 +329,9 @@
     <string name="insights_empty_title">Not enough history yet</string>
 
     <string name="widget_config_title">Which habit?</string>
+    <string name="widget_config_week">Week</string>
+    <string name="widget_config_month">Month</string>
+    <string name="widget_calendar_description">A habit as a week or a month grid.</string>
     <string name="widget_config_empty">Create a habit first, then this widget can show it.</string>
 
     <plurals name="insights_intro">

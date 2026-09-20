@@ -29,6 +29,35 @@ data class BreathPhase(
 )
 
 /**
+ * One adjustable number on an exercise.
+ *
+ * The bounds and the step live here rather than in the editor so that there is exactly one
+ * definition of "a CO2 rest decrement is 0 to 60 seconds in steps of 5". The editor renders
+ * whatever fields an exercise declares, which is what keeps a fifth exercise from needing a
+ * fifth settings screen.
+ */
+enum class BreathField(
+    val min: Int,
+    val max: Int,
+    val step: Int,
+    /** Rendered as `m:ss` when true, as a plain number when false. */
+    val isDuration: Boolean,
+) {
+    ROUNDS(1, BreathingExercise.MAX_ROUNDS, 1, isDuration = false),
+    BOX_SECONDS(2, 20, 1, isDuration = true),
+    BREATHE_UP(30, 600, 15, isDuration = true),
+    HOLD(10, 600, 5, isDuration = true),
+    START_HOLD(10, 600, 5, isDuration = true),
+    HOLD_INCREMENT(0, 60, 5, isDuration = true),
+    REST(30, 600, 15, isDuration = true),
+    START_REST(30, 600, 15, isDuration = true),
+    REST_DECREMENT(0, 60, 5, isDuration = true),
+    ;
+
+    fun clamp(value: Int): Int = value.coerceIn(min, max)
+}
+
+/**
  * The four exercises.
  *
  * Each one is a **pure function to a flat list of phases**. Nothing here knows about time passing,
@@ -39,6 +68,15 @@ data class BreathPhase(
 sealed interface BreathingExercise {
     val title: String
     val subtitle: String
+
+    /** The numbers this exercise lets you change, in the order the editor should show them. */
+    val fields: List<BreathField>
+
+    /** The current value of [field]. Only fields in [fields] are meaningful. */
+    fun valueOf(field: BreathField): Int
+
+    /** A copy with [field] set to [value], clamped to the field's bounds. */
+    fun with(field: BreathField, value: Int): BreathingExercise
 
     /** The full session, in order. */
     fun expand(): List<BreathPhase>
@@ -56,9 +94,23 @@ sealed interface BreathingExercise {
         override val title = "Box breathing"
         override val subtitle = "$seconds · $seconds · $seconds · $seconds"
 
+        override val fields = listOf(BreathField.BOX_SECONDS, BreathField.ROUNDS)
+
+        override fun valueOf(field: BreathField): Int = when (field) {
+            BreathField.BOX_SECONDS -> seconds
+            BreathField.ROUNDS -> rounds
+            else -> 0
+        }
+
+        override fun with(field: BreathField, value: Int): BreathingExercise = when (field) {
+            BreathField.BOX_SECONDS -> copy(seconds = field.clamp(value))
+            BreathField.ROUNDS -> copy(rounds = field.clamp(value))
+            else -> this
+        }
+
         override fun expand(): List<BreathPhase> {
-            val n = rounds.coerceIn(1, MAX_ROUNDS)
-            val s = seconds.coerceIn(2, 20)
+            val n = BreathField.ROUNDS.clamp(rounds)
+            val s = BreathField.BOX_SECONDS.clamp(seconds)
             return buildList {
                 add(BreathPhase(BreathPhaseKind.PREPARE, PREPARE_SECONDS))
                 repeat(n) { index ->
@@ -85,11 +137,25 @@ sealed interface BreathingExercise {
         override val title = "Static apnea"
         override val subtitle = "Hold ${holdSeconds.asClock()}"
 
+        override val fields = listOf(BreathField.BREATHE_UP, BreathField.HOLD)
+
+        override fun valueOf(field: BreathField): Int = when (field) {
+            BreathField.BREATHE_UP -> breatheUpSeconds
+            BreathField.HOLD -> holdSeconds
+            else -> 0
+        }
+
+        override fun with(field: BreathField, value: Int): BreathingExercise = when (field) {
+            BreathField.BREATHE_UP -> copy(breatheUpSeconds = field.clamp(value))
+            BreathField.HOLD -> copy(holdSeconds = field.clamp(value))
+            else -> this
+        }
+
         override fun expand(): List<BreathPhase> = listOf(
             BreathPhase(BreathPhaseKind.PREPARE, PREPARE_SECONDS),
-            BreathPhase(BreathPhaseKind.RECOVER, breatheUpSeconds.coerceIn(30, 600), 1, 1),
+            BreathPhase(BreathPhaseKind.RECOVER, BreathField.BREATHE_UP.clamp(breatheUpSeconds), 1, 1),
             BreathPhase(BreathPhaseKind.INHALE, INHALE_SECONDS, 1, 1),
-            BreathPhase(BreathPhaseKind.HOLD_FULL, holdSeconds.coerceIn(10, 900), 1, 1),
+            BreathPhase(BreathPhaseKind.HOLD_FULL, BreathField.HOLD.clamp(holdSeconds), 1, 1),
             BreathPhase(BreathPhaseKind.EXHALE, RECOVERY_EXHALE_SECONDS, 1, 1),
         )
     }
@@ -108,11 +174,34 @@ sealed interface BreathingExercise {
         val rounds: Int = 8,
     ) : BreathingExercise {
         override val title = "CO₂ table"
-        override val subtitle = "$rounds × ${holdSeconds.asClock()} hold, shrinking rest"
+        override val subtitle = "$rounds × ${holdSeconds.asClock()} hold, rest −${restDecrementSeconds}s each round"
+
+        override val fields = listOf(
+            BreathField.ROUNDS,
+            BreathField.HOLD,
+            BreathField.START_REST,
+            BreathField.REST_DECREMENT,
+        )
+
+        override fun valueOf(field: BreathField): Int = when (field) {
+            BreathField.ROUNDS -> rounds
+            BreathField.HOLD -> holdSeconds
+            BreathField.START_REST -> startRestSeconds
+            BreathField.REST_DECREMENT -> restDecrementSeconds
+            else -> 0
+        }
+
+        override fun with(field: BreathField, value: Int): BreathingExercise = when (field) {
+            BreathField.ROUNDS -> copy(rounds = field.clamp(value))
+            BreathField.HOLD -> copy(holdSeconds = field.clamp(value))
+            BreathField.START_REST -> copy(startRestSeconds = field.clamp(value))
+            BreathField.REST_DECREMENT -> copy(restDecrementSeconds = field.clamp(value))
+            else -> this
+        }
 
         override fun expand(): List<BreathPhase> {
-            val n = rounds.coerceIn(1, MAX_ROUNDS)
-            val hold = holdSeconds.coerceIn(10, 600)
+            val n = BreathField.ROUNDS.clamp(rounds)
+            val hold = BreathField.HOLD.clamp(holdSeconds)
             return buildList {
                 add(BreathPhase(BreathPhaseKind.PREPARE, PREPARE_SECONDS))
                 repeat(n) { index ->
@@ -143,16 +232,49 @@ sealed interface BreathingExercise {
         val rounds: Int = 8,
     ) : BreathingExercise {
         override val title = "O₂ table"
-        override val subtitle = "$rounds holds, growing to ${(startHoldSeconds + holdIncrementSeconds * (rounds - 1)).asClock()}"
+        override val subtitle =
+            "$rounds holds, ${startHoldSeconds.asClock()} growing to ${finalHoldSeconds().asClock()}"
+
+        override val fields = listOf(
+            BreathField.ROUNDS,
+            BreathField.START_HOLD,
+            BreathField.HOLD_INCREMENT,
+            BreathField.REST,
+        )
+
+        override fun valueOf(field: BreathField): Int = when (field) {
+            BreathField.ROUNDS -> rounds
+            BreathField.START_HOLD -> startHoldSeconds
+            BreathField.HOLD_INCREMENT -> holdIncrementSeconds
+            BreathField.REST -> restSeconds
+            else -> 0
+        }
+
+        override fun with(field: BreathField, value: Int): BreathingExercise = when (field) {
+            BreathField.ROUNDS -> copy(rounds = field.clamp(value))
+            BreathField.START_HOLD -> copy(startHoldSeconds = field.clamp(value))
+            BreathField.HOLD_INCREMENT -> copy(holdIncrementSeconds = field.clamp(value))
+            BreathField.REST -> copy(restSeconds = field.clamp(value))
+            else -> this
+        }
+
+        /** The last round's hold, which is what the subtitle promises and the body has to do. */
+        fun finalHoldSeconds(): Int {
+            val n = BreathField.ROUNDS.clamp(rounds)
+            return holdAt(n - 1)
+        }
+
+        private fun holdAt(index: Int): Int =
+            (startHoldSeconds + holdIncrementSeconds * index).coerceAtMost(BreathField.HOLD.max)
 
         override fun expand(): List<BreathPhase> {
-            val n = rounds.coerceIn(1, MAX_ROUNDS)
-            val rest = restSeconds.coerceIn(30, 600)
+            val n = BreathField.ROUNDS.clamp(rounds)
+            val rest = BreathField.REST.clamp(restSeconds)
             return buildList {
                 add(BreathPhase(BreathPhaseKind.PREPARE, PREPARE_SECONDS))
                 repeat(n) { index ->
                     val round = index + 1
-                    val hold = (startHoldSeconds + holdIncrementSeconds * index).coerceAtMost(900)
+                    val hold = holdAt(index)
                     add(BreathPhase(BreathPhaseKind.RECOVER, rest, round, n))
                     add(BreathPhase(BreathPhaseKind.HOLD_FULL, hold, round, n))
                 }

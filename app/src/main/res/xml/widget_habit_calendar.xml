@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  A habit as a week or month grid.
+
+  Sized for a month by default (4 cells wide, 3 tall) because a month grid is the point of it; it
+  still resizes in both directions, and the cells scale with the widget rather than staying fixed.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="250dp"
+    android:minHeight="180dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="3"
+    android:description="@string/widget_calendar_description"
+    android:previewLayout="@layout/widget_preview_calendar"
+    android:configure="dev.achyutem.cadence.widget.HabitCalendarConfigActivity"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

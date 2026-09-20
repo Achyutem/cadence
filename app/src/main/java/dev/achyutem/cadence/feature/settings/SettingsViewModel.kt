@@ -39,8 +39,8 @@ class SettingsViewModel(
     /**
      * Rebuild the reminder horizon.
      *
-     * Called after any setting that changes what should fire or when: quiet hours, the check-in
-     * prompt, and after the notification permission is granted.
+     * Called after any setting that changes what should fire or when: quiet hours, and after the
+     * notification permission is granted.
      */
     fun rescheduleReminders() = viewModelScope.launch { reminders.rescheduleAll() }
 
@@ -51,11 +51,6 @@ class SettingsViewModel(
 
     fun setQuietHours(start: java.time.LocalTime, end: java.time.LocalTime) = viewModelScope.launch {
         settings.setQuietHours(start, end)
-        reminders.rescheduleAll()
-    }
-
-    fun setCheckInPrompt(enabled: Boolean) = viewModelScope.launch {
-        settings.setCheckInPromptEnabled(enabled)
         reminders.rescheduleAll()
     }
 
@@ -78,6 +73,9 @@ class SettingsViewModel(
 
     fun setDynamicColor(enabled: Boolean) =
         viewModelScope.launch { settings.setUseDynamicColor(enabled) }
+
+    fun setButtonShape(shape: dev.achyutem.cadence.core.datastore.ButtonShape) =
+        viewModelScope.launch { settings.setButtonShape(shape) }
 
     fun setReducedMotion(enabled: Boolean) =
         viewModelScope.launch { settings.setReducedMotion(enabled) }

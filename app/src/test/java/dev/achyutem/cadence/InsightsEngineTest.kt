@@ -1,6 +1,5 @@
 package dev.achyutem.cadence
 
-import dev.achyutem.cadence.core.database.entity.DailyCheckInEntity
 import dev.achyutem.cadence.core.database.entity.HabitEntryEntity
 import dev.achyutem.cadence.core.database.entity.TaskEntity
 import dev.achyutem.cadence.domain.insights.InsightConfidence
@@ -44,10 +43,9 @@ class InsightsEngineTest {
     private fun analyse(
         tasks: List<TaskEntity>,
         habits: List<HabitEntryEntity> = emptyList(),
-        checkIns: List<DailyCheckInEntity> = emptyList(),
         from: LocalDate = LocalDate.parse("2026-01-01"),
         to: LocalDate = LocalDate.parse("2026-12-31"),
-    ) = InsightsEngine.analyse(tasks, habits, checkIns, from, to, zone)
+    ) = InsightsEngine.analyse(tasks, habits, from, to, zone)
 
     // --- Silence ---
 
@@ -175,28 +173,6 @@ class InsightsEngineTest {
             )
         }
         assertEquals(null, analyse(tasks).firstOrNull { it.id == "time-of-day" })
-    }
-
-    // --- Check-ins ---
-
-    @Test
-    fun `energy is not compared without enough check-ins on both sides`() {
-        val tasks = (0..59).flatMap { day ->
-            val date = LocalDate.parse("2026-01-05").plusDays(day.toLong())
-            listOf(task(date, completed = true), task(date, completed = false))
-        }
-        // Plenty of check-ins, but only two low-energy days.
-        val checkIns = (0..29).map { day ->
-            DailyCheckInEntity(
-                id = day.toLong(),
-                date = LocalDate.parse("2026-01-05").plusDays(day.toLong()),
-                mood = 4,
-                energy = if (day < 2) 1 else 5,
-                createdAt = epoch,
-                updatedAt = epoch,
-            )
-        }
-        assertEquals(null, analyse(tasks, checkIns = checkIns).firstOrNull { it.id == "energy" })
     }
 
     @Test

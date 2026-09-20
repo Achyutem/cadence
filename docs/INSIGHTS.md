@@ -34,7 +34,6 @@ So the rules come first:
 - Relationship between number of tasks scheduled and proportion completed, likely the most
   genuinely useful one, and the easiest to word responsibly.
 - Habits trending away from their usual consistency.
-- Check-in mood/energy against completion, when enough check-ins exist.
 
 ## Implementation
 

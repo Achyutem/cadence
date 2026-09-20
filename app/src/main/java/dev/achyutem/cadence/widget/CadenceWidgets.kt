@@ -19,6 +19,7 @@ object CadenceWidgets {
         HabitsWidget().updateAll(context)
         SingleHabitWidget().updateAll(context)
         HeatmapWidget().updateAll(context)
+        HabitCalendarWidget().updateAll(context)
         NextTaskWidget().updateAll(context)
     }
 }

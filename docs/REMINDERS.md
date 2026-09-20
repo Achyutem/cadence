@@ -52,7 +52,7 @@ point of the button is to postpone without deciding anything.
 ## Suppression and quiet hours
 
 A reminder is dropped at fire time if the thing already happened: a completed task, a habit
-already logged, a check-in already recorded. A reminder for something you finished an hour ago is
+already logged. A reminder for something you finished an hour ago is
 worse than no reminder.
 
 A trigger already in the past when the horizon is built is skipped rather than fired immediately.
@@ -63,7 +63,7 @@ halves separately.
 
 ## Three channels
 
-Tasks (high), habits (default), check-in (low). Separate so the user can silence habit nudges
+Tasks (high) and habits (default). Separate so the user can silence habit nudges
 without losing task reminders, in system settings where that choice belongs, rather than through
 an in-app toggle we invented.
 

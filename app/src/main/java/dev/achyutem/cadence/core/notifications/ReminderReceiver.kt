@@ -99,17 +99,6 @@ class ReminderReceiver : BroadcastReceiver() {
                 )
             }
 
-            ReminderTarget.CHECK_IN -> {
-                if (container.checkInDao.getOn(date) != null) return
-                notify(
-                    context,
-                    id = notificationId(target, 0, date),
-                    channel = NotificationChannels.CHECK_IN,
-                    title = context.getString(R.string.notification_check_in_title),
-                    body = context.getString(R.string.notification_check_in_body),
-                    actions = emptyList(),
-                )
-            }
         }
     }
 
@@ -135,7 +124,6 @@ class ReminderReceiver : BroadcastReceiver() {
                         )
                 )
             }
-            ReminderTarget.CHECK_IN -> Unit
         }
 
         context.getSystemService<NotificationManager>()?.cancel(notificationId(target, entityId, date))

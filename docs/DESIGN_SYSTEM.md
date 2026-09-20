@@ -32,13 +32,26 @@ saturation it reads as calm, and it stops every accent from looking dirty agains
 
 ### Accents
 
-Five shipped accents: blue, purple, green, orange, pink. Each is a **hand-tuned pair of light and
-dark ramps**, not a generated seed.
+Ten shipped accents: blue, indigo, violet, magenta, rose, amber, emerald, teal, cyan, slate. Each
+is a **hand-tuned pair of light and dark ramps**, not a generated seed.
+
+The first set of five was muted, chosen for restraint, and read as dull rather than calm. The
+current set is brighter, with light primaries around 45–55% lightness and dark primaries around
+70–78%, which is the range where an accent stays legible on a near-black surface without glowing.
+Slate stays deliberately quiet: some people want no colour at all.
 
 Seed generation was rejected deliberately. Generated schemes drift, the "same" blue yields a
 different container tone in each scheme and contrast ratios wander, and Glance widgets cannot run
-Material's colour generation at all, so widgets and app would diverge. Five fixed accents tuned
-once buys predictable contrast everywhere. Every `on*` colour clears 4.5:1 against its pairing.
+Material's colour generation at all, so widgets and app would diverge. Fixed accents tuned once
+buy predictable contrast everywhere. Every `on*` colour clears 4.5:1 against its pairing.
+
+### Control shape
+
+Buttons and the segmented control take their corner radius from `LocalControlShape`, which the
+theme sets from a preference: rounded rectangles or pills. Purely taste. Rounded reads precise and
+technical, pills read softer; neither is more correct, so it is the user's call rather than a
+decision baked into the design system. Nothing else in the app follows it, cards and sheets keep
+their own radii, because a pill-shaped card is a different design, not a preference.
 
 Material You is available as an opt-in (off by default, S+ only); Cadence's own identity is the
 default.
@@ -127,7 +140,7 @@ names.
 ## Revision: the Geist pass
 
 The design language was reworked after the first build. The brief asked for the philosophy behind
-Vercel and Next.js, clean, precise, fast, while keeping Cadence's five accents prominent.
+Vercel and Next.js, clean, precise, fast, while keeping Cadence's accents prominent.
 
 **What changed and why:**
 
@@ -156,11 +169,11 @@ animating indicator possible at all.
 
 The first version expanded the selected tab to reveal its label. It looked elegant in a screenshot
 and was worse to use: every selection re-laid-out the whole bar, so the tab you wanted next was
-never where you last saw it. With five destinations that stops being a quirk and becomes a cost.
+never where you last saw it. With six destinations that stops being a quirk and becomes a cost.
 
 Now tabs are **fixed width with a sliding indicator**. Positions are constant, every target is the
 same size, and the only thing that moves is the indicator travelling to the tab you chose. No tab
-draws a label, so all five carry content descriptions, and `NavigationTest` drives the dock that
+draws a label, so all six carry content descriptions, and `NavigationTest` drives the dock that
 way on purpose, which means a tab a screen reader cannot find is a failing test.
 
 ### The completion checkbox

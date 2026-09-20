@@ -7,7 +7,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 
 /** What a scheduled alarm is for, so the receiver can build the right notification. */
-enum class ReminderTarget { TASK, HABIT, CHECK_IN }
+enum class ReminderTarget { TASK, HABIT }
 
 /**
  * One alarm: a target, a date, and the exact instant it should fire.

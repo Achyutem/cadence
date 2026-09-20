@@ -2,9 +2,11 @@ package dev.achyutem.cadence
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
 import org.junit.Test
@@ -29,7 +31,10 @@ class BreathingFlowTest {
         composeRule.onNodeWithContentDescription("Breathe").performClick()
         composeRule.onNodeWithText("Box breathing").assertIsDisplayed()
 
+        // Tapping an exercise opens its setup sheet; Start is what begins the session.
         composeRule.onNodeWithText("Box breathing").performClick()
+        composeRule.onNodeWithText("Each side").assertIsDisplayed()
+        composeRule.onNodeWithText("Start").performClick()
 
         // The session replaces the list and hides the dock.
         composeRule.onNodeWithText("Pause").assertIsDisplayed()
@@ -40,6 +45,27 @@ class BreathingFlowTest {
         // Back to the list, with navigation restored.
         composeRule.onNodeWithText("EXERCISES").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Today").assertIsDisplayed()
+    }
+
+    @Test
+    fun anExercisesSettingsArePersistedAndShownOnItsCard() {
+        composeRule.onNodeWithContentDescription("Breathe").performClick()
+        composeRule.onNodeWithText("CO\u2082 table").performClick()
+
+        // Reset first: preferences outlive a test method, so the starting point has to be stated
+        // rather than assumed.
+        composeRule.onNodeWithText("Reset to default").performClick()
+        composeRule.onNodeWithContentDescription("More Rounds").performClick()
+        composeRule.onNodeWithContentDescription("More Rounds").performClick()
+
+        Espresso.pressBack()
+
+        // Eight rounds by default, so the card should now be advertising ten.
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("10 \u00d7 1:00 hold, rest \u221215s each round")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
     }
 
     @Test

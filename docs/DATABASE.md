@@ -73,11 +73,13 @@ derived number is computed.** Editing a past day immediately corrects all histor
 `completed` is stored rather than recomputed from `value`, because the habit's target can change
 later and a day that genuinely met the target it had at the time should stay met.
 
-### `daily_check_ins`
+### `daily_check_ins` (retired)
 `id · date (unique) · mood · energy · note · createdAt · updatedAt`
 
-`mood` and `energy` are both 1..5. Coarse on purpose: answerable in one tap, and about as much
-resolution as self-report actually carries.
+The feature was removed; see `docs/PRODUCT.md`. The table stays, and export and import still carry
+it, because dropping it would be a destructive migration against rows a user may already have, and
+because a backup written by the version that had check-ins should still restore completely.
+Nothing writes to it any more.
 
 ### `recurrence_rules`
 `id · frequency · interval · daysOfWeek · dayOfMonth · weekOfMonth · weekdayOfMonth · monthOfYear ·

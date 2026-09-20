@@ -61,6 +61,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.achyutem.cadence.R
 import dev.achyutem.cadence.core.datastore.AccentColor
+import dev.achyutem.cadence.core.datastore.ButtonShape
 import dev.achyutem.cadence.core.datastore.ThemeMode
 import dev.achyutem.cadence.core.datastore.UserPreferences
 import dev.achyutem.cadence.core.designsystem.component.ButtonTone
@@ -136,10 +137,10 @@ fun SettingsScreen(
         onThemeMode = viewModel::setThemeMode,
         onAccent = viewModel::setAccent,
         onDynamicColor = viewModel::setDynamicColor,
+        onButtonShape = viewModel::setButtonShape,
         onReducedMotion = viewModel::setReducedMotion,
         onWeekStart = viewModel::setWeekStart,
         onQuietHours = viewModel::setQuietHoursEnabled,
-        onCheckInPrompt = viewModel::setCheckInPrompt,
         notificationsAllowed = notificationsAllowed,
         exactAlarmsAllowed = viewModel.canScheduleExact(),
         onRequestNotifications = {
@@ -200,10 +201,10 @@ private fun SettingsContent(
     onThemeMode: (ThemeMode) -> Unit,
     onAccent: (AccentColor) -> Unit,
     onDynamicColor: (Boolean) -> Unit,
+    onButtonShape: (ButtonShape) -> Unit,
     onReducedMotion: (Boolean) -> Unit,
     onWeekStart: (DayOfWeek) -> Unit,
     onQuietHours: (Boolean) -> Unit,
-    onCheckInPrompt: (Boolean) -> Unit,
     notificationsAllowed: Boolean,
     exactAlarmsAllowed: Boolean,
     onRequestNotifications: () -> Unit,
@@ -268,6 +269,21 @@ private fun SettingsContent(
                 checked = preferences.useDynamicColor,
                 onCheckedChange = onDynamicColor,
             )
+            Spacer(Modifier.height(Spacing.md))
+            Text(
+                text = stringResource(R.string.settings_button_shape),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(Spacing.xs))
+            SegmentedControl(
+                options = ButtonShape.entries,
+                selected = preferences.buttonShape,
+                onSelect = onButtonShape,
+                label = { stringResource(it.labelRes()) },
+            )
+            Spacer(Modifier.height(Spacing.sm))
+
             ToggleRow(
                 title = stringResource(R.string.settings_reduce_motion),
                 description = stringResource(R.string.settings_reduce_motion_description),
@@ -322,12 +338,6 @@ private fun SettingsContent(
                 description = stringResource(R.string.settings_quiet_hours_body),
                 checked = preferences.quietHoursEnabled,
                 onCheckedChange = onQuietHours,
-            )
-            ToggleRow(
-                title = stringResource(R.string.settings_check_in_reminder),
-                description = stringResource(R.string.settings_check_in_reminder_body),
-                checked = preferences.checkInPromptEnabled,
-                onCheckedChange = onCheckInPrompt,
             )
             Spacer(Modifier.height(Spacing.xl))
         }
@@ -446,20 +456,30 @@ private fun AccentRow(
     onSelect: (AccentColor) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    // Ten swatches do not fit one row on a phone, and a horizontally scrolling colour picker
+    // hides half the options behind a gesture nobody knows is there. Two rows of five shows
+    // everything at once.
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .selectableGroup(),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.spacedBy(Spacing.xxs),
     ) {
-        AccentColor.entries.forEach { accent ->
-            AccentSwatch(
-                accent = accent,
-                selected = accent == selected,
-                enabled = enabled,
-                onClick = { onSelect(accent) },
-            )
+        AccentColor.entries.chunked(5).forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                row.forEach { accent ->
+                    AccentSwatch(
+                        accent = accent,
+                        selected = accent == selected,
+                        enabled = enabled,
+                        onClick = { onSelect(accent) },
+                    )
+                }
+            }
         }
     }
 }
@@ -599,32 +619,66 @@ private fun PermissionRow(title: String, body: String, onGrant: () -> Unit) {
     }
 }
 
+private fun ButtonShape.labelRes(): Int = when (this) {
+    ButtonShape.ROUNDED -> R.string.button_shape_rounded
+    ButtonShape.PILL -> R.string.button_shape_pill
+}
+
 private fun ThemeMode.labelRes(): Int = when (this) {
     ThemeMode.SYSTEM -> R.string.theme_system
     ThemeMode.LIGHT -> R.string.theme_light
     ThemeMode.DARK -> R.string.theme_dark
 }
 
-@Preview(name = "Settings · light", showBackground = true)
+@Preview(name = "Settings, light", showBackground = true)
 @Composable
 private fun SettingsPreviewLight() = CadencePreviewTheme {
+    // Named arguments throughout: a preview that breaks every time the screen gains a callback
+    // is a preview nobody keeps working.
     SettingsContent(
-        UserPreferences.Default.copy(displayName = "Achyutem"),
-        DataTransferState.Idle,
-        {}, {}, {}, {}, {}, {}, {}, {},
-        notificationsAllowed = true, exactAlarmsAllowed = true,
-        {}, {}, {}, {}, {},
+        preferences = UserPreferences.Default.copy(displayName = "Achyutem"),
+        transfer = DataTransferState.Idle,
+        onDisplayName = {},
+        onThemeMode = {},
+        onAccent = {},
+        onDynamicColor = {},
+        onButtonShape = {},
+        onReducedMotion = {},
+        onWeekStart = {},
+        onQuietHours = {},
+        notificationsAllowed = true,
+        exactAlarmsAllowed = true,
+        onRequestNotifications = {},
+        onRequestExactAlarms = {},
+        onExport = {},
+        onImport = {},
+        onDismissTransfer = {},
     )
 }
 
-@Preview(name = "Settings · dark", showBackground = true)
+@Preview(name = "Settings, dark", showBackground = true)
 @Composable
-private fun SettingsPreviewDark() = CadencePreviewTheme(dark = true, accent = AccentColor.GREEN) {
+private fun SettingsPreviewDark() = CadencePreviewTheme(dark = true, accent = AccentColor.EMERALD) {
     SettingsContent(
-        UserPreferences.Default.copy(accentColor = AccentColor.GREEN, themeMode = ThemeMode.DARK),
-        DataTransferState.Idle,
-        {}, {}, {}, {}, {}, {}, {}, {},
-        notificationsAllowed = false, exactAlarmsAllowed = false,
-        {}, {}, {}, {}, {},
+        preferences = UserPreferences.Default.copy(
+            accentColor = AccentColor.EMERALD,
+            themeMode = ThemeMode.DARK,
+        ),
+        transfer = DataTransferState.Idle,
+        onDisplayName = {},
+        onThemeMode = {},
+        onAccent = {},
+        onDynamicColor = {},
+        onButtonShape = {},
+        onReducedMotion = {},
+        onWeekStart = {},
+        onQuietHours = {},
+        notificationsAllowed = false,
+        exactAlarmsAllowed = false,
+        onRequestNotifications = {},
+        onRequestExactAlarms = {},
+        onExport = {},
+        onImport = {},
+        onDismissTransfer = {},
     )
 }

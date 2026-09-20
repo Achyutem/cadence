@@ -38,6 +38,71 @@ exercise means adding one `expand()` and nothing else.
 | CO₂ table | **constant** | **shrinks** | CO₂ accumulates as recovery shortens |
 | O₂ table | **grows** | **constant** | less oxygen each round from a fixed recovery |
 
+## Every number is the user's
+
+Each exercise declares which of its numbers can be changed, as a list of `BreathField`. A field
+carries its own bounds and step, so "a CO₂ rest decrement is 0 to 60 seconds in steps of 5" is
+written once and enforced in three places: the editor's buttons, `expand()`'s clamping, and the
+import path. One sheet renders whatever fields an exercise declares, which is why box breathing
+and an O₂ table share a settings screen and why a fifth exercise would need no new UI.
+
+| Exercise | Fields |
+|---|---|
+| Box | seconds per side, rounds |
+| Static apnea | breathe-up, hold |
+| CO₂ table | rounds, hold, first rest, rest decrement |
+| O₂ table | rounds, first hold, hold increment, rest |
+
+Edits save as they are made, not behind a Save button: the common case is opening the sheet to
+change one number, and the second most common is opening it to check what the numbers are.
+
+Underneath the fields is a strip of every hold the session will ask for, in order. "Three rounds,
+one minute, plus ten seconds" is easy to type and hard to picture; 1:00, 1:10, 1:20 is neither,
+and it is what stops someone starting an eight-round table that ends on a three-minute hold by
+accident.
+
+## A session runs itself
+
+Once started, nothing has to be touched. Every phase of every round is already in the expanded
+list and the ticker walks it to the end. Pause, skip and stop exist; none of them is required to
+get from the first round to the last.
+
+Two things make that real rather than nominal:
+
+- **The screen is held on for the length of the session.** A table can run twenty minutes without
+  a touch, and a phone that locks itself in round three takes the countdown with it. The flag is
+  scoped to the session, not to the app.
+- **Sound marks every phase change**, so the session works face down and eyes shut.
+
+## Sound
+
+Tones are synthesised, not bundled and not taken from `ToneGenerator`. `ToneGenerator`'s catalogue
+is call-progress and DTMF tones: it can make a noise at a phase change, but it cannot make
+*breathe in* sound like the opposite of *breathe out*, which is the entire requirement.
+
+| Cue | Sound |
+|---|---|
+| Breathe in | rising pair, 440 → 660 Hz |
+| Breathe out | falling pair, 660 → 440 Hz |
+| Hold | one low sustained note, 300 Hz |
+| Hold empty | the same, lower, 220 Hz |
+| Breathe freely | soft falling pair, quieter |
+| Last three seconds | short quiet tick, 880 Hz |
+| Finished | three rising notes |
+
+Rising means breathe in, falling means breathe out, low and flat means stop moving air. That is
+learnable in one session.
+
+The countdown tick is suppressed on phases shorter than eight seconds: a four-second box inhale
+that ticks three times is a metronome, not a countdown, and it drowns out the phase change that
+actually matters.
+
+Cues are an enum emitted by the runner, so the whole session including exactly when it beeps is
+assertable in a unit test with no audio hardware anywhere near it. The screen collects them and
+plays them; muting is an early return rather than a branch inside the runner. Playback goes to the
+media stream, so the volume keys adjust it and a silenced phone stays silent, which is the right
+call for something people do to calm down.
+
 ## The circle is the instruction
 
 You should be able to follow a session **without reading anything**. The circle grows through an

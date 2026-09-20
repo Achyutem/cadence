@@ -28,10 +28,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -53,6 +59,7 @@ import dev.achyutem.cadence.core.designsystem.token.Radius
 import dev.achyutem.cadence.core.designsystem.token.Spacing
 import dev.achyutem.cadence.domain.breathing.BreathPhaseKind
 import dev.achyutem.cadence.domain.breathing.BreathingExercise
+import dev.achyutem.cadence.domain.breathing.BreathingPreferences
 import dev.achyutem.cadence.domain.breathing.asClock
 import dev.achyutem.cadence.domain.breathing.totalSeconds
 
@@ -80,14 +87,29 @@ fun BreathingScreen(
     val run by viewModel.run.collectAsStateWithLifecycle()
     val longestHold by viewModel.longestHold.collectAsStateWithLifecycle()
     val sessionsToday by viewModel.sessionsToday.collectAsStateWithLifecycle()
+    val breathing by viewModel.breathing.collectAsStateWithLifecycle()
 
-    androidx.compose.runtime.LaunchedEffect(run != null) { onImmersiveChange(run != null) }
-    androidx.compose.runtime.DisposableEffect(Unit) { onDispose { onImmersiveChange(false) } }
+    LaunchedEffect(run != null) { onImmersiveChange(run != null) }
+    DisposableEffect(Unit) { onDispose { onImmersiveChange(false) } }
+
+    /**
+     * Turn the session's cues into sound.
+     *
+     * Collected here rather than played from the ViewModel so that nothing in the runner touches
+     * audio; muting is a plain early return, which also means a muted session costs nothing.
+     */
+    val tones = rememberBreathingTones()
+    LaunchedEffect(viewModel, breathing.soundEnabled) {
+        if (!breathing.soundEnabled) return@LaunchedEffect
+        viewModel.cues.collect(tones::play)
+    }
 
     if (run != null) {
         BackHandler { viewModel.stop() }
         SessionView(
             run = run!!,
+            soundEnabled = breathing.soundEnabled,
+            onToggleSound = { viewModel.setSoundEnabled(it) },
             onTogglePause = viewModel::togglePause,
             onSkip = viewModel::skipPhase,
             onStop = viewModel::stop,
@@ -96,9 +118,12 @@ fun BreathingScreen(
         )
     } else {
         ExerciseList(
+            breathing = breathing,
             longestHoldSeconds = longestHold,
             sessionsToday = sessionsToday,
+            onEdit = viewModel::save,
             onStart = viewModel::start,
+            onToggleSound = { viewModel.setSoundEnabled(it) },
             modifier = modifier,
         )
     }
@@ -106,17 +131,39 @@ fun BreathingScreen(
 
 @Composable
 private fun ExerciseList(
+    breathing: BreathingPreferences,
     longestHoldSeconds: Int?,
     sessionsToday: Int,
+    onEdit: (BreathingExercise) -> Unit,
     onStart: (BreathingExercise) -> Unit,
+    onToggleSound: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val exercises = listOf(
-        BreathingExercise.Box(),
-        BreathingExercise.StaticApnea(),
-        BreathingExercise.Co2Table(),
-        BreathingExercise.O2Table(),
-    )
+    val exercises = breathing.exercises()
+
+    /**
+     * Which exercise is open in the setup sheet.
+     *
+     * Held as a whole exercise rather than an index so the sheet can edit it live; every change
+     * goes straight back to the ViewModel through [onEdit] as well, so what the sheet shows and
+     * what is stored never drift apart.
+     */
+    var editing by remember { mutableStateOf<BreathingExercise?>(null) }
+
+    editing?.let { exercise ->
+        ExerciseSetupSheet(
+            exercise = exercise,
+            onChange = {
+                editing = it
+                onEdit(it)
+            },
+            onStart = {
+                editing = null
+                onStart(it)
+            },
+            onDismiss = { editing = null },
+        )
+    }
 
     LazyColumn(
         modifier = modifier
@@ -130,11 +177,15 @@ private fun ExerciseList(
         ),
     ) {
         item(key = "title") {
-            Text(
-                text = stringResource(R.string.breathing_title),
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.breathing_title),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f),
+                )
+                SoundToggle(enabled = breathing.soundEnabled, onToggle = onToggleSound)
+            }
             if (sessionsToday > 0 || longestHoldSeconds != null) {
                 Spacer(Modifier.height(Spacing.xxs))
                 Text(
@@ -167,7 +218,7 @@ private fun ExerciseList(
         }
 
         items(exercises, key = { it.title }) { exercise ->
-            ExerciseCard(exercise = exercise, onClick = { onStart(exercise) })
+            ExerciseCard(exercise = exercise, onClick = { editing = exercise })
             Spacer(Modifier.height(Spacing.xs))
         }
     }
@@ -248,12 +299,27 @@ private fun ExerciseCard(exercise: BreathingExercise, onClick: () -> Unit) {
 @Composable
 private fun SessionView(
     run: BreathingRun,
+    soundEnabled: Boolean,
+    onToggleSound: (Boolean) -> Unit,
     onTogglePause: () -> Unit,
     onSkip: () -> Unit,
     onStop: () -> Unit,
     onDone: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    /**
+     * Hold the screen on for the length of the session.
+     *
+     * A table can run twenty minutes without a touch, which is the whole point, and a phone that
+     * locks itself in round three takes the countdown with it. Scoped to this composable, so the
+     * flag is gone the moment the session ends rather than for as long as the app is open.
+     */
+    val view = LocalView.current
+    DisposableEffect(view) {
+        view.keepScreenOn = true
+        onDispose { view.keepScreenOn = false }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -278,7 +344,7 @@ private fun SessionView(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.weight(1f))
-            Spacer(Modifier.size(38.dp))
+            SoundToggle(enabled = soundEnabled, onToggle = onToggleSound)
         }
 
         Spacer(Modifier.height(Spacing.md))
@@ -369,5 +435,12 @@ private fun BreathPhaseKind.labelRes(): Int = when (this) {
 @Preview(showBackground = true)
 @Composable
 private fun BreathingPreview() = CadencePreviewTheme {
-    ExerciseList(longestHoldSeconds = 185, sessionsToday = 2, onStart = {})
+    ExerciseList(
+        breathing = BreathingPreferences.Default,
+        longestHoldSeconds = 185,
+        sessionsToday = 2,
+        onEdit = {},
+        onStart = {},
+        onToggleSound = {},
+    )
 }

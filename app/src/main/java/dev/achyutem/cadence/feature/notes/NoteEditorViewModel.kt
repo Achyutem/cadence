@@ -25,6 +25,14 @@ data class NoteEditorUiState(
     val title: String = "",
     val content: String = "",
     val pinned: Boolean = false,
+    /**
+     * True when the note is being read rather than written.
+     *
+     * An existing note with content opens in **view mode**: most of the time a note is opened to
+     * be read, and landing in an editor with a cursor blinking in someone's prose invites
+     * accidental edits. A new or empty note opens straight into editing, because there is nothing
+     * to read.
+     */
     val previewMode: Boolean = false,
     val loading: Boolean = true,
     val saved: Boolean = true,
@@ -68,6 +76,7 @@ class NoteEditorViewModel(
                         title = note.title,
                         content = note.content,
                         pinned = note.pinned,
+                        previewMode = note.content.isNotBlank(),
                         loading = false,
                     )
                 }
@@ -87,14 +96,42 @@ class NoteEditorViewModel(
         scheduleAutosave()
     }
 
+    /**
+     * Handle Enter inside the body, continuing a list if the caret is in one.
+     *
+     * Returns the rewritten text and the new caret position, or null when this was an ordinary
+     * newline the text field should handle itself. Both are returned together so the screen never
+     * recomputes the continuation to find out what the text became.
+     */
+    fun continueList(caret: Int): Pair<String, Int>? {
+        val result = Markdown.continueListOnNewline(_uiState.value.content, caret) ?: return null
+        _uiState.update { it.copy(content = result.first, saved = false) }
+        scheduleAutosave()
+        return result
+    }
+
     fun togglePreview() = _uiState.update { it.copy(previewMode = !it.previewMode) }
+
+    /**
+     * Switch to editing because the user touched the body.
+     *
+     * Separate from [togglePreview] so that tapping text is a one-way move into editing; a tap
+     * that could also flip you *back* into reading would make the body feel like a switch.
+     */
+    fun beginEditing() = _uiState.update { if (it.previewMode) it.copy(previewMode = false) else it }
 
     fun togglePinned() {
         _uiState.update { it.copy(pinned = !it.pinned, saved = false) }
         scheduleAutosave()
     }
 
-    /** Flip a checkbox in the rendered preview by rewriting the underlying Markdown line. */
+    /**
+     * Flip a checkbox in the rendered preview by rewriting the underlying Markdown line.
+     *
+     * Note that this does **not** leave preview mode. Ticking something off is reading behaviour,
+     * not editing behaviour, and dropping the user into a text editor because they checked a box
+     * is exactly the wrong response.
+     */
     fun toggleTaskAtLine(line: Int) {
         _uiState.update { it.copy(content = Markdown.toggleTaskAtLine(it.content, line), saved = false) }
         scheduleAutosave()

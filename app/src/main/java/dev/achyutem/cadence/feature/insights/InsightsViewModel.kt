@@ -54,13 +54,9 @@ class InsightsViewModel(
                 .filter { it.scheduledDate != null && it.scheduledDate!! in from..today }
             val habitEntries = database.habitDao().getAllEntriesForBackup()
                 .filter { it.date in from..today }
-            val checkIns = database.checkInDao().getAllForBackup()
-                .filter { it.date in from..today }
-
             val insights = InsightsEngine.analyse(
                 tasks = tasks,
                 habitEntries = habitEntries,
-                checkIns = checkIns,
                 from = from,
                 to = today,
                 zone = clock.zone(),

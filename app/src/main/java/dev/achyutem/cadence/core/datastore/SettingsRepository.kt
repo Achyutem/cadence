@@ -2,6 +2,7 @@ package dev.achyutem.cadence.core.datastore
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -9,6 +10,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import dev.achyutem.cadence.domain.breathing.BreathingPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -44,6 +46,8 @@ class SettingsRepository(context: Context) {
 
     suspend fun setUseDynamicColor(enabled: Boolean) = put(Keys.useDynamicColor, enabled)
 
+    suspend fun setButtonShape(shape: ButtonShape) = put(Keys.buttonShape, shape.name)
+
     suspend fun setReducedMotion(enabled: Boolean) = put(Keys.reducedMotion, enabled)
 
     suspend fun setWeekStartsOn(day: DayOfWeek) = put(Keys.weekStartsOn, day.value)
@@ -70,7 +74,18 @@ class SettingsRepository(context: Context) {
 
     suspend fun setShowCompletedOnToday(show: Boolean) = put(Keys.showCompletedOnToday, show)
 
-    suspend fun setCheckInPromptEnabled(enabled: Boolean) = put(Keys.checkInPrompt, enabled)
+    suspend fun setBreathingSoundEnabled(enabled: Boolean) = put(Keys.breathingSound, enabled)
+
+    /**
+     * Save one exercise's numbers.
+     *
+     * Takes the whole [BreathingPreferences] rather than a field at a time so that editing an
+     * exercise is a single write, and so the editor never has to know which key belongs to which
+     * knob.
+     */
+    suspend fun setBreathing(breathing: BreathingPreferences) {
+        dataStore.edit { it.putBreathing(breathing) }
+    }
 
     /**
      * Replace every preference at once.
@@ -84,6 +99,7 @@ class SettingsRepository(context: Context) {
             prefs[Keys.themeMode] = preferences.themeMode.name
             prefs[Keys.accentColor] = preferences.accentColor.name
             prefs[Keys.useDynamicColor] = preferences.useDynamicColor
+            prefs[Keys.buttonShape] = preferences.buttonShape.name
             prefs[Keys.reducedMotion] = preferences.reducedMotion
             prefs[Keys.weekStartsOn] = preferences.weekStartsOn.value
             prefs[Keys.completedTaskBehavior] = preferences.completedTaskBehavior.name
@@ -94,8 +110,24 @@ class SettingsRepository(context: Context) {
             prefs[Keys.quietHoursStart] = preferences.quietHoursStart.toString()
             prefs[Keys.quietHoursEnd] = preferences.quietHoursEnd.toString()
             prefs[Keys.showCompletedOnToday] = preferences.showCompletedOnToday
-            prefs[Keys.checkInPrompt] = preferences.checkInPromptEnabled
+            prefs.putBreathing(preferences.breathing)
         }
+    }
+
+    private fun MutablePreferences.putBreathing(breathing: BreathingPreferences) {
+        this[Keys.breathingSound] = breathing.soundEnabled
+        this[Keys.boxSeconds] = breathing.boxSeconds
+        this[Keys.boxRounds] = breathing.boxRounds
+        this[Keys.staticBreatheUp] = breathing.staticBreatheUpSeconds
+        this[Keys.staticHold] = breathing.staticHoldSeconds
+        this[Keys.co2Hold] = breathing.co2HoldSeconds
+        this[Keys.co2StartRest] = breathing.co2StartRestSeconds
+        this[Keys.co2RestDecrement] = breathing.co2RestDecrementSeconds
+        this[Keys.co2Rounds] = breathing.co2Rounds
+        this[Keys.o2Rest] = breathing.o2RestSeconds
+        this[Keys.o2StartHold] = breathing.o2StartHoldSeconds
+        this[Keys.o2HoldIncrement] = breathing.o2HoldIncrementSeconds
+        this[Keys.o2Rounds] = breathing.o2Rounds
     }
 
     private suspend fun <T> put(key: Preferences.Key<T>, value: T) {
@@ -107,6 +139,7 @@ class SettingsRepository(context: Context) {
         val themeMode = stringPreferencesKey("theme_mode")
         val accentColor = stringPreferencesKey("accent_color")
         val useDynamicColor = booleanPreferencesKey("use_dynamic_color")
+        val buttonShape = stringPreferencesKey("button_shape")
         val reducedMotion = booleanPreferencesKey("reduced_motion")
         val weekStartsOn = intPreferencesKey("week_starts_on")
         val completedTaskBehavior = stringPreferencesKey("completed_task_behavior")
@@ -117,7 +150,19 @@ class SettingsRepository(context: Context) {
         val quietHoursStart = stringPreferencesKey("quiet_hours_start")
         val quietHoursEnd = stringPreferencesKey("quiet_hours_end")
         val showCompletedOnToday = booleanPreferencesKey("show_completed_on_today")
-        val checkInPrompt = booleanPreferencesKey("check_in_prompt")
+        val breathingSound = booleanPreferencesKey("breathing_sound")
+        val boxSeconds = intPreferencesKey("breathing_box_seconds")
+        val boxRounds = intPreferencesKey("breathing_box_rounds")
+        val staticBreatheUp = intPreferencesKey("breathing_static_breathe_up")
+        val staticHold = intPreferencesKey("breathing_static_hold")
+        val co2Hold = intPreferencesKey("breathing_co2_hold")
+        val co2StartRest = intPreferencesKey("breathing_co2_start_rest")
+        val co2RestDecrement = intPreferencesKey("breathing_co2_rest_decrement")
+        val co2Rounds = intPreferencesKey("breathing_co2_rounds")
+        val o2Rest = intPreferencesKey("breathing_o2_rest")
+        val o2StartHold = intPreferencesKey("breathing_o2_start_hold")
+        val o2HoldIncrement = intPreferencesKey("breathing_o2_hold_increment")
+        val o2Rounds = intPreferencesKey("breathing_o2_rounds")
     }
 
     private fun toUserPreferences(prefs: Preferences): UserPreferences {
@@ -127,6 +172,7 @@ class SettingsRepository(context: Context) {
             themeMode = prefs[Keys.themeMode].toEnumOr(defaults.themeMode),
             accentColor = prefs[Keys.accentColor].toEnumOr(defaults.accentColor),
             useDynamicColor = prefs[Keys.useDynamicColor] ?: defaults.useDynamicColor,
+            buttonShape = prefs[Keys.buttonShape].toEnumOr(defaults.buttonShape),
             reducedMotion = prefs[Keys.reducedMotion] ?: defaults.reducedMotion,
             weekStartsOn = prefs[Keys.weekStartsOn]
                 ?.takeIf { it in 1..7 }
@@ -143,7 +189,27 @@ class SettingsRepository(context: Context) {
             quietHoursStart = prefs[Keys.quietHoursStart].toLocalTimeOr(defaults.quietHoursStart),
             quietHoursEnd = prefs[Keys.quietHoursEnd].toLocalTimeOr(defaults.quietHoursEnd),
             showCompletedOnToday = prefs[Keys.showCompletedOnToday] ?: defaults.showCompletedOnToday,
-            checkInPromptEnabled = prefs[Keys.checkInPrompt] ?: defaults.checkInPromptEnabled,
+            breathing = toBreathingPreferences(prefs),
+        )
+    }
+
+    private fun toBreathingPreferences(prefs: Preferences): BreathingPreferences {
+        val defaults = BreathingPreferences.Default
+        return BreathingPreferences(
+            soundEnabled = prefs[Keys.breathingSound] ?: defaults.soundEnabled,
+            boxSeconds = prefs[Keys.boxSeconds] ?: defaults.boxSeconds,
+            boxRounds = prefs[Keys.boxRounds] ?: defaults.boxRounds,
+            staticBreatheUpSeconds = prefs[Keys.staticBreatheUp] ?: defaults.staticBreatheUpSeconds,
+            staticHoldSeconds = prefs[Keys.staticHold] ?: defaults.staticHoldSeconds,
+            co2HoldSeconds = prefs[Keys.co2Hold] ?: defaults.co2HoldSeconds,
+            co2StartRestSeconds = prefs[Keys.co2StartRest] ?: defaults.co2StartRestSeconds,
+            co2RestDecrementSeconds = prefs[Keys.co2RestDecrement]
+                ?: defaults.co2RestDecrementSeconds,
+            co2Rounds = prefs[Keys.co2Rounds] ?: defaults.co2Rounds,
+            o2RestSeconds = prefs[Keys.o2Rest] ?: defaults.o2RestSeconds,
+            o2StartHoldSeconds = prefs[Keys.o2StartHold] ?: defaults.o2StartHoldSeconds,
+            o2HoldIncrementSeconds = prefs[Keys.o2HoldIncrement] ?: defaults.o2HoldIncrementSeconds,
+            o2Rounds = prefs[Keys.o2Rounds] ?: defaults.o2Rounds,
         )
     }
 }

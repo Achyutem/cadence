@@ -74,6 +74,15 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".widget.HabitCalendarConfigActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Cadence">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <receiver
             android:name=".core.notifications.ReminderReceiver"
             android:exported="false" />
@@ -102,7 +111,8 @@
         -->
         <receiver
             android:name=".widget.TodayWidgetReceiver"
-            android:exported="false">
+            android:exported="false"
+            android:label="@string/widget_today_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -113,7 +123,8 @@
 
         <receiver
             android:name=".widget.TodoListWidgetReceiver"
-            android:exported="false">
+            android:exported="false"
+            android:label="@string/widget_todos_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -124,7 +135,8 @@
 
         <receiver
             android:name=".widget.HabitsWidgetReceiver"
-            android:exported="false">
+            android:exported="false"
+            android:label="@string/widget_habits_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -135,7 +147,8 @@
 
         <receiver
             android:name=".widget.SingleHabitWidgetReceiver"
-            android:exported="false">
+            android:exported="false"
+            android:label="@string/widget_habit_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -146,7 +159,8 @@
 
         <receiver
             android:name=".widget.HeatmapWidgetReceiver"
-            android:exported="false">
+            android:exported="false"
+            android:label="@string/widget_heatmap_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -157,13 +171,26 @@
 
         <receiver
             android:name=".widget.NextTaskWidgetReceiver"
-            android:exported="false">
+            android:exported="false"
+            android:label="@string/widget_next_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_next" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.HabitCalendarWidgetReceiver"
+            android:exported="false"
+            android:label="@string/widget_calendar_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_habit_calendar" />
         </receiver>
 
     </application>

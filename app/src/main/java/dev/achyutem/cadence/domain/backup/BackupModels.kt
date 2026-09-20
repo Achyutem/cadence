@@ -65,7 +65,31 @@ data class BackupPreferences(
     @SerialName("quiet_hours_start") val quietHoursStart: String = "22:00",
     @SerialName("quiet_hours_end") val quietHoursEnd: String = "07:00",
     @SerialName("show_completed_on_today") val showCompletedOnToday: Boolean = true,
-    @SerialName("check_in_prompt_enabled") val checkInPromptEnabled: Boolean = true,
+    @SerialName("button_shape") val buttonShape: String = "ROUNDED",
+    val breathing: BackupBreathing = BackupBreathing(),
+)
+
+/**
+ * The user's breathing exercise settings.
+ *
+ * A nested object rather than thirteen more flat keys, because these numbers only mean anything
+ * together: a CO2 table's rest decrement is nonsense without its round count.
+ */
+@Serializable
+data class BackupBreathing(
+    @SerialName("sound_enabled") val soundEnabled: Boolean = true,
+    @SerialName("box_seconds") val boxSeconds: Int = 4,
+    @SerialName("box_rounds") val boxRounds: Int = 8,
+    @SerialName("static_breathe_up_seconds") val staticBreatheUpSeconds: Int = 120,
+    @SerialName("static_hold_seconds") val staticHoldSeconds: Int = 120,
+    @SerialName("co2_hold_seconds") val co2HoldSeconds: Int = 60,
+    @SerialName("co2_start_rest_seconds") val co2StartRestSeconds: Int = 120,
+    @SerialName("co2_rest_decrement_seconds") val co2RestDecrementSeconds: Int = 15,
+    @SerialName("co2_rounds") val co2Rounds: Int = 8,
+    @SerialName("o2_rest_seconds") val o2RestSeconds: Int = 120,
+    @SerialName("o2_start_hold_seconds") val o2StartHoldSeconds: Int = 60,
+    @SerialName("o2_hold_increment_seconds") val o2HoldIncrementSeconds: Int = 15,
+    @SerialName("o2_rounds") val o2Rounds: Int = 8,
 )
 
 @Serializable

@@ -225,6 +225,66 @@ object Markdown {
     private fun List<MarkdownSpan>.joinText(): String = joinToString("") { it.text }
 
     /**
+     * Continue a list when Enter is pressed, the way Obsidian and Slack do.
+     *
+     * Typing `- [ ] one` and pressing Enter should produce `- [ ] ` on the next line, not a blank
+     * one. Without this, every item after the first has to have its marker typed again, which is
+     * enough friction that people stop using lists.
+     *
+     * Pressing Enter on an item whose content is **empty** ends the list instead of adding another
+     * empty marker. That is the escape hatch, and it is the behaviour every editor that does this
+     * converges on: two Enters gets you out.
+     *
+     * Returns the new text and where the caret should land, or null when the line being left is
+     * not a list item at all.
+     */
+    fun continueListOnNewline(source: String, caret: Int): Pair<String, Int>? {
+        if (caret !in 0..source.length) return null
+        val before = source.substring(0, caret)
+        val lineStart = before.lastIndexOf('\n') + 1
+        val currentLine = before.substring(lineStart)
+
+        val marker = listMarkerOf(currentLine) ?: return null
+        val content = currentLine.substring(marker.length)
+
+        // An empty item means "I am done with this list".
+        if (content.isBlank()) {
+            val text = source.substring(0, lineStart) + source.substring(caret)
+            return text to lineStart
+        }
+
+        val insertion = "\n" + marker
+        val text = before + insertion + source.substring(caret)
+        return text to (caret + insertion.length)
+    }
+
+    /**
+     * The marker a new line should inherit, including its indentation.
+     *
+     * A checked box never carries its tick forward: the next item is a new thing to do, not an
+     * already-done one.
+     */
+    private fun listMarkerOf(line: String): String? {
+        taskRegex.find(line)?.let {
+            val indent = line.takeWhile { c -> c == ' ' || c == '\t' }
+            val bullet = line.trimStart().first()
+            return "$indent$bullet [ ] "
+        }
+        bulletRegex.find(line)?.let {
+            val indent = line.takeWhile { c -> c == ' ' || c == '\t' }
+            val bullet = line.trimStart().first()
+            return "$indent$bullet "
+        }
+        numberedRegex.find(line)?.let { match ->
+            val indent = line.takeWhile { c -> c == ' ' || c == '\t' }
+            val number = match.groupValues[1].toIntOrNull() ?: return null
+            val separator = line.trimStart().dropWhile(Char::isDigit).first()
+            return "$indent${number + 1}$separator "
+        }
+        return null
+    }
+
+    /**
      * Flip a `- [ ]` / `- [x]` checkbox on a specific source line.
      *
      * Editing the *text* rather than a parsed model is what keeps the Markdown authoritative:

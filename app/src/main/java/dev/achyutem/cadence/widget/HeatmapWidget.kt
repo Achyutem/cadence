@@ -18,8 +18,10 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
+import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
 import androidx.glance.state.PreferencesGlanceStateDefinition
@@ -47,7 +49,11 @@ import java.time.LocalDate
 class HeatmapWidget : GlanceAppWidget() {
 
     override val stateDefinition = PreferencesGlanceStateDefinition
-    override val sizeMode = SizeMode.Responsive(setOf(MEDIUM, LARGE))
+    /**
+     * Exact, not responsive: the grid scales with the widget, and `SizeMode.Responsive` reports
+     * the nearest declared bucket rather than the real size. See [HabitCalendarWidget].
+     */
+    override val sizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val container = context.appContainer()
@@ -94,29 +100,56 @@ class HeatmapWidget : GlanceAppWidget() {
             }
 
             // Rows are weekdays, columns are weeks, the same orientation as the app.
-            Column {
-                for (row in 0..6) {
-                    Row {
-                        for (column in 0 until WEEKS) {
-                            val date: LocalDate = gridStart.plusDays(column * 7L + row)
-                            val visible = date >= snapshot.heatmapStart && date <= snapshot.today
-                            val level = if (visible) snapshot.heatmapLevels[date] ?: 0 else 0
-                            Box(
-                                modifier = GlanceModifier
-                                    .size(CELL.dp)
-                                    .cornerRadius(2.dp)
-                                    .background(
-                                        if (visible) {
-                                            colors.heatmap[level.coerceIn(0, colors.heatmap.lastIndex)]
-                                        } else {
-                                            colors.background
-                                        },
-                                    ),
-                            ) {}
-                            Spacer(modifier = GlanceModifier.width(GAP.dp))
+            //
+            // Thirteen week columns cannot be thirteen children of one container: Glance renders
+            // a container as one of its generated layouts and those hold at most **ten**
+            // children, silently dropping the rest. So the weeks are split into groups and the
+            // grid is built column-major, one Column of seven days per week, which also lets the
+            // columns share the width by weight and scale with the widget.
+            val height = androidx.glance.LocalSize.current.height.value
+            val cell = ((height - CHROME_HEIGHT) / 7f - GAP).coerceIn(6f, 22f)
+
+            Row(modifier = GlanceModifier.fillMaxWidth()) {
+                for (group in 0 until GROUPS) {
+                    Row(modifier = GlanceModifier.defaultWeight()) {
+                        for (offset in 0 until WEEKS_PER_GROUP) {
+                            val column = group * WEEKS_PER_GROUP + offset
+                            if (column >= WEEKS) break
+                            Column(modifier = GlanceModifier.defaultWeight()) {
+                                for (row in 0..6) {
+                                    val date: LocalDate = gridStart.plusDays(column * 7L + row)
+                                    val visible =
+                                        date >= snapshot.heatmapStart && date <= snapshot.today
+                                    val level =
+                                        if (visible) snapshot.heatmapLevels[date] ?: 0 else 0
+                                    Box(
+                                        modifier = GlanceModifier
+                                            .fillMaxWidth()
+                                            .height(cell.dp)
+                                            .padding((GAP / 2).dp),
+                                    ) {
+                                        Box(
+                                            modifier = GlanceModifier
+                                                .fillMaxSize()
+                                                .cornerRadius(2.dp)
+                                                .background(
+                                                    if (visible) {
+                                                        colors.heatmap[
+                                                            level.coerceIn(
+                                                                0,
+                                                                colors.heatmap.lastIndex,
+                                                            ),
+                                                        ]
+                                                    } else {
+                                                        colors.background
+                                                    },
+                                                ),
+                                        ) {}
+                                    }
+                                }
+                            }
                         }
                     }
-                    Spacer(modifier = GlanceModifier.height(GAP.dp))
                 }
             }
         }
@@ -125,11 +158,23 @@ class HeatmapWidget : GlanceAppWidget() {
     companion object {
         /** 13 weeks × 7 = 91 cells. See the class note on the RemoteViews size limit. */
         const val WEEKS = 13
-        const val CELL = 13
-        const val GAP = 3
+        const val GAP = 3f
+
+        /**
+         * Week columns per inner row, and how many inner rows.
+         *
+         * Glance containers hold ten children. Seven columns per group keeps every container
+         * inside that, and two groups cover the thirteen weeks.
+         */
+        const val WEEKS_PER_GROUP = 7
+        const val GROUPS = (WEEKS + WEEKS_PER_GROUP - 1) / WEEKS_PER_GROUP
+
+        /** The title row plus the surface's own vertical padding. */
+        private const val CHROME_HEIGHT = 62f
 
         val MEDIUM = DpSize(250.dp, 110.dp)
         val LARGE = DpSize(250.dp, 180.dp)
+        val WIDE = DpSize(340.dp, 200.dp)
     }
 }
 

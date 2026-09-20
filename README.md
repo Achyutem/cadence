@@ -1,7 +1,7 @@
 # Cadence
 
 A local-first personal productivity app for Android, tasks, habits, calendar, daily planning,
-reminders, check-ins, heatmaps and home-screen widgets, with **no account, no backend and no
+reminders, heatmaps and home-screen widgets, with **no account, no backend and no
 network access**.
 
 > **Status: feature complete for daily use.** See [`docs/ROADMAP.md`](docs/ROADMAP.md) for what
@@ -10,7 +10,7 @@ network access**.
 **Working today:** Today · tasks with subtasks, priorities, scheduling and full editing · habits in
 four metric types with streaks, consistency and a contribution heatmap · calendar in month, week
 and day views · reminders with notification actions that work without opening the app · Markdown
-notes · breath training (box, static apnea, CO₂ and O₂ tables) · daily check-in · local insights
+notes · breath training (box, static apnea, CO₂ and O₂ tables) · local insights
 engine · six interactive home-screen widgets · one shared recurrence engine · light/dark × five
 accents × Material You · JSON export and import.
 

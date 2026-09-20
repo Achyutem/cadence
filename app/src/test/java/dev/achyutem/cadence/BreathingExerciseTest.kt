@@ -1,5 +1,6 @@
 package dev.achyutem.cadence
 
+import dev.achyutem.cadence.domain.breathing.BreathField
 import dev.achyutem.cadence.domain.breathing.BreathPhaseKind
 import dev.achyutem.cadence.domain.breathing.BreathingExercise
 import dev.achyutem.cadence.domain.breathing.asClock
@@ -104,7 +105,7 @@ class BreathingExerciseTest {
             startHoldSeconds = 300, holdIncrementSeconds = 120, rounds = 20,
         ).expand()
         val holds = phases.filter { it.kind == BreathPhaseKind.HOLD_FULL }.map { it.seconds }
-        assertTrue(holds.all { it <= 900 })
+        assertTrue(holds.all { it <= BreathField.HOLD.max })
     }
 
     @Test

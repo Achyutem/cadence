@@ -1,6 +1,5 @@
 package dev.achyutem.cadence.domain.insights
 
-import dev.achyutem.cadence.core.database.entity.DailyCheckInEntity
 import dev.achyutem.cadence.core.database.entity.HabitEntryEntity
 import dev.achyutem.cadence.core.database.entity.TaskEntity
 import java.time.DayOfWeek
@@ -70,7 +69,6 @@ object InsightsEngine {
     fun analyse(
         tasks: List<TaskEntity>,
         habitEntries: List<HabitEntryEntity>,
-        checkIns: List<DailyCheckInEntity>,
         from: LocalDate,
         to: LocalDate,
         zone: ZoneId,
@@ -86,7 +84,6 @@ object InsightsEngine {
             completionByWeekday(byDate),
             loadVersusCompletion(byDate),
             habitAndTaskCompletion(byDate, habitEntries),
-            checkInAndCompletion(byDate, checkIns),
             timeOfDayPattern(tasks, zone),
         )
     }
@@ -214,34 +211,6 @@ object InsightsEngine {
             basis = "${(withRate * 100).roundToInt()}% against " +
                 "${(withoutRate * 100).roundToInt()}%. This is a pattern in the two together, " +
                 "not evidence that one causes the other.",
-        )
-    }
-
-    /** Whether higher-energy days line up with higher completion. */
-    private fun checkInAndCompletion(
-        byDate: Map<LocalDate, List<TaskEntity>>,
-        checkIns: List<DailyCheckInEntity>,
-    ): Insight? {
-        if (checkIns.size < MIN_DAYS) return null
-
-        val highEnergy = checkIns.filter { it.energy >= 4 }.map { it.date }.toSet()
-        val lowEnergy = checkIns.filter { it.energy <= 2 }.map { it.date }.toSet()
-        if (highEnergy.size < MIN_GROUP_DAYS || lowEnergy.size < MIN_GROUP_DAYS) return null
-
-        val high = byDate.filterKeys { it in highEnergy }.values.flatten()
-        val low = byDate.filterKeys { it in lowEnergy }.values.flatten()
-        if (high.size < MIN_GROUP_DAYS || low.size < MIN_GROUP_DAYS) return null
-
-        val highRate = high.count { it.completed }.toFloat() / high.size
-        val lowRate = low.count { it.completed }.toFloat() / low.size
-        if (abs(highRate - lowRate) < MIN_EFFECT) return null
-
-        return Insight(
-            id = "energy",
-            text = "Days you record higher energy tend to be days you finish more of your list.",
-            confidence = InsightConfidence.PATTERN,
-            basis = "${(highRate * 100).roundToInt()}% on higher-energy days against " +
-                "${(lowRate * 100).roundToInt()}% on lower ones.",
         )
     }
 

@@ -134,6 +134,59 @@ class MarkdownTest {
         assertEquals(source, Markdown.toggleTaskAtLine(source, 9))
     }
 
+    // --- List continuation ---
+
+    @Test
+    fun `pressing enter in a bullet continues the list`() {
+        val (text, caret) = Markdown.continueListOnNewline("- one", caret = 5)!!
+        assertEquals("- one\n- ", text)
+        assertEquals(8, caret)
+    }
+
+    @Test
+    fun `a task item continues unchecked, never carrying the tick forward`() {
+        // The next item is a new thing to do, not an already-done one.
+        val (text, _) = Markdown.continueListOnNewline("- [x] done", caret = 10)!!
+        assertEquals("- [x] done\n- [ ] ", text)
+    }
+
+    @Test
+    fun `a numbered item increments`() {
+        val (text, _) = Markdown.continueListOnNewline("3. third", caret = 8)!!
+        assertEquals("3. third\n4. ", text)
+    }
+
+    @Test
+    fun `indentation is carried forward`() {
+        val (text, _) = Markdown.continueListOnNewline("  - nested", caret = 10)!!
+        assertEquals("  - nested\n  - ", text)
+    }
+
+    @Test
+    fun `pressing enter on an empty item ends the list`() {
+        // Two Enters gets you out, which is what every editor that does this converges on.
+        val (text, caret) = Markdown.continueListOnNewline("- one\n- ", caret = 8)!!
+        assertEquals("- one\n", text)
+        assertEquals(6, caret)
+    }
+
+    @Test
+    fun `a plain paragraph is left alone`() {
+        assertEquals(null, Markdown.continueListOnNewline("just text", caret = 9))
+    }
+
+    @Test
+    fun `continuation works mid-document`() {
+        val source = "# Title\n- one\nafter"
+        val (text, _) = Markdown.continueListOnNewline(source, caret = 13)!!
+        assertEquals("# Title\n- one\n- \nafter", text)
+    }
+
+    @Test
+    fun `an out of range caret is ignored`() {
+        assertEquals(null, Markdown.continueListOnNewline("- one", caret = 99))
+    }
+
     @Test
     fun `parsing never throws on arbitrary input`() {
         listOf("", "   ", "***", "```", "- [", "#", "~~~~", "**_*~`", "\n\n\n").forEach { input ->
