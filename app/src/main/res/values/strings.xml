@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">Cadence</string>
+
+    <!-- Navigation -->
+    <string name="nav_today">Today</string>
+    <string name="nav_todos">Todos</string>
+    <string name="nav_habits">Habits</string>
+    <string name="nav_notes">Notes</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Today -->
+    <string name="today_section_todos">Todos</string>
+    <string name="today_section_habits">Habits</string>
+    <string name="today_section_overdue">Overdue</string>
+    <string name="today_progress_title">Today</string>
+    <string name="today_progress_none">—</string>
+    <string name="today_progress_percent">%1$d%%</string>
+    <!-- "complete" is an adjective with no plural form, so there is nothing for a quantity
+         string to vary. The label that does need pluralising is the <plurals> below. -->
+    <string name="today_progress_summary" tools:ignore="PluralsCandidate">%1$d of %2$d complete</string>
+    <string name="today_progress_empty_description">Nothing scheduled today</string>
+    <string name="today_empty_tasks_title">Nothing scheduled</string>
+    <string name="today_empty_tasks_description">Tasks you add for today will appear here.</string>
+    <string name="today_empty_habits_title">No habits yet</string>
+    <string name="today_empty_habits_description">Habits you track will show their progress for today here.</string>
+
+    <string name="greeting_morning">Good morning.</string>
+    <string name="greeting_morning_named">Good morning, %1$s.</string>
+    <string name="greeting_afternoon_named">Good afternoon, %1$s.</string>
+    <string name="greeting_evening_named">Good evening, %1$s.</string>
+    <string name="greeting_night_named">Still up, %1$s.</string>
+    <string name="greeting_afternoon">Good afternoon.</string>
+    <string name="greeting_evening">Good evening.</string>
+    <string name="greeting_night">Still up.</string>
+
+    <!-- Todos -->
+    <string name="todos_title">Todos</string>
+    <string name="todos_add">Add</string>
+    <string name="todos_overdue">Overdue</string>
+    <string name="todos_scheduled">Scheduled</string>
+    <string name="todos_backlog">No date</string>
+    <string name="todos_empty_action">Add your first task</string>
+    <string name="todos_empty_title">Nothing here</string>
+    <string name="filter_today">Today</string>
+    <string name="filter_upcoming">Upcoming</string>
+    <string name="filter_all">All</string>
+
+    <string name="quick_add_placeholder">What needs to be done?</string>
+    <string name="quick_add_submit">Add task</string>
+    <string name="quick_add_no_date">No date</string>
+    <string name="quick_add_no_time">No time</string>
+    <string name="date_today">Today</string>
+    <string name="date_tomorrow">Tomorrow</string>
+    <string name="priority_none">Priority</string>
+    <string name="priority_low">Low</string>
+    <string name="priority_medium">Medium</string>
+    <string name="priority_high">High</string>
+
+    <string name="task_mark_complete">Mark %1$s complete</string>
+    <string name="task_mark_incomplete">Mark %1$s not complete</string>
+    <string name="task_recurring">Repeats</string>
+    <string name="todos_empty_description">Tasks you add will show up here. Anything without a date waits in the backlog.</string>
+
+    <!-- Habits -->
+    <string name="habits_title">Habits</string>
+    <string name="habits_empty_title">No habits yet</string>
+    <string name="habits_empty_description">Habit tracking arrives in Phase 3.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_you">You</string>
+    <string name="settings_name_placeholder">Your name</string>
+    <string name="settings_name_description">Used only for the greeting on Today. Never leaves this device.</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_data">Data</string>
+    <string name="settings_data_description">Export everything to a JSON file you control, or restore from one.</string>
+    <string name="settings_export">Export</string>
+    <string name="settings_import">Import</string>
+    <string name="settings_import_confirm_title">Replace all data?</string>
+    <string name="settings_import_confirm_body">Importing replaces everything currently in Cadence \u2014 tasks, habits, history and notes \u2014 with the contents of the backup. This cannot be undone. Export first if you want to keep what is here.</string>
+    <string name="settings_import_confirm_action">Replace everything</string>
+    <string name="settings_behaviour">Behaviour</string>
+    <string name="settings_about">About</string>
+    <string name="settings_week_start">Week starts on</string>
+    <string name="settings_dynamic_color">Use wallpaper colours</string>
+    <string name="settings_dynamic_color_description">Follow the system palette instead of a Cadence accent.</string>
+    <string name="settings_reduce_motion">Reduce motion</string>
+    <string name="settings_reduce_motion_description">Removes transitions and animated progress.</string>
+    <string name="settings_about_body">Cadence stores everything on this device. There is no account, no sync and no network access.</string>
+
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
+    <!-- Accent colour names, used as accessibility labels for the swatches -->
+    <string name="accent_blue">Blue</string>
+    <string name="accent_purple">Purple</string>
+    <string name="accent_green">Green</string>
+    <string name="accent_orange">Orange</string>
+    <string name="accent_pink">Pink</string>
+
+    <!--
+      A quantity string, not a format string: "1 of 1 tasks complete" is wrong in English and
+      more wrong in languages with richer plural rules. The count that governs the form is the
+      total, which is what the second argument agrees with.
+    -->
+    <plurals name="today_progress_description">
+        <item quantity="one">%1$d of %2$d task complete</item>
+        <item quantity="other">%1$d of %2$d tasks complete</item>
+    </plurals>
+
+    <!-- Notes -->
+    <string name="notes_title">Notes</string>
+    <string name="notes_new">New</string>
+    <string name="notes_pinned">Pinned</string>
+    <string name="notes_all">All notes</string>
+    <string name="notes_untitled">Untitled</string>
+    <string name="notes_pin">Pin note</string>
+    <string name="notes_unpin">Unpin note</string>
+    <string name="notes_search_hint">Search notes</string>
+    <string name="notes_search_clear">Clear search</string>
+    <string name="notes_empty_title">No notes yet</string>
+    <string name="notes_empty_description">Notes support Markdown \u2014 headings, lists, task checkboxes, code and emphasis.</string>
+    <string name="notes_empty_action">Write your first note</string>
+    <string name="notes_no_matches_title">Nothing found</string>
+    <string name="notes_no_matches_description">No note matches \u201c%1$s\u201d.</string>
+
+    <string name="note_title_placeholder">Heading</string>
+    <string name="note_body_placeholder">Start writing\u2026</string>
+    <string name="note_preview_mode">Preview formatting</string>
+    <string name="note_edit_mode">Edit Markdown</string>
+
+    <string name="format_heading">Heading</string>
+    <string name="format_bold">Bold</string>
+    <string name="format_italic">Italic</string>
+    <string name="format_code">Code</string>
+    <string name="format_bullet">Bullet list</string>
+    <string name="format_task">Task checkbox</string>
+
+    <!-- Shared actions -->
+    <string name="action_back">Back</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_done">Done</string>
+</resources>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Lint runs with warningsAsErrors, so every suppression here needs a reason. The rule is: a check
+  is disabled only when it is wrong for this project, never because a finding is inconvenient.
+-->
+<lint>
+
+    <!--
+      Dependency-currency checks. These fire on every release of every library and would fail the
+      build weekly for reasons unrelated to the change being built. Versions in
+      gradle/libs.versions.toml are chosen deliberately as a mutually-compatible set; upgrading
+      them is a review task with a build and a test run behind it, not a compile-time warning.
+    -->
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+
+    <!--
+      Lint's advice is wrong here: a bare `mipmap-anydpi` folder is not recognised by the
+      resource merger and the adaptive icon fails to link, regardless of minSdk. Verified by
+      trying it — see the comment in the icon XML.
+    -->
+    <issue id="ObsoleteSdkInt">
+        <ignore path="src/main/res/mipmap-anydpi-v26" />
+    </issue>
+
+</lint>
