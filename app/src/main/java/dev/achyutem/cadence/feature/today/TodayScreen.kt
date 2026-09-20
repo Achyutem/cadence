@@ -45,7 +45,9 @@ import dev.achyutem.cadence.core.designsystem.token.Spacing
 import dev.achyutem.cadence.core.time.DayPart
 import dev.achyutem.cadence.core.time.formatDayAndMonth
 import dev.achyutem.cadence.core.time.formatWeekdayFull
+import dev.achyutem.cadence.domain.habit.Habit
 import dev.achyutem.cadence.domain.task.Task
+import dev.achyutem.cadence.feature.habits.HabitRow
 import dev.achyutem.cadence.feature.todos.QuickAddBar
 import dev.achyutem.cadence.feature.todos.TaskRow
 import java.time.LocalDate
@@ -59,6 +61,7 @@ import java.time.LocalDate
  */
 @Composable
 fun TodayScreen(
+    onOpenHabit: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TodayViewModel = viewModel(factory = TodayViewModel.Factory),
 ) {
@@ -75,6 +78,9 @@ fun TodayScreen(
         TodayContent(
             state = state,
             onToggle = viewModel::setCompleted,
+            onIncrementHabit = viewModel::incrementHabit,
+            onDecrementHabit = viewModel::decrementHabit,
+            onOpenHabit = onOpenHabit,
             onAddClick = { quickAddVisible = true },
         )
         QuickAddBar(
@@ -92,6 +98,9 @@ fun TodayScreen(
 private fun TodayContent(
     state: TodayUiState,
     onToggle: (Task, Boolean) -> Unit,
+    onIncrementHabit: (Habit) -> Unit,
+    onDecrementHabit: (Habit) -> Unit,
+    onOpenHabit: (Long) -> Unit,
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -185,15 +194,37 @@ private fun TodayContent(
 
         item(key = "habits-header") {
             Spacer(Modifier.height(Spacing.lg))
-            SectionHeader(title = stringResource(R.string.today_section_habits))
+            SectionHeader(
+                title = stringResource(R.string.today_section_habits),
+                trailing = {
+                    if (state.habits.isNotEmpty()) {
+                        Text(
+                            text = "${state.habits.count { it.completed }}/${state.habits.size}",
+                            style = MaterialTheme.typography.labelMedium.tabularFigures,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                },
+            )
             Spacer(Modifier.height(Spacing.xxs))
         }
 
-        item(key = "habits-empty") {
-            EmptyState(
-                title = stringResource(R.string.today_empty_habits_title),
-                description = stringResource(R.string.today_empty_habits_description),
-            )
+        if (state.habits.isEmpty()) {
+            item(key = "habits-empty") {
+                EmptyState(
+                    title = stringResource(R.string.today_empty_habits_title),
+                    description = stringResource(R.string.today_empty_habits_description),
+                )
+            }
+        } else {
+            items(state.habits, key = { "h${it.id}" }) { habit ->
+                HabitRow(
+                    habit = habit,
+                    onIncrement = { onIncrementHabit(habit) },
+                    onDecrement = { onDecrementHabit(habit) },
+                    onClick = { onOpenHabit(habit.id) },
+                )
+            }
         }
     }
 }
@@ -313,6 +344,9 @@ private fun TodayPreviewLight() = CadencePreviewTheme {
             loading = false,
         ),
         onToggle = { _, _ -> },
+        onIncrementHabit = {},
+        onDecrementHabit = {},
+        onOpenHabit = {},
         onAddClick = {},
     )
 }

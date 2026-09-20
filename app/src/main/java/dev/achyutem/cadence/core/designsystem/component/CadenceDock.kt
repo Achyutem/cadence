@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import dev.achyutem.cadence.core.designsystem.theme.CadenceTheme
 import dev.achyutem.cadence.core.designsystem.token.Borders
@@ -103,7 +104,9 @@ fun CadenceDock(
     ) {
         Box(
             modifier = Modifier
-                .offset(x = indicatorOffset)
+                // Lambda overload: reading the animated value in the layout phase instead of
+                // in composition means each frame re-lays-out rather than recomposing.
+                .offset { IntOffset(indicatorOffset.roundToPx(), 0) }
                 .width(TabWidth)
                 .height(IndicatorHeight)
                 .clip(Radius.pill)

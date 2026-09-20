@@ -1,53 +1,187 @@
 package dev.achyutem.cadence.feature.habits
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.achyutem.cadence.R
-import dev.achyutem.cadence.core.designsystem.component.EmptyState
+import dev.achyutem.cadence.core.designsystem.component.ButtonTone
+import dev.achyutem.cadence.core.designsystem.component.CadenceButton
+import dev.achyutem.cadence.core.designsystem.component.FullScreenEmptyState
+import dev.achyutem.cadence.core.designsystem.component.SectionHeader
 import dev.achyutem.cadence.core.designsystem.theme.CadencePreviewTheme
+import dev.achyutem.cadence.core.designsystem.theme.tabularFigures
 import dev.achyutem.cadence.core.designsystem.token.Spacing
+import dev.achyutem.cadence.domain.habit.Habit
 
-/**
- * Habits. Phase 3 fills this in with the habit list, metrics and streaks; Phase 0 establishes
- * the screen frame and its place in the graph.
- */
 @Composable
-fun HabitsScreen(modifier: Modifier = Modifier) {
+fun HabitsScreen(
+    onOpenHabit: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: HabitsViewModel = viewModel(factory = HabitsViewModel.Factory),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val editorOpen by viewModel.editorOpen.collectAsStateWithLifecycle()
+
+    LifecycleResumeEffect(Unit) {
+        viewModel.refreshToday()
+        onPauseOrDispose { }
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        HabitsContent(
+            state = state,
+            onIncrement = viewModel::increment,
+            onDecrement = viewModel::decrement,
+            onOpenHabit = onOpenHabit,
+            onAddClick = viewModel::openEditor,
+        )
+
+        if (editorOpen) {
+            HabitEditorSheet(
+                today = state.date,
+                onDismiss = viewModel::closeEditor,
+                onCreate = viewModel::createHabit,
+            )
+        }
+    }
+}
+
+@Composable
+private fun HabitsContent(
+    state: HabitsUiState,
+    onIncrement: (Habit) -> Unit,
+    onDecrement: (Habit) -> Unit,
+    onOpenHabit: (Long) -> Unit,
+    onAddClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .statusBarsPadding()
-            .padding(horizontal = Spacing.screenGutter, vertical = Spacing.xl),
-        verticalArrangement = Arrangement.spacedBy(Spacing.md),
+            .statusBarsPadding(),
     ) {
-        Text(
-            text = stringResource(R.string.habits_title),
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = Spacing.screenGutter,
+                    end = Spacing.screenGutter,
+                    top = Spacing.xl,
+                    bottom = Spacing.md,
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            EmptyState(
+            Text(
+                text = stringResource(R.string.habits_title),
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            CadenceButton(
+                text = stringResource(R.string.habits_add),
+                onClick = onAddClick,
+                tone = ButtonTone.Primary,
+                icon = Icons.Rounded.Add,
+            )
+        }
+
+        when {
+            state.loading -> Unit
+
+            state.isEmpty -> FullScreenEmptyState(
                 title = stringResource(R.string.habits_empty_title),
                 description = stringResource(R.string.habits_empty_description),
+                action = {
+                    CadenceButton(
+                        text = stringResource(R.string.habits_empty_action),
+                        onClick = onAddClick,
+                        tone = ButtonTone.Primary,
+                    )
+                },
             )
+
+            else -> LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = Spacing.screenGutter,
+                    end = Spacing.screenGutter,
+                    bottom = Spacing.dockClearance,
+                ),
+            ) {
+                item(key = "today-header") {
+                    SectionHeader(
+                        title = stringResource(R.string.habits_today),
+                        trailing = {
+                            Text(
+                                text = "${state.completedCount}/${state.scheduled.size}",
+                                style = MaterialTheme.typography.labelMedium.tabularFigures,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                    )
+                    Spacer(Modifier.height(Spacing.xxs))
+                }
+
+                items(state.scheduled, key = { "h${it.id}" }) { habit ->
+                    HabitRow(
+                        habit = habit,
+                        onIncrement = { onIncrement(habit) },
+                        onDecrement = { onDecrement(habit) },
+                        onClick = { onOpenHabit(habit.id) },
+                    )
+                }
+
+                if (state.notScheduledToday.isNotEmpty()) {
+                    item(key = "not-today-header") {
+                        Spacer(Modifier.height(Spacing.lg))
+                        SectionHeader(title = stringResource(R.string.habits_not_today))
+                        Spacer(Modifier.height(Spacing.xxs))
+                    }
+                    items(state.notScheduledToday, key = { "n${it.id}" }) { habit ->
+                        HabitRow(
+                            habit = habit,
+                            onIncrement = { onIncrement(habit) },
+                            onDecrement = { onDecrement(habit) },
+                            onClick = { onOpenHabit(habit.id) },
+                        )
+                    }
+                }
+            }
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun HabitsPreview() = CadencePreviewTheme { HabitsScreen() }
+private fun HabitsPreview() = CadencePreviewTheme {
+    HabitsContent(
+        state = HabitsUiState(loading = false),
+        onIncrement = {},
+        onDecrement = {},
+        onOpenHabit = {},
+        onAddClick = {},
+    )
+}

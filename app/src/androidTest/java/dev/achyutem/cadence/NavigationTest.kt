@@ -11,12 +11,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * The critical flow Phase 0 owns: every destination is reachable from the dock.
+ * All five destinations are reachable from the dock.
  *
- * Note how each tab is found: an *unselected* dock item shows no label, so its name lives only in
- * its content description; the selected one shows the label as real text. Driving the test that
- * way is not a workaround — it is the assertion that the dock stays reachable by screen reader
- * even when the label is hidden.
+ * Tabs are found by content description rather than by text. That is the contract, not a
+ * workaround: the dock draws no labels, so the description is the only name a screen reader has,
+ * and a tab that cannot be found this way is a tab a screen-reader user cannot identify.
  */
 @RunWith(AndroidJUnit4::class)
 class NavigationTest {
@@ -27,10 +26,13 @@ class NavigationTest {
     @Test
     fun everyDockDestinationIsReachable() {
         composeRule.onNodeWithContentDescription("Todos").performClick()
-        composeRule.onNodeWithText("No tasks yet").assertIsDisplayed()
+        composeRule.onNodeWithText("Todos").assertIsDisplayed()
 
         composeRule.onNodeWithContentDescription("Habits").performClick()
-        composeRule.onNodeWithText("No habits yet").assertIsDisplayed()
+        composeRule.onNodeWithText("Habits").assertIsDisplayed()
+
+        composeRule.onNodeWithContentDescription("Notes").performClick()
+        composeRule.onNodeWithText("Notes").assertIsDisplayed()
 
         composeRule.onNodeWithContentDescription("Settings").performClick()
         composeRule.onNodeWithText("APPEARANCE").assertIsDisplayed()
@@ -40,20 +42,15 @@ class NavigationTest {
     }
 
     @Test
-    fun unselectedTabsAreNamedForScreenReaders() {
-        // Today is the start destination, so the other three must all be described.
-        listOf("Todos", "Habits", "Settings").forEach { name ->
+    fun everyTabIsNamedForScreenReaders() {
+        // Including the selected one: no tab draws a visible label, so all five must be described.
+        listOf("Today", "Todos", "Habits", "Notes", "Settings").forEach { name ->
             composeRule.onNodeWithContentDescription(name).assertIsDisplayed()
         }
     }
 
     @Test
     fun theAppOpensOnToday() {
-        // Today is the start destination, so its dock tab is selected — which means its name is
-        // shown as a visible label and is therefore *absent* as a content description. (Asserting
-        // on the text "Today" instead would be ambiguous: the progress card is titled "Today"
-        // too.)
-        composeRule.onNodeWithContentDescription("Today").assertDoesNotExist()
         composeRule.onNodeWithText("TODOS").assertIsDisplayed()
         composeRule.onNodeWithText("HABITS").assertIsDisplayed()
     }

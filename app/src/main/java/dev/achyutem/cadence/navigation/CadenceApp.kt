@@ -33,6 +33,7 @@ import dev.achyutem.cadence.core.designsystem.theme.CadenceTheme
 import dev.achyutem.cadence.core.designsystem.token.Motion
 import dev.achyutem.cadence.core.designsystem.token.Spacing
 import androidx.navigation.toRoute
+import dev.achyutem.cadence.feature.habits.HabitDetailScreen
 import dev.achyutem.cadence.feature.habits.HabitsScreen
 import dev.achyutem.cadence.feature.notes.NoteEditorScreen
 import dev.achyutem.cadence.feature.notes.NotesScreen
@@ -138,13 +139,22 @@ private fun CadenceNavHost(navController: NavHostController) {
             if (exitMillis == 0) ExitTransition.None else fadeOut(tween(exitMillis))
         },
     ) {
-        composable<CadenceRoute.Today> { TodayScreen() }
+        composable<CadenceRoute.Today> {
+            TodayScreen(onOpenHabit = { id -> navController.navigate(CadenceRoute.HabitDetail(id)) })
+        }
         composable<CadenceRoute.Todos> { TodosScreen() }
-        composable<CadenceRoute.Habits> { HabitsScreen() }
+        composable<CadenceRoute.Habits> {
+            HabitsScreen(onOpenHabit = { id -> navController.navigate(CadenceRoute.HabitDetail(id)) })
+        }
         composable<CadenceRoute.Notes> {
             NotesScreen(onOpenNote = { noteId -> navController.navigate(CadenceRoute.NoteDetail(noteId)) })
         }
         composable<CadenceRoute.Settings> { SettingsScreen() }
+
+        composable<CadenceRoute.HabitDetail> { entry ->
+            val route = entry.toRoute<CadenceRoute.HabitDetail>()
+            HabitDetailScreen(habitId = route.habitId, onBack = { navController.popBackStack() })
+        }
 
         composable<CadenceRoute.NoteDetail> { entry ->
             val route = entry.toRoute<CadenceRoute.NoteDetail>()

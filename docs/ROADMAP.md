@@ -16,37 +16,62 @@ emulator with settings persisting across process death.
 
 ---
 
-## Phase 1 — Todo core (next)
+## Phase 1 — Todo core ✅ complete
 
-Task creation, editing, deletion, completion, subtasks, priority, dates, times, duration,
-ordering. The Today and Todos screens become real.
+Creation, completion, subtasks with derived parent state, priority, dates, times, duration,
+ordering. Today and Todos read real data.
 
-Quick-add is the make-or-break interaction: one tap to a text field, one line, done. Structured
-configuration comes *after* creation, never before it.
+Quick-add is the interaction that matters: one tap to a field, one line, Done. The composer stays
+open and clears after each save, because tasks arrive in bursts.
 
-**Done when:** a task can be created, completed and re-found after an app restart; the Today
-progress card reflects real data; completion animates; reordering persists; empty states and
-completed-task behaviour all work.
+**Verified:** tasks created, completed and re-found after a reinstall; progress card tracking real
+completion; completion animating; hide/sink completed-task behaviour working.
 
----
-
-## Phase 2 — Recurrence
-
-`domain/recurrence` — one engine for tasks and habits. See `docs/RECURRENCE.md` for the full
-case list and test plan. This phase is mostly tests.
-
-**Done when:** every case in that document passes, including month-end clamping, last-weekday
-months, leap years and interval phase from the anchor.
+Still open: editing an existing task, drag reordering, tags, and the task detail screen.
 
 ---
 
-## Phase 3 — Habits
+## Phase 2 — Recurrence ✅ complete
 
-Creation, all four metric types, targets and goal direction, recurrence, entries, streaks,
-statistics. Habit detail screen.
+One engine for tasks and habits, in `domain/recurrence`. 31 unit tests cover every case in
+`docs/RECURRENCE.md`: month-end clamping, last-weekday months, leap years, 29 February, interval
+phase from the anchor, multi-weekday fortnightly drift, end dates and occurrence limits.
 
-**Done when:** streaks and rates are computed from entries (never stored), editing a past day
-corrects all derived numbers, and archived habits stay out of active lists but in history.
+Still open: the recurrence picker UI, and attaching rules to tasks (habits already use them).
+
+---
+
+## Phase 3 — Habits ✅ complete
+
+All four metric types, targets, goal direction (at least / at most), schedules, entries, streaks
+and statistics. Detail screen with the heatmap.
+
+Every derived number is computed from entries, never stored. 19 unit tests pin the behaviour that
+is easy to get wrong: weekday habits keeping their streak over the weekend, today-not-done-yet not
+breaking a streak, rates measured against *scheduled* days, and averages excluding untouched days.
+
+**Verified on device:** boolean and quantity habits created, incremented, and reflected in the
+heatmap and statistics.
+
+Still open: editing a habit, archiving from the UI, custom recurrence, habit reordering.
+
+---
+
+## Notes ✅ complete (added outside the original plan)
+
+Fifth dock destination. Markdown notes with a heading and body, pinning, search, and an autosaving
+editor with a formatting bar. Custom Markdown subset — parser and Compose renderer, no dependency
+— covered by 19 unit tests focused on half-typed input.
+
+---
+
+## Data ✅ complete (added outside the original plan)
+
+Whole-database JSON export and import through the Storage Access Framework, so no storage
+permission is needed. The file format is a versioned DTO layer independent of the Room schema.
+Import replaces everything, states so plainly, and runs in one transaction.
+
+Plus a display name used only for the greeting on Today.
 
 ---
 

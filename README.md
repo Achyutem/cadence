@@ -4,8 +4,12 @@ A local-first personal productivity app for Android — tasks, habits, calendar,
 reminders, check-ins, heatmaps and home-screen widgets, with **no account, no backend and no
 network access**.
 
-> **Status: Phase 0 (foundation) complete.** Builds, runs and is fully themed; task and habit
-> features land in Phases 1–3. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+> **Status: tasks, habits, notes and recurrence are working.** Calendar, reminders, widgets and
+> insights are next. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+
+**Working today:** Today · task capture and completion with subtasks · habits in four metric types
+with streaks, consistency and a contribution heatmap · Markdown notes · one shared recurrence
+engine · light/dark × five accents × Material You · JSON export and import.
 
 ## Build
 
@@ -28,12 +32,17 @@ set `JAVA_HOME` to a JDK first.
 
 ## Stack
 
-Kotlin · Jetpack Compose · Material 3 · Room · DataStore · Navigation Compose · WorkManager ·
-Glance (Phase 8). Gradle Kotlin DSL with a version catalog. AGP 8.13.2, Kotlin 2.2.21,
-compileSdk 36, minSdk 34.
+Kotlin · Jetpack Compose · Material 3 · Room · DataStore · Navigation Compose · kotlinx
+serialization. Gradle Kotlin DSL with a version catalog. AGP 8.13.2, Kotlin 2.2.21, compileSdk 36,
+minSdk 34.
 
 No third-party libraries beyond Jetpack and kotlinx. That is a deliberate constraint, not an
-oversight.
+oversight — the Markdown parser, the heatmap and the charts are all hand-written rather than
+pulling in a library each.
+
+The one bundled asset is **Geist Variable** (SIL OFL, 166 KB, licence in `licenses/`).
+
+Lint runs with `warningsAsErrors`; every suppression in `app/lint.xml` carries a written reason.
 
 ## Documentation
 
@@ -44,6 +53,8 @@ oversight.
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Module shape, state, DI, testing strategy |
 | [`docs/DATABASE.md`](docs/DATABASE.md) | Schema, storage contract, migration procedure |
 | [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) | Colour, type, spacing, motion, the dock |
+| [`docs/NOTES.md`](docs/NOTES.md) | Markdown notes, and why the text stays authoritative |
+| [`docs/BACKUP.md`](docs/BACKUP.md) | Export/import format and the replace policy |
 | [`docs/RECURRENCE.md`](docs/RECURRENCE.md) | The shared recurrence engine |
 | [`docs/NOTIFICATIONS.md`](docs/NOTIFICATIONS.md) | Reminder scheduling and its edge cases |
 | [`docs/WIDGETS.md`](docs/WIDGETS.md) | Widget architecture |

@@ -64,8 +64,39 @@
 
     <!-- Habits -->
     <string name="habits_title">Habits</string>
+    <string name="habits_add">Add</string>
+    <string name="habits_today">Today</string>
+    <string name="habits_not_today">Not scheduled today</string>
+    <string name="habits_empty_action">Create your first habit</string>
     <string name="habits_empty_title">No habits yet</string>
-    <string name="habits_empty_description">Habit tracking arrives in Phase 3.</string>
+
+    <string name="habit_new_title">New habit</string>
+    <string name="habit_name_placeholder">Habit name</string>
+    <string name="habit_measure">How is it measured?</string>
+    <string name="habit_schedule">Schedule</string>
+    <string name="habit_target_placeholder">Target</string>
+    <string name="habit_unit_placeholder">Unit</string>
+    <string name="habit_create">Create</string>
+    <string name="habit_type_boolean">Done</string>
+    <string name="habit_type_count">Count</string>
+    <string name="habit_type_quantity">Amount</string>
+    <string name="habit_type_duration">Minutes</string>
+    <string name="habit_goal_at_least">At least</string>
+    <string name="habit_goal_at_most">At most</string>
+    <string name="habit_schedule_daily">Every day</string>
+    <string name="habit_schedule_weekdays">Weekdays</string>
+    <string name="habit_schedule_weekends">Weekends</string>
+    <string name="habit_mark_complete">Mark %1$s done</string>
+    <string name="habit_mark_incomplete">Mark %1$s not done</string>
+    <string name="habit_increment">Add to %1$s</string>
+    <string name="habit_decrement">Subtract from %1$s</string>
+    <string name="habit_best_streak">Best streak</string>
+    <string name="habit_consistency">Consistency</string>
+    <string name="habit_average">Average</string>
+    <string name="habit_this_month">This month</string>
+    <string name="habit_activity">Activity</string>
+    <string name="habit_no_data">Not enough history yet</string>
+    <string name="habits_empty_description">Track anything you want to keep up \u2014 done/not done, a count, an amount, or minutes.</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
@@ -142,6 +173,9 @@
     <string name="action_back">Back</string>
     <string name="action_delete">Delete</string>
     <string name="action_cancel">Cancel</string>
-    <string name="action_save">Save</string>
-    <string name="action_done">Done</string>
+
+    <plurals name="habit_streak">
+        <item quantity="one">%1$d day streak</item>
+        <item quantity="other">%1$d day streak</item>
+    </plurals>
 </resources>

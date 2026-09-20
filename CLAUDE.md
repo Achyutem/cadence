@@ -62,6 +62,17 @@ document needs an explicit argued update — not a quiet exception.
 21. **Never claim something works without building and running it.** Do not silently skip tests.
 22. **Queries are range-bounded.** Never load the whole history to render one screen.
 
+## Notes and data
+
+27. **A note's Markdown text is the source of truth.** The renderer is a view of it. Tapping a
+    rendered checkbox rewrites the source line, never a parsed model.
+28. **No save buttons on documents.** Notes autosave and flush on exit. Losing a note because
+    someone pressed back is not an acceptable failure.
+29. **Import replaces, atomically, and says so.** It is the only destructive action in the app and
+    it runs in one transaction.
+30. **The backup format is independent of the Room schema.** It is a contract with the user's
+    future self; it changes only deliberately, and it is versioned.
+
 ## Design
 
 23. **Accent colours the active elements only** — navigation, progress, completion, selection,
@@ -72,7 +83,10 @@ document needs an explicit argued update — not a quiet exception.
     transitions ~200–300ms, expressive changes ~320–420ms. Everything scales through
     `LocalMotionScale` so reduced-motion works everywhere for free.
 26. **Dependencies are a cost.** Prefer platform and Jetpack APIs. A charting library to draw one
-    heatmap is not a trade worth making.
+    heatmap, or a CommonMark implementation to render six kinds of syntax, is not a trade worth
+    making. The only bundled asset is Geist Variable.
+26b. **Lint runs with `warningsAsErrors`.** A check is disabled only when it is wrong for this
+    project, never because a finding is inconvenient, and every suppression carries a reason.
 
 ## Explicitly out of scope
 

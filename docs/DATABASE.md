@@ -1,6 +1,6 @@
 # Database
 
-Room over SQLite. Version **1**. Schemas exported to `app/schemas/` and committed.
+Room over SQLite. Version **2**. Schemas exported to `app/schemas/` and committed.
 
 ## Storage contract
 
@@ -96,6 +96,13 @@ stay reconstructible.
 A time-of-day plus an offset, **not an absolute instant**. The alarm time is derived per occurrence
 at scheduling time in the current zone, which is what makes reminders survive travel and DST.
 
+### `notes`
+`id · title · content · preview · pinned · archived · sortOrder · createdAt · updatedAt`
+
+Added in v2. `content` is raw Markdown; `preview` is a write-time cache of it. See
+[`NOTES.md`](NOTES.md) for why the text stays authoritative and why the cache is the one
+denormalised field in the schema.
+
 ### `tags`, `task_tags`
 Simple many-to-many, both sides `ON DELETE CASCADE`.
 
@@ -108,6 +115,14 @@ Simple many-to-many, both sides `ON DELETE CASCADE`.
 - **No derived values stored as authoritative fields.** No `streak` column, no `consistency`
   column. See `docs/INSIGHTS.md` and `CLAUDE.md` #12.
 - **Every read is range-bounded or id-bounded.** There is deliberately no `SELECT * FROM tasks`.
+
+## Migrations so far
+
+**v1 → v2** — added the `notes` table.
+
+Written by hand, and it must match the schema Room expects exactly (column order, types, NOT NULL,
+DEFAULT) or Room's identity check fails at open time *on an upgraded install while passing on a
+fresh one*. That asymmetry is precisely why migration tests exist.
 
 ## Migration procedure
 

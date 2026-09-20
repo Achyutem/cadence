@@ -3,7 +3,13 @@ package dev.achyutem.cadence.feature.today
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.achyutem.cadence.core.common.cadenceViewModelFactory
+import dev.achyutem.cadence.core.database.dao.HabitDao
+import dev.achyutem.cadence.core.database.dao.RecurrenceDao
 import dev.achyutem.cadence.core.database.dao.TaskDao
+import dev.achyutem.cadence.core.database.entity.HabitEntity
+import dev.achyutem.cadence.core.database.entity.HabitEntryEntity
+import dev.achyutem.cadence.core.database.entity.HabitType
+import dev.achyutem.cadence.core.database.entity.RecurrenceRuleEntity
 import dev.achyutem.cadence.core.database.entity.TaskEntity
 import dev.achyutem.cadence.core.database.entity.TaskPriority
 import dev.achyutem.cadence.core.datastore.CompletedTaskBehavior
@@ -12,6 +18,10 @@ import dev.achyutem.cadence.core.datastore.UserPreferences
 import dev.achyutem.cadence.core.time.CadenceClock
 import dev.achyutem.cadence.core.time.DayPart
 import dev.achyutem.cadence.core.time.dayPart
+import dev.achyutem.cadence.domain.habit.Habit
+import dev.achyutem.cadence.domain.habit.isValueComplete
+import dev.achyutem.cadence.domain.habit.toHabit
+import dev.achyutem.cadence.domain.recurrence.RecurrenceEngine
 import dev.achyutem.cadence.domain.task.Task
 import dev.achyutem.cadence.domain.task.completionProgress
 import dev.achyutem.cadence.domain.task.orderedForDay
@@ -38,6 +48,7 @@ data class TodayUiState(
     /** Hide-completed preference applied. This is what the list renders. */
     val visibleTasks: List<Task> = emptyList(),
     val overdue: List<Task> = emptyList(),
+    val habits: List<Habit> = emptyList(),
     val preferences: UserPreferences = UserPreferences.Default,
     val loading: Boolean = true,
 ) {
@@ -62,8 +73,45 @@ data class TodayUiState(
 class TodayViewModel(
     private val clock: CadenceClock,
     private val tasks: TaskDao,
+    private val habitDao: HabitDao,
+    private val recurrence: RecurrenceDao,
     private val settings: SettingsRepository,
 ) : ViewModel() {
+
+    /**
+     * Recurrence rules are cached rather than re-read per habit.
+     *
+     * There are only ever a handful, and they change almost never — but every habit on Today
+     * needs one to decide whether it is due, so loading them once and looking up by id keeps the
+     * screen at two queries instead of one per habit.
+     */
+    private var cachedRules: Map<Long, RecurrenceRuleEntity> = emptyMap()
+
+    init {
+        viewModelScope.launch {
+            recurrence.observeAllRules().collect { rules ->
+                cachedRules = rules.associateBy { it.id }
+            }
+        }
+    }
+
+    private fun buildHabits(
+        entities: List<HabitEntity>,
+        entries: List<HabitEntryEntity>,
+        date: LocalDate,
+    ): List<Habit> {
+        val entriesByHabit = entries.associateBy { it.habitId }
+        return entities
+            .map { habit ->
+                val rule = habit.recurrenceRuleId?.let(cachedRules::get)
+                habit.toHabit(
+                    entry = entriesByHabit[habit.id],
+                    scheduledToday = rule == null || RecurrenceEngine.occursOn(rule, date),
+                )
+            }
+            // Today shows only what is actually due today; the full list lives on Habits.
+            .filter { it.scheduledToday }
+    }
 
     private val now = MutableStateFlow(clock.dateTimeNow())
 
@@ -77,7 +125,19 @@ class TodayViewModel(
                 tasks.observeScheduledOn(date),
                 tasks.observeOverdue(date),
                 tasks.observeAllSubtasks(),
-            ) { scheduled, overdue, subtasks ->
+                habitDao.observeActive(),
+                habitDao.observeEntriesOn(date),
+            ) { values ->
+                @Suppress("UNCHECKED_CAST")
+                val scheduled = values[0] as List<TaskEntity>
+                @Suppress("UNCHECKED_CAST")
+                val overdue = values[1] as List<TaskEntity>
+                @Suppress("UNCHECKED_CAST")
+                val subtasks = values[2] as List<TaskEntity>
+                @Suppress("UNCHECKED_CAST")
+                val activeHabits = values[3] as List<HabitEntity>
+                @Suppress("UNCHECKED_CAST")
+                val habitEntries = values[4] as List<HabitEntryEntity>
                 val childrenByParent = subtasks.groupBy { it.parentTaskId }
                 fun TaskEntity.build(): Task = toTask(childrenByParent[id].orEmpty())
 
@@ -98,6 +158,7 @@ class TodayViewModel(
                     tasks = ordered,
                     visibleTasks = if (hideCompleted) ordered.filterNot { it.completed } else ordered,
                     overdue = overdue.map { it.build() }.filterNot { it.completed },
+                    habits = buildHabits(activeHabits, habitEntries, date),
                     preferences = preferences,
                     loading = false,
                 )
@@ -118,6 +179,40 @@ class TodayViewModel(
      */
     fun refresh() {
         now.value = clock.dateTimeNow()
+    }
+
+    /** One tap from Today: booleans flip, metered habits step up. */
+    fun incrementHabit(habit: Habit) = viewModelScope.launch {
+        val entity = habitDao.getById(habit.id) ?: return@launch
+        val date = clock.today()
+        val at = clock.now()
+        val next = when (habit.type) {
+            HabitType.BOOLEAN -> if (habit.completed) 0.0 else habit.targetValue.coerceAtLeast(1.0)
+            else -> habit.todayValue + habit.incrementStep
+        }
+        val existing = habitDao.getEntry(habit.id, date)
+        habitDao.upsertEntry(
+            existing?.copy(value = next, completed = entity.isValueComplete(next), updatedAt = at)
+                ?: HabitEntryEntity(
+                    habitId = habit.id,
+                    date = date,
+                    value = next,
+                    completed = entity.isValueComplete(next),
+                    createdAt = at,
+                    updatedAt = at,
+                )
+        )
+    }
+
+    fun decrementHabit(habit: Habit) = viewModelScope.launch {
+        val entity = habitDao.getById(habit.id) ?: return@launch
+        val date = clock.today()
+        val at = clock.now()
+        val next = (habit.todayValue - habit.incrementStep).coerceAtLeast(0.0)
+        val existing = habitDao.getEntry(habit.id, date) ?: return@launch
+        habitDao.upsertEntry(
+            existing.copy(value = next, completed = entity.isValueComplete(next), updatedAt = at)
+        )
     }
 
     fun setCompleted(task: Task, completed: Boolean) = viewModelScope.launch {
@@ -160,7 +255,13 @@ class TodayViewModel(
         private const val SORT_STEP = 100
 
         val Factory = cadenceViewModelFactory { container ->
-            TodayViewModel(container.clock, container.taskDao, container.settingsRepository)
+            TodayViewModel(
+                container.clock,
+                container.taskDao,
+                container.habitDao,
+                container.recurrenceDao,
+                container.settingsRepository,
+            )
         }
     }
 }

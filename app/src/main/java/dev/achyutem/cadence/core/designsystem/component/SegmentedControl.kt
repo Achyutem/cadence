@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -102,7 +103,9 @@ fun <T> SegmentedControl(
 
         Box(
             modifier = Modifier
-                .offset(x = indicatorOffset)
+                // Lambda overload: reading the animated value in the layout phase instead of
+                // in composition means each frame re-lays-out rather than recomposing.
+                .offset { IntOffset(indicatorOffset.roundToPx(), 0) }
                 .width(itemWidth)
                 .height(TouchTarget.control)
                 .clip(Radius.shapeSm)

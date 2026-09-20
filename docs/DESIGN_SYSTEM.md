@@ -121,3 +121,60 @@ names.
 - Text scales with the system font size; no fixed-height text containers.
 - Reduced motion is honoured globally.
 - Colour is never the only signal — completion also changes shape and weight.
+
+---
+
+## Revision: the Geist pass
+
+The design language was reworked after the first build. The brief asked for the philosophy behind
+Vercel and Next.js — clean, precise, fast — while keeping Cadence's five accents prominent.
+
+**What changed and why:**
+
+| Before | After | Reason |
+|---|---|---|
+| System sans | **Geist Variable** (166 KB, OFL) | One file for every weight. Built for interfaces: even colour at small sizes, tall x-height, real tabular figures. |
+| Blue-cast neutrals | True neutral greys | A tinted neutral fights every accent beside it. Pure grey lets the accent be the only chromatic thing on screen. |
+| Dark base `#0D0E11` | `#0A0A0A` | Genuinely darker on OLED, and it makes hairline borders the thing that defines structure. |
+| Radii 10/14/20 | 4/6/8/12/16 | The old scale read soft and consumer-ish. A crisp product UI lives at 6–12dp. |
+| Shadows and tonal steps | **Hairline borders** | Structure without weight, crisp at any density, and identical in dark mode instead of vanishing. |
+| 140–420ms | 120–380ms | The fastest-feeling interfaces get out of the way. Anything over ~250ms on a routine tap reads as lag. |
+| `cubic-bezier(.2,0,0,1)` | `cubic-bezier(.4,0,.2,1)` | The curve well-tuned web UI converges on. |
+
+### The segmented control
+
+The first version cross-faded each option's background independently. That is the cheap way to
+build it, and it read cheap: mid-transition, two chips are half-visible and none of them is the
+selection.
+
+Now there is exactly one chip and it **travels**. The control always shows precisely one selected
+thing, and the movement itself says where the selection went. The chip is a sibling behind the
+labels rather than a background on the selected item, which is what makes one continuously
+animating indicator possible at all.
+
+### The dock
+
+The first version expanded the selected tab to reveal its label. It looked elegant in a screenshot
+and was worse to use: every selection re-laid-out the whole bar, so the tab you wanted next was
+never where you last saw it. With five destinations that stops being a quirk and becomes a cost.
+
+Now tabs are **fixed width with a sliding indicator**. Positions are constant, every target is the
+same size, and the only thing that moves is the indicator travelling to the tab you chose. No tab
+draws a label, so all five carry content descriptions — and `NavigationTest` drives the dock that
+way on purpose, which means a tab a screen reader cannot find is a failing test.
+
+### The completion checkbox
+
+The most-used control in the app, so it gets the most attention. Three things happen together:
+the box fills on a spring, the tick is **drawn along its own path** rather than faded in, and a
+haptic fires on completion only — never on un-completing, because undoing is a correction and
+should not be congratulated.
+
+A cross-faded glyph looks like a state change. A drawn stroke looks like an action you performed.
+
+### Performance note
+
+Both sliding indicators use `Modifier.offset { }` — the lambda overload — not `offset(x = …)`.
+Reading an animated value during composition recomposes on every frame; deferring the read to the
+layout phase means a frame only re-lays-out. Lint's `UseOfNonLambdaOffsetOverload` caught this,
+which is a good argument for running lint with `warningsAsErrors`.
