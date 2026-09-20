@@ -12,7 +12,7 @@ import java.time.temporal.ChronoUnit
 /**
  * The one recurrence engine. Tasks and habits both use it; there is no second implementation.
  *
- * Everything here is a pure function of a rule and a date. No clock, no database, no Android —
+ * Everything here is a pure function of a rule and a date. No clock, no database, no Android,
  * which is what lets the whole surface be covered by fast JVM tests, and why this is the module
  * with the heaviest test weight in the app.
  *
@@ -42,7 +42,7 @@ object RecurrenceEngine {
         if (!matches) return false
 
         // An occurrence limit has to be evaluated by counting from the anchor, because "the 10th
-        // occurrence" is not a date property — it depends on everything before it.
+        // occurrence" is not a date property, it depends on everything before it.
         rule.occurrenceLimit?.let { limit ->
             if (limit <= 0) return false
             val index = countOccurrencesUpTo(rule, date)
@@ -156,7 +156,7 @@ object RecurrenceEngine {
      * Monthly on the Nth weekday: "second Tuesday", "last Friday".
      *
      * `weekOfMonth = -1` means last, which is the 4th occurrence in some months and the 5th in
-     * others — so it is tested by asking whether another one fits in the month, not by counting.
+     * others, so it is tested by asking whether another one fits in the month, not by counting.
      */
     private fun matchesMonthlyByWeekday(rule: RecurrenceRuleEntity, date: LocalDate): Boolean {
         val weekday = rule.weekdayOfMonth ?: rule.anchorDate.dayOfWeek
@@ -199,7 +199,7 @@ object RecurrenceEngine {
 
     /**
      * How far [nextOccurrenceAfter] will look before giving up. Two years covers every rule this
-     * engine can express — the sparsest is yearly — with room to spare.
+     * engine can express; the sparsest is yearly, with room to spare.
      */
     private const val SEARCH_LIMIT_DAYS = 366L * 2
 }

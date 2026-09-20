@@ -32,12 +32,12 @@ import dev.achyutem.cadence.core.time.formatWeekdayFull
 import dev.achyutem.cadence.core.datastore.TimeFormat
 
 /**
- * Today — progress plus what is left of the day.
+ * Today, progress plus what is left of the day.
  *
  * Three sizes from one composition via [SizeMode.Responsive]: a small tile showing only the
  * fraction, a medium one that adds the bar and the next few tasks, and a large one that shows
  * habits too. Writing them as one composable that reads [LocalSize] rather than three widgets
- * keeps the layouts honest with each other — there is no way for the medium version to drift from
+ * keeps the layouts honest with each other; there is no way for the medium version to drift from
  * the large one, because they are the same code.
  */
 class TodayWidget : GlanceAppWidget() {
@@ -79,16 +79,17 @@ class TodayWidget : GlanceAppWidget() {
                             )
                         }
                     }
-                    Text(
-                        text = snapshot.taskProgress
-                            ?.let { "${(it * 100).toInt()}%" }
-                            ?: "—",
-                        style = TextStyle(
-                            color = if (snapshot.taskProgress == null) colors.onSurfaceVariant else colors.accent,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                        ),
-                    )
+                    // Nothing scheduled shows no number, matching the app's progress card.
+                    snapshot.taskProgress?.let { progress ->
+                        Text(
+                            text = "${(progress * 100).toInt()}%",
+                            style = TextStyle(
+                                color = colors.accent,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                            ),
+                        )
+                    }
                 }
 
                 Spacer(modifier = GlanceModifier.height(8.dp))

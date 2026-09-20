@@ -74,7 +74,7 @@ interface NoteDao {
     suspend fun deleteAll()
 }
 
-/** Projection for the note list — everything except the body. */
+/** Projection for the note list, everything except the body. */
 data class NoteSummary(
     val id: Long,
     val title: String,

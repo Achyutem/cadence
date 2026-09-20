@@ -38,7 +38,7 @@ data class NoteEditorUiState(
  * **Autosave, not a save button.** A note is a document; losing one because the user backed out
  * is unacceptable, and a save button makes that the user's problem. Edits are debounced by
  * [AUTOSAVE_DELAY_MS] so typing does not write on every keystroke, and [saveNow] forces a flush
- * when the screen goes away — the debounce is a performance optimisation, never a window in which
+ * when the screen goes away; the debounce is a performance optimisation, never a window in which
  * work can be lost.
  *
  * A note that is still completely blank is never written, so opening the editor and changing your

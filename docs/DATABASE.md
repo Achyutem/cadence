@@ -46,7 +46,7 @@ Indices: `scheduledDate`, `parentTaskId`, `recurrenceRuleId`, `reminderId`, `(ar
 ### `task_occurrences`
 `id · taskId → tasks · date · completed · completedAt · skipped · createdAt · updatedAt`
 
-Unique on `(taskId, date)`. Rows exist only for dates the user actually touched — an untouched
+Unique on `(taskId, date)`. Rows exist only for dates the user actually touched, an untouched
 future date simply has no row. `skipped` is distinct from "not completed": a skipped occurrence is
 excused and does not count against completion rate; a missed one does.
 
@@ -54,14 +54,14 @@ excused and does not count against completion rate; a missed one does.
 `id · name · description · type · targetValue · goalDirection · unit · recurrenceRuleId ·
 reminderId · startDate · sortOrder · archived · createdAt · updatedAt`
 
-`type` ∈ `BOOLEAN | COUNT | QUANTITY | DURATION` — one metric model, so streaks, heatmaps and
+`type` ∈ `BOOLEAN | COUNT | QUANTITY | DURATION`, one metric model, so streaks, heatmaps and
 statistics have one code path. `goalDirection` ∈ `AT_LEAST | AT_MOST`, because "at most 2 coffees"
 needs the opposite completion test to "at least 8 glasses".
 
 `startDate` exists so statistics never look behind a habit's creation and invent a year of
 "missed" days.
 
-A null `recurrenceRuleId` means "every day" — the engine substitutes a daily rule rather than
+A null `recurrenceRuleId` means "every day", the engine substitutes a daily rule rather than
 special-casing null everywhere.
 
 ### `habit_entries`
@@ -83,7 +83,7 @@ resolution as self-report actually carries.
 `id · frequency · interval · daysOfWeek · dayOfMonth · weekOfMonth · weekdayOfMonth · monthOfYear ·
 anchorDate · endDate · occurrenceLimit`
 
-A pure description of *which dates* something lands on — no completion state, no task or habit
+A pure description of *which dates* something lands on, no completion state, no task or habit
 identity. That is precisely what lets one engine serve both.
 
 `anchorDate` is the phase reference for interval arithmetic ("every 2 days" counted from where?).
@@ -108,7 +108,7 @@ denormalised field in the schema.
 completed · createdAt`
 
 Added in v3. `completed` distinguishes finishing a table from stopping early, and **both are
-kept** — for a CO₂ or O₂ table the round you stopped at is the measurement. `longestHoldSeconds`
+kept**, for a CO₂ or O₂ table the round you stopped at is the measurement. `longestHoldSeconds`
 is stored rather than derived because it is the one number that cannot be recomputed from the
 exercise definition: it depends on where the user actually stopped.
 
@@ -127,9 +127,9 @@ Simple many-to-many, both sides `ON DELETE CASCADE`.
 
 ## Migrations so far
 
-**v1 → v2** — added the `notes` table.
+**v1 → v2**, added the `notes` table.
 
-**v2 → v3** — added the `breathing_sessions` table.
+**v2 → v3**, added the `breathing_sessions` table.
 
 Written by hand, and it must match the schema Room expects exactly (column order, types, NOT NULL,
 DEFAULT) or Room's identity check fails at open time *on an upgraded install while passing on a

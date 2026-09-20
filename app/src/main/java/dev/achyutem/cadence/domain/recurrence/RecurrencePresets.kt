@@ -9,7 +9,7 @@ import java.time.LocalDate
  * The recurrence patterns people actually pick, as constructors.
  *
  * These exist so that a screen never hand-assembles a [RecurrenceRuleEntity] with the wrong
- * fields populated for its frequency — a weekly rule with a `dayOfMonth`, say, which would be
+ * fields populated for its frequency; a weekly rule with a `dayOfMonth`, say, which would be
  * silently ignored and produce a schedule nobody asked for.
  */
 object RecurrencePresets {
@@ -73,7 +73,7 @@ object RecurrencePresets {
 /**
  * A short human description of a rule, for the list row and the editor.
  *
- * Lives here rather than in the UI because the phrasing is part of the recurrence vocabulary —
+ * Lives here rather than in the UI because the phrasing is part of the recurrence vocabulary,
  * the task row, the habit row and the widget must all describe the same rule the same way.
  */
 fun RecurrenceRuleEntity.describe(): String {

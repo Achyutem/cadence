@@ -49,6 +49,7 @@ data class TodayUiState(
     val visibleTasks: List<Task> = emptyList(),
     val overdue: List<Task> = emptyList(),
     val habits: List<Habit> = emptyList(),
+    val checkIn: dev.achyutem.cadence.core.database.entity.DailyCheckInEntity? = null,
     val preferences: UserPreferences = UserPreferences.Default,
     val loading: Boolean = true,
 ) {
@@ -74,6 +75,7 @@ class TodayViewModel(
     private val clock: CadenceClock,
     private val tasks: TaskDao,
     private val habitDao: HabitDao,
+    private val checkInDao: dev.achyutem.cadence.core.database.dao.CheckInDao,
     private val recurrence: RecurrenceDao,
     private val settings: SettingsRepository,
     private val onDataChanged: suspend () -> Unit,
@@ -82,7 +84,7 @@ class TodayViewModel(
     /**
      * Recurrence rules are cached rather than re-read per habit.
      *
-     * There are only ever a handful, and they change almost never — but every habit on Today
+     * There are only ever a handful, and they change almost never, but every habit on Today
      * needs one to decide whether it is due, so loading them once and looking up by id keeps the
      * screen at two queries instead of one per habit.
      */
@@ -128,6 +130,7 @@ class TodayViewModel(
                 tasks.observeAllSubtasks(),
                 habitDao.observeActive(),
                 habitDao.observeEntriesOn(date),
+                checkInDao.observeOn(date),
             ) { values ->
                 @Suppress("UNCHECKED_CAST")
                 val scheduled = values[0] as List<TaskEntity>
@@ -139,6 +142,7 @@ class TodayViewModel(
                 val activeHabits = values[3] as List<HabitEntity>
                 @Suppress("UNCHECKED_CAST")
                 val habitEntries = values[4] as List<HabitEntryEntity>
+                val checkIn = values[5] as dev.achyutem.cadence.core.database.entity.DailyCheckInEntity?
                 val childrenByParent = subtasks.groupBy { it.parentTaskId }
                 fun TaskEntity.build(): Task = toTask(childrenByParent[id].orEmpty())
 
@@ -154,12 +158,13 @@ class TodayViewModel(
                     displayName = preferences.displayName,
                     dayPart = instant.toLocalTime().dayPart(),
                     // Progress counts every task scheduled for the day, including hidden
-                    // completed ones — hiding something the user finished must not make the day
+                    // completed ones, hiding something the user finished must not make the day
                     // look less complete than it is.
                     tasks = ordered,
                     visibleTasks = if (hideCompleted) ordered.filterNot { it.completed } else ordered,
                     overdue = overdue.map { it.build() }.filterNot { it.completed },
                     habits = buildHabits(activeHabits, habitEntries, date),
+                    checkIn = checkIn,
                     preferences = preferences,
                     loading = false,
                 )
@@ -174,7 +179,7 @@ class TodayViewModel(
     /**
      * Re-read the clock.
      *
-     * Called when the screen resumes, because the app can be left open across midnight — without
+     * Called when the screen resumes, because the app can be left open across midnight, without
      * this, Today would keep showing yesterday, and "overdue" would be computed against the wrong
      * day.
      */
@@ -214,6 +219,29 @@ class TodayViewModel(
         val existing = habitDao.getEntry(habit.id, date) ?: return@launch
         habitDao.upsertEntry(
             existing.copy(value = next, completed = entity.isValueComplete(next), updatedAt = at)
+        )
+        onDataChanged()
+    }
+
+    /**
+     * Record a mood or an energy level.
+     *
+     * Creates the day's check-in if there is not one yet, defaulting the other axis to the
+     * midpoint. Tapping one thing must be enough; requiring both would turn a gesture into a form.
+     */
+    fun setCheckIn(mood: Int?, energy: Int?) = viewModelScope.launch {
+        val date = clock.today()
+        val at = clock.now()
+        val existing = checkInDao.getOn(date)
+        val base = existing ?: dev.achyutem.cadence.core.database.entity.DailyCheckInEntity(
+            date = date, mood = 3, energy = 3, createdAt = at, updatedAt = at,
+        )
+        checkInDao.upsert(
+            base.copy(
+                mood = mood ?: base.mood,
+                energy = energy ?: base.energy,
+                updatedAt = at,
+            )
         )
         onDataChanged()
     }
@@ -264,6 +292,7 @@ class TodayViewModel(
                 container.clock,
                 container.taskDao,
                 container.habitDao,
+                container.checkInDao,
                 container.recurrenceDao,
                 container.settingsRepository,
                 container::refreshWidgets,

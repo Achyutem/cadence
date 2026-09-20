@@ -38,6 +38,7 @@ import dev.achyutem.cadence.domain.task.Task
 
 @Composable
 fun TodosScreen(
+    onOpenTask: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TodosViewModel = viewModel(factory = TodosViewModel.Factory),
 ) {
@@ -50,6 +51,7 @@ fun TodosScreen(
             onFilter = viewModel::setFilter,
             onToggle = viewModel::setCompleted,
             onToggleSubtask = viewModel::setCompleted,
+            onOpenTask = onOpenTask,
             onAddClick = viewModel::showQuickAdd,
         )
 
@@ -69,6 +71,7 @@ private fun TodosContent(
     onFilter: (TaskFilter) -> Unit,
     onToggle: (Task, Boolean) -> Unit,
     onToggleSubtask: (Task, Boolean) -> Unit,
+    onOpenTask: (Long) -> Unit,
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -142,6 +145,7 @@ private fun TodosContent(
                     use24Hour = use24Hour,
                     onToggle = onToggle,
                     onToggleSubtask = onToggleSubtask,
+                    onOpenTask = onOpenTask,
                 )
                 taskSection(
                     titleRes = R.string.todos_scheduled,
@@ -149,6 +153,7 @@ private fun TodosContent(
                     use24Hour = use24Hour,
                     onToggle = onToggle,
                     onToggleSubtask = onToggleSubtask,
+                    onOpenTask = onOpenTask,
                 )
                 taskSection(
                     titleRes = R.string.todos_backlog,
@@ -156,6 +161,7 @@ private fun TodosContent(
                     use24Hour = use24Hour,
                     onToggle = onToggle,
                     onToggleSubtask = onToggleSubtask,
+                    onOpenTask = onOpenTask,
                 )
             }
         }
@@ -166,7 +172,7 @@ private fun TodosContent(
  * A titled group of tasks, which draws nothing at all when empty.
  *
  * Written as a `LazyListScope` extension rather than a composable so the rows stay direct
- * children of the one `LazyColumn` — nesting scrollables to group things would defeat lazy
+ * children of the one `LazyColumn`, nesting scrollables to group things would defeat lazy
  * loading and make the whole list measure eagerly.
  */
 private fun androidx.compose.foundation.lazy.LazyListScope.taskSection(
@@ -175,6 +181,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.taskSection(
     use24Hour: Boolean,
     onToggle: (Task, Boolean) -> Unit,
     onToggleSubtask: (Task, Boolean) -> Unit,
+    onOpenTask: (Long) -> Unit,
 ) {
     if (tasks.isEmpty()) return
 
@@ -188,7 +195,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.taskSection(
             task = task,
             onToggle = { checked -> onToggle(task, checked) },
             onToggleSubtask = onToggleSubtask,
-            onClick = { },
+            onClick = { onOpenTask(task.id) },
             use24Hour = use24Hour,
         )
     }
@@ -208,6 +215,7 @@ private fun TodosPreview() = CadencePreviewTheme {
         onFilter = {},
         onToggle = { _, _ -> },
         onToggleSubtask = { _, _ -> },
+        onOpenTask = {},
         onAddClick = {},
     )
 }

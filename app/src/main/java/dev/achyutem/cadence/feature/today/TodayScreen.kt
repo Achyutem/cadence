@@ -47,13 +47,14 @@ import dev.achyutem.cadence.core.time.formatDayAndMonth
 import dev.achyutem.cadence.core.time.formatWeekdayFull
 import dev.achyutem.cadence.domain.habit.Habit
 import dev.achyutem.cadence.domain.task.Task
+import dev.achyutem.cadence.feature.checkin.CheckInCard
 import dev.achyutem.cadence.feature.habits.HabitRow
 import dev.achyutem.cadence.feature.todos.QuickAddBar
 import dev.achyutem.cadence.feature.todos.TaskRow
 import java.time.LocalDate
 
 /**
- * Today — the most important screen, and the one the app opens to.
+ * Today, the most important screen, and the one the app opens to.
  *
  * Order of business, top to bottom: what day it is, how the day is going, what is overdue, what
  * is scheduled, then habits. Overdue sits above today's list because it is the only thing on the
@@ -62,6 +63,7 @@ import java.time.LocalDate
 @Composable
 fun TodayScreen(
     onOpenHabit: (Long) -> Unit,
+    onOpenTask: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TodayViewModel = viewModel(factory = TodayViewModel.Factory),
 ) {
@@ -81,6 +83,8 @@ fun TodayScreen(
             onIncrementHabit = viewModel::incrementHabit,
             onDecrementHabit = viewModel::decrementHabit,
             onOpenHabit = onOpenHabit,
+            onOpenTask = onOpenTask,
+            onCheckIn = viewModel::setCheckIn,
             onAddClick = { quickAddVisible = true },
         )
         QuickAddBar(
@@ -101,6 +105,8 @@ private fun TodayContent(
     onIncrementHabit: (Habit) -> Unit,
     onDecrementHabit: (Habit) -> Unit,
     onOpenHabit: (Long) -> Unit,
+    onOpenTask: (Long) -> Unit,
+    onCheckIn: (mood: Int?, energy: Int?) -> Unit,
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -150,7 +156,7 @@ private fun TodayContent(
                     task = task,
                     onToggle = { checked -> onToggle(task, checked) },
                     onToggleSubtask = onToggle,
-                    onClick = { },
+                    onClick = { onOpenTask(task.id) },
                     use24Hour = use24Hour,
                 )
             }
@@ -186,8 +192,21 @@ private fun TodayContent(
                     task = task,
                     onToggle = { checked -> onToggle(task, checked) },
                     onToggleSubtask = onToggle,
-                    onClick = { },
+                    onClick = { onOpenTask(task.id) },
                     use24Hour = use24Hour,
+                )
+            }
+        }
+
+        if (state.preferences.checkInPromptEnabled) {
+            item(key = "checkin") {
+                Spacer(Modifier.height(Spacing.lg))
+                SectionHeader(title = stringResource(R.string.checkin_section))
+                Spacer(Modifier.height(Spacing.xs))
+                CheckInCard(
+                    entry = state.checkIn,
+                    onMood = { onCheckIn(it, null) },
+                    onEnergy = { onCheckIn(null, it) },
                 )
             }
         }
@@ -259,7 +278,7 @@ private fun DateHeader(date: LocalDate, dayPart: DayPart, name: String) {
  * The greeting, with or without a name.
  *
  * A blank name is a first-class case, not a missing value: it produces the unnamed greeting
- * rather than "Good morning, ." — the kind of detail that decides whether an optional field
+ * rather than "Good morning, .", the kind of detail that decides whether an optional field
  * actually feels optional.
  */
 @Composable
@@ -298,19 +317,16 @@ private fun ProgressCard(progress: Float?, completed: Int, total: Int) {
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
-                Text(
-                    text = if (progress == null) {
-                        stringResource(R.string.today_progress_none)
-                    } else {
-                        stringResource(R.string.today_progress_percent, (progress * 100).toInt())
-                    },
-                    style = MaterialTheme.typography.titleMedium.tabularFigures,
-                    color = if (progress == null) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    },
-                )
+                // No number at all when there is nothing scheduled. A placeholder glyph is a
+                // dash pretending to be data, and 0% would read as failure rather than as an
+                // empty day.
+                if (progress != null) {
+                    Text(
+                        text = stringResource(R.string.today_progress_percent, (progress * 100).toInt()),
+                        style = MaterialTheme.typography.titleMedium.tabularFigures,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
             }
             Spacer(Modifier.height(Spacing.sm))
             CadenceProgressBar(
@@ -347,6 +363,8 @@ private fun TodayPreviewLight() = CadencePreviewTheme {
         onIncrementHabit = {},
         onDecrementHabit = {},
         onOpenHabit = {},
+        onOpenTask = {},
+        onCheckIn = { _, _ -> },
         onAddClick = {},
     )
 }

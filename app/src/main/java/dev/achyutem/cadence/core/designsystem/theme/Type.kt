@@ -20,7 +20,7 @@ import dev.achyutem.cadence.R
  * five static files, so the whole type system costs less than two static weights would.
  *
  * Geist is a neutral grotesque built for interfaces: unusually even colour at small sizes, a
- * tall x-height that keeps 13sp list text legible, and genuine tabular figures — which matters
+ * tall x-height that keeps 13sp list text legible, and genuine tabular figures, which matters
  * here, because this app is full of numbers that change in place.
  *
  * Variable-axis instancing requires API 26; `minSdk` is 34, so there is no fallback path.
@@ -95,7 +95,7 @@ val CadenceTypography = Typography(
 )
 
 /**
- * Tabular figures, for any number that changes in place — progress percentages, streak counts,
+ * Tabular figures, for any number that changes in place, progress percentages, streak counts,
  * habit values, timeline clock labels, heatmap tooltips.
  *
  * With proportional digits a counter ticking 8 → 9 → 10 shifts everything beside it sideways.

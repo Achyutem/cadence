@@ -82,7 +82,7 @@ ksp {
 dependencies {
     // WorkManager is declared in the version catalog but deliberately NOT depended on yet. Its
     // manifest merges in ACCESS_NETWORK_STATE, WAKE_LOCK, FOREGROUND_SERVICE and
-    // RECEIVE_BOOT_COMPLETED — four permissions this app does not need until reminders exist,
+    // RECEIVE_BOOT_COMPLETED, four permissions this app does not need until reminders exist,
     // one of which is network-related and would undercut the privacy guarantee for no benefit.
     // It arrives with the feature that uses it.
 

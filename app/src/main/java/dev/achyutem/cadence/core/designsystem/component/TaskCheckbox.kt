@@ -43,7 +43,7 @@ import dev.achyutem.cadence.core.designsystem.token.TouchTarget
  * happen together, and together they are what makes ticking something off feel good:
  *
  *  1. The box fills, on a spring with a small overshoot.
- *  2. The tick is **drawn**, not faded in — the stroke is revealed along its own path, so the
+ *  2. The tick is **drawn**, not faded in; the stroke is revealed along its own path, so the
  *     mark appears to be made rather than to arrive. A cross-faded glyph looks like a state
  *     change; a drawn stroke looks like an action you performed.
  *  3. A haptic fires on completion only, never on un-completing, because undoing is a correction
@@ -168,7 +168,7 @@ fun TaskCheckbox(
 /**
  * Reveal the tick along its own length.
  *
- * The mark is two segments — down-right, then up-right. Rather than measuring the path, the
+ * The mark is two segments, down-right, then up-right. Rather than measuring the path, the
  * progress is split between the segments proportionally to their length, so the pen appears to
  * travel at a constant speed through the corner instead of pausing there.
  */

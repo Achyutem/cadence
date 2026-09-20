@@ -19,7 +19,7 @@ import java.time.LocalDate
  * Everything a widget needs, in one snapshot.
  *
  * Widgets read **the same DAOs and the same domain functions as the app**. There is no widget
- * cache, no parallel query layer and no duplicated notion of "is this habit due today" — which is
+ * cache, no parallel query layer and no duplicated notion of "is this habit due today", which is
  * the usual way widget and app quietly start disagreeing about the user's day.
  *
  * Loaded as a one-shot suspend read rather than as Flows: `provideGlance` runs once per update
@@ -107,7 +107,7 @@ suspend fun AppContainer.loadHabitSnapshot(habitId: Long, heatmapDays: Long): Ha
         habit = entity.toHabit(entry = todayEntry),
         preferences = preferences,
         today = today,
-        // The same statistics functions the detail screen uses — a streak cannot read differently
+        // The same statistics functions the detail screen uses; a streak cannot read differently
         // on the home screen than it does inside the app.
         currentStreak = HabitStatistics.currentStreak(entries, rule, entity.startDate, today),
         heatmapLevels = HabitStatistics.heatmapLevels(entries, entity.targetValue, start, today),

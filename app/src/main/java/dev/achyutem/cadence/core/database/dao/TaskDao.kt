@@ -39,7 +39,7 @@ interface TaskDao {
     )
     fun observeScheduledOn(date: LocalDate): Flow<List<TaskEntity>>
 
-    /** Inclusive date range — the query behind the week and month calendar views. */
+    /** Inclusive date range, the query behind the week and month calendar views. */
     @Query(
         """
         SELECT * FROM tasks
@@ -64,7 +64,7 @@ interface TaskDao {
     )
     fun observeBacklog(): Flow<List<TaskEntity>>
 
-    /** Incomplete tasks whose date has passed — surfaced on Today as "overdue". */
+    /** Incomplete tasks whose date has passed, surfaced on Today as "overdue". */
     @Query(
         """
         SELECT * FROM tasks
@@ -94,7 +94,7 @@ interface TaskDao {
      *
      * This looks like it breaks the range-bounded rule, and does not: subtasks are a small,
      * bounded set in practice (they belong to tasks a person is actively working on), and the
-     * alternative — an `IN (:ids)` query re-issued whenever the visible parent list changes —
+     * alternative, an `IN (:ids)` query re-issued whenever the visible parent list changes,
      * re-runs on every scroll and every completion. One indexed scan beats N invalidations.
      */
     @Query("SELECT * FROM tasks WHERE parentTaskId IS NOT NULL AND archived = 0 ORDER BY sortOrder ASC, id ASC")

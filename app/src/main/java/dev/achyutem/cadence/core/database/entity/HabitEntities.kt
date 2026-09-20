@@ -26,7 +26,7 @@ enum class HabitType {
 }
 
 /**
- * How to read [HabitEntity.targetValue] — "at least 8 glasses" and "at most 2 coffees" are both
+ * How to read [HabitEntity.targetValue], "at least 8 glasses" and "at most 2 coffees" are both
  * useful and need opposite completion tests.
  */
 enum class HabitGoalDirection { AT_LEAST, AT_MOST }
@@ -58,7 +58,7 @@ data class HabitEntity(
     val goalDirection: HabitGoalDirection = HabitGoalDirection.AT_LEAST,
     /** Display unit for QUANTITY ("glasses", "pages"). Null for BOOLEAN/COUNT/DURATION. */
     val unit: String? = null,
-    /** Null means "every day" — the engine substitutes a daily rule rather than special-casing. */
+    /** Null means "every day", the engine substitutes a daily rule rather than special-casing. */
     val recurrenceRuleId: Long? = null,
     val reminderId: Long? = null,
     /**
@@ -77,7 +77,7 @@ data class HabitEntity(
  * which every derived number is computed.
  *
  * Nothing in the database stores a streak, a percentage or an average. Those are functions of
- * these rows plus the habit's recurrence rule, computed in the domain layer — so they can never
+ * these rows plus the habit's recurrence rule, computed in the domain layer, so they can never
  * drift out of sync with the data, and editing a past day immediately corrects all history.
  *
  * [completed] is stored rather than recomputed from [value] because the habit's target can change

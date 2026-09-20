@@ -16,8 +16,8 @@ import java.time.LocalDate
 /**
  * The recurrence engine's test suite.
  *
- * Every case in `docs/RECURRENCE.md` appears here. Date arithmetic fails quietly — a rule that is
- * wrong one month in four looks fine in a demo and is infuriating in daily use — so this is the
+ * Every case in `docs/RECURRENCE.md` appears here. Date arithmetic fails quietly; a rule that is
+ * wrong one month in four looks fine in a demo and is infuriating in daily use, so this is the
  * densest set of tests in the project by design.
  *
  * Dates are chosen for their calendar shape, not at random, and each is spelled out in a comment
@@ -54,7 +54,7 @@ class RecurrenceEngineTest {
         assertTrue(on(rule, "2026-09-01"))
         assertFalse(on(rule, "2026-09-02"))
         assertTrue(on(rule, "2026-09-03"))
-        // Still in phase months later — the arithmetic is from the anchor, not from the month.
+        // Still in phase months later; the arithmetic is from the anchor, not from the month.
         assertTrue(on(rule, "2026-11-30"))
         assertFalse(on(rule, "2026-12-01"))
     }
@@ -102,7 +102,7 @@ class RecurrenceEngineTest {
             interval = 2,
         )
         assertTrue(on(rule, "2026-09-21"))  // Mon, week 0
-        assertTrue(on(rule, "2026-09-24"))  // Thu, week 0 — same week, must also match
+        assertTrue(on(rule, "2026-09-24"))  // Thu, week 0, same week, must also match
         assertFalse(on(rule, "2026-09-28")) // Mon, week 1
         assertFalse(on(rule, "2026-10-01")) // Thu, week 1
         assertTrue(on(rule, "2026-10-05"))  // Mon, week 2
@@ -138,7 +138,7 @@ class RecurrenceEngineTest {
         // February, April, June, September or November.
         val rule = RecurrencePresets.monthlyOnDay(LocalDate.parse("2026-01-31"), dayOfMonth = 31)
         assertTrue(on(rule, "2026-01-31"))
-        assertTrue(on(rule, "2026-02-28")) // clamped — 2026 is not a leap year
+        assertTrue(on(rule, "2026-02-28")) // clamped, 2026 is not a leap year
         assertTrue(on(rule, "2026-04-30")) // clamped
         assertTrue(on(rule, "2026-05-31"))
         assertFalse(on(rule, "2026-02-27"))

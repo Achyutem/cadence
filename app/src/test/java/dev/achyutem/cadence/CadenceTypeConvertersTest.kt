@@ -12,7 +12,7 @@ import java.time.LocalTime
 
 /**
  * The storage format is a contract: rows written by version 1 must still parse in version 12.
- * These tests pin the exact on-disk representation, not just round-trip behaviour — a change that
+ * These tests pin the exact on-disk representation, not just round-trip behaviour, a change that
  * silently switched dates to epoch-day integers would round-trip perfectly and corrupt every
  * existing database.
  */

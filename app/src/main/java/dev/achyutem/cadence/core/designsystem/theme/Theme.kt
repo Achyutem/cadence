@@ -23,12 +23,12 @@ import dev.achyutem.cadence.core.designsystem.token.Radius
 
 /** Cadence-specific colours, alongside (not replacing) `MaterialTheme.colorScheme`. */
 val LocalCadenceColors = staticCompositionLocalOf<CadenceColors> {
-    error("CadenceColors not provided — wrap this content in CadenceTheme.")
+    error("CadenceColors not provided, wrap this content in CadenceTheme.")
 }
 
 /**
  * Multiplier applied to every animation duration. 1f normally; 0f when the user has reduced
- * motion enabled, which makes animations resolve instantly instead of being removed — so state
+ * motion enabled, which makes animations resolve instantly instead of being removed, so state
  * still lands correctly and nothing has to branch on "are animations on".
  */
 val LocalMotionScale = compositionLocalOf { 1f }

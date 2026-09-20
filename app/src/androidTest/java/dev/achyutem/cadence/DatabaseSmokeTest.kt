@@ -123,7 +123,7 @@ class DatabaseSmokeTest {
                 createdAt = now, updatedAt = now,
             )
         )
-        // Upsert again for the same day — this must replace, not accumulate.
+        // Upsert again for the same day; this must replace, not accumulate.
         habitDao.upsertEntry(
             habitDao.getEntry(habitId, date)!!.copy(value = 8.0, completed = true, updatedAt = now)
         )

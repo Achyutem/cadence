@@ -21,7 +21,7 @@ private val Context.preferencesDataStore: DataStore<Preferences> by preferencesD
 /**
  * Preferences storage.
  *
- * Unknown or corrupt stored values fall back to the default rather than throwing — a preferences
+ * Unknown or corrupt stored values fall back to the default rather than throwing, a preferences
  * file is not worth crashing over, and an enum removed in a later version must not brick the app.
  */
 class SettingsRepository(context: Context) {

@@ -14,9 +14,9 @@ enum class TaskPriority { NONE, LOW, MEDIUM, HIGH }
  * A task.
  *
  * Three shapes are all first-class:
- *  - date only            — "sometime Tuesday"
- *  - date + [startTime]   — appears on the calendar timeline
- *  - date + time + [durationMinutes] — occupies a block, feeds the day-planning maths
+ *  - date only           , "sometime Tuesday"
+ *  - date + [startTime]  , appears on the calendar timeline
+ *  - date + time + [durationMinutes], occupies a block, feeds the day-planning maths
  *
  * A task with no [scheduledDate] is a backlog item; it is still a real task and appears in Todos.
  *
@@ -83,7 +83,7 @@ data class TaskEntity(
 
 /**
  * The completion record for one date of a recurring task. Rows exist only for dates the user
- * actually touched — an untouched future date has no row and is simply "not done yet".
+ * actually touched; an untouched future date has no row and is simply "not done yet".
  *
  * [skipped] is distinct from "not completed": a skipped occurrence is intentionally excused and
  * does not count against completion rate, whereas a missed one does.

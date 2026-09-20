@@ -4,7 +4,7 @@
   a composable preview to the picker, so this is a static stand-in that matches the real widget's
   shape and tone rather than showing an empty rectangle.
 
-  Every view here must be one RemoteViews permits — the launcher inflates this in its own process.
+  Every view here must be one RemoteViews permits, the launcher inflates this in its own process.
   A plain <View> is NOT on that list, which is why the accent bar is an ImageView: using <View>
   makes the picker show "Can't load widget", with no error anywhere in logcat.
 -->

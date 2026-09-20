@@ -1,6 +1,6 @@
 # Cadence
 
-A local-first personal productivity app for Android — tasks, habits, calendar, daily planning,
+A local-first personal productivity app for Android, tasks, habits, calendar, daily planning,
 reminders, check-ins, heatmaps and home-screen widgets, with **no account, no backend and no
 network access**.
 
@@ -39,7 +39,7 @@ kotlinx serialization. Gradle Kotlin DSL with a version catalog. AGP 8.13.2, Kot
 minSdk 34.
 
 No third-party libraries beyond Jetpack and kotlinx. That is a deliberate constraint, not an
-oversight — the Markdown parser, the heatmap and the charts are all hand-written rather than
+oversight; the Markdown parser, the heatmap and the charts are all hand-written rather than
 pulling in a library each.
 
 The one bundled asset is **Geist Variable** (SIL OFL, 166 KB, licence in `licenses/`).

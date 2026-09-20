@@ -7,7 +7,7 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
 /**
  * The five shipped accents. This is an enum rather than a stored ARGB value because each accent
- * is a hand-tuned pair of light/dark ramps, not a single hue — see `designsystem/theme/Accent.kt`.
+ * is a hand-tuned pair of light/dark ramps, not a single hue; see `designsystem/theme/Accent.kt`.
  * A future custom accent would add one `CUSTOM` case carrying a seed, without changing anything
  * that reads this type.
  */

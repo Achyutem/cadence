@@ -6,7 +6,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 
 /**
- * How a recurrence repeats. One vocabulary, shared by tasks and habits — there is exactly one
+ * How a recurrence repeats. One vocabulary, shared by tasks and habits; there is exactly one
  * recurrence implementation in Cadence (see `domain/recurrence`).
  */
 enum class RecurrenceFrequency {
@@ -65,7 +65,7 @@ data class RecurrenceRuleEntity(
 
 /**
  * A reminder is a time-of-day plus an offset, not an absolute instant. The absolute alarm time
- * is derived per occurrence at scheduling time, in the *current* zone — which is what makes
+ * is derived per occurrence at scheduling time, in the *current* zone, which is what makes
  * reminders survive travel and DST correctly.
  */
 @Entity(tableName = "reminders")

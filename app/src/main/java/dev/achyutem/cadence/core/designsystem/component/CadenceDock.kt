@@ -41,7 +41,7 @@ import dev.achyutem.cadence.core.designsystem.token.Motion
 import dev.achyutem.cadence.core.designsystem.token.Radius
 
 /**
- * One entry in the dock. [selectedIcon] is normally the filled variant of [icon] — the weight
+ * One entry in the dock. [selectedIcon] is normally the filled variant of [icon], the weight
  * change registers before the colour does.
  */
 data class DockItem(
@@ -67,7 +67,7 @@ private val IndicatorHeight = 40.dp
  * re-laid-out the whole bar, so the tab you wanted next was never where you last saw it. With
  * five destinations that stops being a quirk and becomes a real cost. Now positions are constant,
  * every target is the same size, and the only thing that moves is the indicator travelling to the
- * tab you chose — which is also the thing that makes the transition read as one continuous
+ * tab you chose, which is also the thing that makes the transition read as one continuous
  * gesture rather than two independent fades.
  *
  * Labels are therefore not drawn. They are still present for accessibility as content

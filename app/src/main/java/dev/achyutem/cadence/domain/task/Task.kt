@@ -11,7 +11,7 @@ import java.time.LocalTime
  * the two.
  *
  * This is not a second copy of [TaskEntity] for its own sake. It exists because **parent
- * completion is derived, never stored** — a parent with children is complete exactly when all its
+ * completion is derived, never stored**; a parent with children is complete exactly when all its
  * children are, and writing that back to the database would create two truths that drift. Putting
  * the derivation in one place means every screen, widget and statistic agrees by construction.
  */
@@ -42,7 +42,7 @@ data class Task(
      *
      * A task with children is complete when they all are. A task without children uses its own
      * flag. The parent's stored `completed` column is therefore *not consulted* whenever children
-     * exist — not kept in sync, which is what makes disagreement impossible.
+     * exist, not kept in sync, which is what makes disagreement impossible.
      */
     val completed: Boolean
         get() = if (hasSubtasks) subtasks.all { it.completed } else selfCompleted

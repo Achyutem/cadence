@@ -1,6 +1,6 @@
 # Backup
 
-Whole-database export and import as one JSON document, through the Storage Access Framework — the
+Whole-database export and import as one JSON document, through the Storage Access Framework, the
 user picks the file, so Cadence needs **no storage permission** and never sees anything they did
 not choose.
 
@@ -15,12 +15,12 @@ every backup ever taken.
 by a newer version still restores whatever this version understands instead of failing outright.
 
 Every date and time is ISO text rather than a number. A backup should be readable and repairable in
-a text editor years from now, when the reader may not be this app — an epoch millisecond is not
+a text editor years from now, when the reader may not be this app; an epoch millisecond is not
 something a person can check.
 
 ## Import replaces; it does not merge
 
-Merging two histories requires identity that survives export — stable UUIDs on every row, or a
+Merging two histories requires identity that survives export, stable UUIDs on every row, or a
 conflict policy the user has to understand. Both are real designs; neither is what "restore my
 backup" means.
 
@@ -31,8 +31,8 @@ To make that safe it runs inside **one Room transaction**: the old data is delet
 inserted atomically, so a malformed file or a crash mid-import leaves the existing database exactly
 as it was rather than half-erased.
 
-Original row ids are preserved, so foreign keys — subtask parents, habit entries, recurrence rules
-— survive the round trip without remapping. Rows are inserted in dependency order: rules and
+Original row ids are preserved, so foreign keys, subtask parents, habit entries, recurrence rules,
+survive the round trip without remapping. Rows are inserted in dependency order: rules and
 reminders before the tasks and habits that point at them, parents before children.
 
 ## What is not in the file

@@ -3,6 +3,7 @@ package dev.achyutem.cadence.core.common
 import android.content.Context
 import dev.achyutem.cadence.core.database.CadenceDatabase
 import dev.achyutem.cadence.core.datastore.SettingsRepository
+import dev.achyutem.cadence.core.notifications.ReminderScheduler
 import dev.achyutem.cadence.domain.backup.BackupEngine
 import dev.achyutem.cadence.core.time.CadenceClock
 import dev.achyutem.cadence.core.time.SystemCadenceClock
@@ -12,7 +13,7 @@ import dev.achyutem.cadence.core.time.SystemCadenceClock
  *
  * Cadence has one process, one database and a handful of long-lived singletons. Hilt would add a
  * compiler plugin, a second annotation processor and a layer of indirection to solve a problem
- * this app does not have — the brief explicitly rules out "elaborate dependency injection for
+ * this app does not have, the brief explicitly rules out "elaborate dependency injection for
  * trivial objects".
  *
  * What matters for testability is that nothing constructs its own dependencies: every ViewModel
@@ -30,6 +31,10 @@ class AppContainer(
 
     val settingsRepository: SettingsRepository by lazy { SettingsRepository(context) }
 
+    val reminderScheduler: ReminderScheduler by lazy {
+        ReminderScheduler(context, database, settingsRepository, clock)
+    }
+
     val backupEngine: BackupEngine by lazy {
         BackupEngine(
             database = database,
@@ -45,7 +50,7 @@ class AppContainer(
      * Refreshes every home-screen widget.
      *
      * Called by ViewModels after a write. Without this the widgets only update when *they* are
-     * the thing that changed — complete a task in the app and the home screen would keep showing
+     * the thing that changed, complete a task in the app and the home screen would keep showing
      * it outstanding until the next 30-minute refresh, which is exactly the kind of staleness
      * that makes people stop trusting a widget.
      *

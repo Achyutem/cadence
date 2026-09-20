@@ -64,7 +64,7 @@ import java.time.LocalTime
  * Quick add.
  *
  * The brief is blunt about this: creating a task must be *extremely* fast. So the primary path is
- * one line of text and one key — type, press Done, task exists. Date, time and priority are
+ * one line of text and one key, type, press Done, task exists. Date, time and priority are
  * available right there, but nothing is required and nothing blocks the save.
  *
  * The field **stays open and clears after each save**, because tasks arrive in bursts: capturing
@@ -74,7 +74,7 @@ import java.time.LocalTime
 @Composable
 fun QuickAddBar(
     visible: Boolean,
-    /** Today, from the app clock. Never read from [LocalDate.now] — see `CLAUDE.md` #15. */
+    /** Today, from the app clock. Never read from [LocalDate.now]; see `CLAUDE.md` #15. */
     today: LocalDate,
     onDismiss: () -> Unit,
     onSubmit: (title: String, date: LocalDate?, time: LocalTime?, priority: TaskPriority) -> Unit,

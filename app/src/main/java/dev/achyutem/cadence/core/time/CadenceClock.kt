@@ -11,7 +11,7 @@ import java.time.ZoneId
  * The single source of "now" for the whole application.
  *
  * Nothing in Cadence calls [LocalDate.now] or [System.currentTimeMillis] directly. Every
- * date-sensitive calculation — streaks, recurrence, the Today screen, reminder scheduling —
+ * date-sensitive calculation, streaks, recurrence, the Today screen, reminder scheduling,
  * goes through this interface so it can be driven deterministically in tests across midnight,
  * DST transitions, leap days and year boundaries.
  *

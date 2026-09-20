@@ -12,7 +12,7 @@ import java.util.Locale
 /**
  * Date helpers shared by the calendar, the heatmap and the recurrence engine.
  *
- * Everything here operates on [LocalDate] / [LocalTime] — local calendar concepts. A habit that
+ * Everything here operates on [LocalDate] / [LocalTime], local calendar concepts. A habit that
  * happens on "18 September" is a date, not an instant, and is never converted to UTC.
  */
 
@@ -91,7 +91,7 @@ fun LocalTime.formatHourMinute(use24Hour: Boolean): String =
         if (minute == 0) "$h $suffix" else String.format(Locale.getDefault(), "%d:%02d %s", h, minute, suffix)
     }
 
-/** Minutes since local midnight — the coordinate used to lay out the day-view timeline. */
+/** Minutes since local midnight, the coordinate used to lay out the day-view timeline. */
 fun LocalTime.minutesOfDay(): Int = hour * 60 + minute
 
 enum class DayPart { NIGHT, MORNING, AFTERNOON, EVENING }

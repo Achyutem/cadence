@@ -6,7 +6,7 @@
 ## One engine
 
 Tasks and habits share a single recurrence implementation. Duplicating this logic is treated as a
-bug — it is the most subtly-wrong-able code in the app, and two copies means two sets of edge-case
+bug; it is the most subtly-wrong-able code in the app, and two copies means two sets of edge-case
 bugs that drift apart.
 
 The engine is pure Kotlin with no Android dependency, so every case below is a fast JVM unit test.
@@ -14,7 +14,7 @@ The engine is pure Kotlin with no Android dependency, so every case below is a f
 ## The rule
 
 A `RecurrenceRule` describes **which dates** something lands on. Nothing else. No completion, no
-task identity, no habit identity — which is exactly what lets one engine serve both.
+task identity, no habit identity, which is exactly what lets one engine serve both.
 
 | Field | Meaning |
 |---|---|
@@ -44,7 +44,7 @@ task identity, no habit identity — which is exactly what lets one engine serve
 
 ## Why `anchorDate` is immutable
 
-"Every 2 days" needs a phase — counted from *when*? `anchorDate` is that reference. It is never
+"Every 2 days" needs a phase, counted from *when*? `anchorDate` is that reference. It is never
 mutated: editing a recurring item's start creates a **new rule**, so occurrences already recorded
 against the old phase stay reconstructible. Mutating it would silently rewrite history.
 
@@ -64,7 +64,7 @@ decision, not a technical one: "the 31st of every month" should not silently ski
 
 **Last-weekday months.** "Last Friday" is the 4th Friday in some months and the 5th in others.
 `isLastWeekdayOfMonth()` handles this by checking whether +7 days leaves the month, rather than by
-counting — already tested in `DateTimeExtensionsTest`.
+counting, already tested in `DateTimeExtensionsTest`.
 
 **Leap days.** `YEARLY` on 29 February falls back to 28 February in common years.
 
@@ -72,7 +72,7 @@ counting — already tested in `DateTimeExtensionsTest`.
 one counts. These are different fields, not one boolean.
 
 **Time-zone and DST.** Occurrence dates are `LocalDate` and never converted to UTC. Reminder
-*instants* are derived per occurrence at scheduling time in the current zone — see
+*instants* are derived per occurrence at scheduling time in the current zone, see
 `docs/NOTIFICATIONS.md`.
 
 **Termination.** `endDate` is inclusive. `occurrenceLimit` counts generated occurrences, not
@@ -86,7 +86,7 @@ fun RecurrenceRule.occurrencesBetween(start: LocalDate, end: LocalDate): List<Lo
 fun RecurrenceRule.nextOccurrenceAfter(date: LocalDate): LocalDate?
 ```
 
-Range-based by construction — there is no "all occurrences" call, because for an unbounded rule
+Range-based by construction; there is no "all occurrences" call, because for an unbounded rule
 that is an infinite list, and for a long one it is a memory problem.
 
 ## Test plan (Phase 2)

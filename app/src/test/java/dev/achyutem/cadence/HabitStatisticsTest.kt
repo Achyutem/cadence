@@ -85,7 +85,7 @@ class HabitStatisticsTest {
         val entries = listOf(
             entry("2026-09-17"), // Thu
             entry("2026-09-18"), // Fri
-            entry("2026-09-21"), // Mon — weekend skipped, streak continues
+            entry("2026-09-21"), // Mon, weekend skipped, streak continues
         )
         assertEquals(
             3,

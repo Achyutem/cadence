@@ -14,7 +14,7 @@ import org.junit.runner.RunWith
 /**
  * The note flow end to end: create, type, leave, and find it in the list.
  *
- * The assertion that matters is the last one — there is no save button, so if autosave did not
+ * The assertion that matters is the last one; there is no save button, so if autosave did not
  * fire on the way out, the note simply would not be there.
  */
 @RunWith(AndroidJUnit4::class)

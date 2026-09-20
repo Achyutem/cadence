@@ -5,7 +5,7 @@ package dev.achyutem.cadence.domain.notes
  *
  * Cadence does not depend on a Markdown library. The full CommonMark spec is large, and a
  * compliant parser plus a Compose renderer for it is a megabyte-scale dependency to support
- * syntax a personal note-taking app will never use — reference links, HTML blocks, setext
+ * syntax a personal note-taking app will never use, reference links, HTML blocks, setext
  * headings, nested block quotes, tables.
  *
  * What is supported is what people actually type in notes:
@@ -65,7 +65,7 @@ object Markdown {
             val line = lines[index]
 
             // Fenced code. An unterminated fence runs to the end of the document rather than
-            // being discarded — the user is probably still typing it.
+            // being discarded; the user is probably still typing it.
             if (line.trimStart().startsWith("```")) {
                 val code = StringBuilder()
                 index++
@@ -152,7 +152,7 @@ object Markdown {
             val contentStart = i + marker.open.length
             val closeAt = text.indexOf(marker.close, startIndex = contentStart)
             if (closeAt < 0 || closeAt == contentStart) {
-                // No closing marker, or an empty pair like `**` — treat as ordinary characters.
+                // No closing marker, or an empty pair like `**`, treat as ordinary characters.
                 literal.append(text[i]); i++; continue
             }
 
@@ -197,7 +197,7 @@ object Markdown {
     /**
      * Plain text for the note list preview and for search.
      *
-     * Runs on write, not on read — see [dev.achyutem.cadence.core.database.entity.NoteEntity].
+     * Runs on write, not on read; see [dev.achyutem.cadence.core.database.entity.NoteEntity].
      */
     fun toPlainText(source: String, limit: Int = 200): String {
         val text = buildString {

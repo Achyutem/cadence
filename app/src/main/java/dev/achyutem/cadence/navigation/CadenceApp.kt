@@ -39,6 +39,7 @@ import dev.achyutem.cadence.feature.habits.HabitDetailScreen
 import dev.achyutem.cadence.feature.habits.HabitsScreen
 import dev.achyutem.cadence.feature.notes.NoteEditorScreen
 import dev.achyutem.cadence.feature.notes.NotesScreen
+import dev.achyutem.cadence.feature.taskdetail.TaskDetailScreen
 import dev.achyutem.cadence.feature.settings.SettingsScreen
 import dev.achyutem.cadence.feature.today.TodayScreen
 import dev.achyutem.cadence.feature.todos.TodosScreen
@@ -60,7 +61,7 @@ fun CadenceApp(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
 
-    // Raised by a screen that wants the dock out of the way — currently only a running
+    // Raised by a screen that wants the dock out of the way, currently only a running
     // breathing session.
     var immersive by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
 
@@ -152,9 +153,14 @@ private fun CadenceNavHost(
         },
     ) {
         composable<CadenceRoute.Today> {
-            TodayScreen(onOpenHabit = { id -> navController.navigate(CadenceRoute.HabitDetail(id)) })
+            TodayScreen(
+                onOpenHabit = { id -> navController.navigate(CadenceRoute.HabitDetail(id)) },
+                onOpenTask = { id -> navController.navigate(CadenceRoute.TaskDetail(id)) },
+            )
         }
-        composable<CadenceRoute.Todos> { TodosScreen() }
+        composable<CadenceRoute.Todos> {
+            TodosScreen(onOpenTask = { id -> navController.navigate(CadenceRoute.TaskDetail(id)) })
+        }
         composable<CadenceRoute.Habits> {
             HabitsScreen(onOpenHabit = { id -> navController.navigate(CadenceRoute.HabitDetail(id)) })
         }
@@ -163,6 +169,11 @@ private fun CadenceNavHost(
         }
         composable<CadenceRoute.Breathing> { BreathingScreen(onImmersiveChange = onImmersiveChange) }
         composable<CadenceRoute.Settings> { SettingsScreen() }
+
+        composable<CadenceRoute.TaskDetail> { entry ->
+            val route = entry.toRoute<CadenceRoute.TaskDetail>()
+            TaskDetailScreen(taskId = route.taskId, onBack = { navController.popBackStack() })
+        }
 
         composable<CadenceRoute.HabitDetail> { entry ->
             val route = entry.toRoute<CadenceRoute.HabitDetail>()
@@ -191,7 +202,7 @@ private fun NavHostController.navigateToTopLevel(destination: TopLevelDestinatio
 }
 
 /**
- * The graph is flat, so the current destination *is* the tab destination — no hierarchy walk
+ * The graph is flat, so the current destination *is* the tab destination, no hierarchy walk
  * needed. [hasRoute] compares the serialized route class rather than a string, which is why
  * renaming a route object can never silently break tab highlighting.
  */

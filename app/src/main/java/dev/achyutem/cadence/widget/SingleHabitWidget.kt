@@ -38,7 +38,7 @@ import dev.achyutem.cadence.core.database.entity.HabitType
  *
  * ### Configuration
  *
- * The habit id lives in the widget's own Glance state, keyed per widget instance — so several of
+ * The habit id lives in the widget's own Glance state, keyed per widget instance, so several of
  * these can sit on the home screen pointing at different habits. Until one is chosen the widget
  * falls back to the **first habit due today**, which means it is useful the moment it is placed
  * rather than showing a "not configured" placeholder, and it still has a configuration activity

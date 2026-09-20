@@ -1,7 +1,7 @@
-# Cadence — engineering and product principles
+# Cadence, engineering and product principles
 
 These are non-negotiable. If a change conflicts with something here, the change is wrong, or this
-document needs an explicit argued update — not a quiet exception.
+document needs an explicit argued update, not a quiet exception.
 
 ## Product
 
@@ -81,7 +81,7 @@ document needs an explicit argued update — not a quiet exception.
 32. **Interactive means it does not open the app.** Ticking a task or stepping a habit writes
     directly and refreshes. Never fake an interaction the platform cannot honour.
 33. **Every write path refreshes widgets.** A stale widget is a widget nobody trusts. Refresh
-    failures are swallowed — they must never take down the write that triggered them.
+    failures are swallowed; they must never take down the write that triggered them.
 
 ## Breathing
 
@@ -94,7 +94,7 @@ document needs an explicit argued update — not a quiet exception.
 
 ## Design
 
-23. **Accent colours the active elements only** — navigation, progress, completion, selection,
+23. **Accent colours the active elements only**, navigation, progress, completion, selection,
     heatmap, focus. Never recolour every surface.
 24. **Restraint over decoration.** No excessive gradients, shadows, giant cards or illustrations.
     Whitespace is deliberate; density is high where productivity needs it.

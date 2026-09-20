@@ -12,7 +12,7 @@ import kotlin.math.roundToInt
  *
  * The four metric types share one model, so streaks, heatmaps and statistics have exactly one
  * code path. The only thing that differs between "meditate" and "drink 8 glasses" is how a value
- * is compared against a target and how it is formatted — both of which live here.
+ * is compared against a target and how it is formatted, both of which live here.
  */
 data class Habit(
     val id: Long,
@@ -113,7 +113,7 @@ fun HabitEntity.toHabit(
  * Does a recorded value meet the habit's target?
  *
  * Used when writing an entry, so that `HabitEntryEntity.completed` records whether the target
- * *as it was at the time* was met — a habit whose target is raised later must not retroactively
+ * *as it was at the time* was met; a habit whose target is raised later must not retroactively
  * un-complete days that genuinely met the old one.
  */
 fun HabitEntity.isValueComplete(value: Double): Boolean = when (goalDirection) {

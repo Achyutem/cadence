@@ -57,7 +57,7 @@ enum class ButtonSize { Small, Medium }
  *
  * Material's buttons carry a ripple, a 20dp radius, an elevation and a 40dp minimum that all
  * fight the rest of this design language. This one is a bordered or filled rectangle with a tight
- * radius, and its only press feedback is a **1.5% scale-down** — small enough that you feel it
+ * radius, and its only press feedback is a **1.5% scale-down**, small enough that you feel it
  * rather than see it, which is what makes a button feel physical instead of decorated.
  */
 @Composable

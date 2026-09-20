@@ -11,13 +11,13 @@ import java.time.Instant
  * The body is stored as **raw Markdown text**, not as a parsed tree or rich-text spans. That is
  * the decision everything else here follows from:
  *
- *  - It is trivially exportable and diffable — a note survives leaving this app intact.
+ *  - It is trivially exportable and diffable, a note survives leaving this app intact.
  *  - It cannot become corrupt in a way that loses the user's words. A parser bug shows wrong
  *    formatting; a broken span model loses text.
  *  - The renderer can improve later without a migration, because the source of truth is what the
  *    user typed.
  *
- * [preview] is the one denormalised field in the schema, and it is not derived *data* — it is a
+ * [preview] is the one denormalised field in the schema, and it is not derived *data*; it is a
  * truncated copy of the body with formatting stripped, maintained on write. A note list must
  * render a hundred previews per frame, and running a Markdown parser over full bodies to do it
  * would make scrolling the one slow thing in the app. It is a cache of presentation, never a

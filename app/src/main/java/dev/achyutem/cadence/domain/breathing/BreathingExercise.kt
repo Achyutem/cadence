@@ -6,8 +6,8 @@ import kotlin.math.max
  * What the body is doing during one phase of an exercise.
  *
  * [HOLD_FULL] and [HOLD_EMPTY] are separate because they are different skills and different
- * sensations — a hold on full lungs is a CO2 tolerance exercise, a hold on empty lungs is much
- * more aggressive — and because the UI animates them differently.
+ * sensations; a hold on full lungs is a CO2 tolerance exercise, a hold on empty lungs is much
+ * more aggressive, and because the UI animates them differently.
  */
 enum class BreathPhaseKind {
     PREPARE,
@@ -19,7 +19,7 @@ enum class BreathPhaseKind {
     RECOVER,
 }
 
-/** One timed segment of a session. Sessions are a flat list of these — see [BreathingExercise]. */
+/** One timed segment of a session. Sessions are a flat list of these; see [BreathingExercise]. */
 data class BreathPhase(
     val kind: BreathPhaseKind,
     val seconds: Int,
@@ -33,7 +33,7 @@ data class BreathPhase(
  *
  * Each one is a **pure function to a flat list of phases**. Nothing here knows about time passing,
  * coroutines or the screen; the runner just walks the list. That is what makes an exercise
- * completely unit-testable — a CO2 table is correct or not before anything is ever rendered — and
+ * completely unit-testable; a CO2 table is correct or not before anything is ever rendered, and
  * it is why adding a fifth exercise means adding one `expand()` and nothing else.
  */
 sealed interface BreathingExercise {
@@ -47,7 +47,7 @@ sealed interface BreathingExercise {
      * Box breathing: equal inhale, hold, exhale, hold.
      *
      * The calm one. Used to settle rather than to train tolerance, so it has no recovery phases
-     * and no progression — every round is identical.
+     * and no progression, every round is identical.
      */
     data class Box(
         val seconds: Int = 4,
@@ -133,7 +133,7 @@ sealed interface BreathingExercise {
     /**
      * O2 tolerance table: the rest stays the same, the hold **grows** each round.
      *
-     * The opposite stress — the body has to work with less oxygen each time, from a constant
+     * The opposite stress; the body has to work with less oxygen each time, from a constant
      * recovery. This is the more demanding of the two tables.
      */
     data class O2Table(

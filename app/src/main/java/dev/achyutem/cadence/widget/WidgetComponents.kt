@@ -35,8 +35,8 @@ import dev.achyutem.cadence.core.time.formatHourMinute
  *
  * Deliberately parallel to the app's components rather than shared with them: Glance has its own
  * `GlanceModifier`, its own layout primitives and no `CompositionLocal`, so nothing from
- * `designsystem/component` can be reused directly. What *is* shared is the thing that matters —
- * the colours in [WidgetColors] and the domain types — so a widget looks and reads like the app
+ * `designsystem/component` can be reused directly. What *is* shared is the thing that matters,
+ * the colours in [WidgetColors] and the domain types, so a widget looks and reads like the app
  * without pretending the two toolkits are one.
  */
 
@@ -81,7 +81,7 @@ fun WidgetHeader(
  *
  * An earlier version tried to build this from two weighted boxes in a row. That cannot work:
  * Glance's `defaultWeight()` takes no weight *value*, so two weighted cells always split 50/50
- * regardless of the progress passed in — a bar that looked plausible in code and would have
+ * regardless of the progress passed in; a bar that looked plausible in code and would have
  * rendered every value as half full.
  */
 @Composable

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Today — progress, then what is left of the day.
+  Today, progress, then what is left of the day.
 
   targetCellWidth/Height are the Android 12+ way of sizing a widget and are what modern launchers
   actually honour; minWidth/minHeight remain as the fallback for older grids. resizeMode is set on

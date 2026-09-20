@@ -57,8 +57,8 @@ object Radius {
  * Border widths.
  *
  * Structure in this app comes from **hairline borders**, not shadows. A 1dp border at low
- * contrast separates surfaces without adding visual weight, stays crisp at any density, and —
- * unlike a shadow — looks identical in dark mode instead of disappearing into the background.
+ * contrast separates surfaces without adding visual weight, stays crisp at any density, and,
+ * unlike a shadow, looks identical in dark mode instead of disappearing into the background.
  */
 object Borders {
     val hairline: Dp = 1.dp
@@ -86,14 +86,14 @@ object Motion {
 
     /**
      * The workhorse curve: leaves immediately, settles gently. Equivalent to CSS
-     * `cubic-bezier(.4, 0, .2, 1)` — the curve almost every well-tuned web UI converges on.
+     * `cubic-bezier(.4, 0, .2, 1)`, the curve almost every well-tuned web UI converges on.
      */
     val standardEasing: Easing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f)
 
-    /** Entering elements — decelerate into place with no overshoot. */
+    /** Entering elements, decelerate into place with no overshoot. */
     val enterEasing: Easing = CubicBezierEasing(0f, 0f, 0.2f, 1f)
 
-    /** Exiting elements — accelerate away. Always paired with a shorter duration than the enter. */
+    /** Exiting elements, accelerate away. Always paired with a shorter duration than the enter. */
     val exitEasing: Easing = CubicBezierEasing(0.4f, 0f, 1f, 1f)
 
     /** Sliding indicators and thumbs: critically damped, so it arrives without wobbling. */
@@ -120,6 +120,6 @@ object Elevation {
 object TouchTarget {
     val min: Dp = 48.dp
     val compact: Dp = 40.dp
-    /** Segmented-control and chip height — smaller than a tap target, so the parent pads it out. */
+    /** Segmented-control and chip height, smaller than a tap target, so the parent pads it out. */
     val control: Dp = 34.dp
 }

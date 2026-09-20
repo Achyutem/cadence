@@ -15,7 +15,6 @@
     <string name="today_section_habits">Habits</string>
     <string name="today_section_overdue">Overdue</string>
     <string name="today_progress_title">Today</string>
-    <string name="today_progress_none">—</string>
     <string name="today_progress_percent">%1$d%%</string>
     <!-- "complete" is an adjective with no plural form, so there is nothing for a quantity
          string to vary. The label that does need pluralising is the <plurals> below. -->
@@ -54,6 +53,7 @@
     <string name="date_today">Today</string>
     <string name="date_tomorrow">Tomorrow</string>
     <string name="priority_none">Priority</string>
+    <string name="priority_none_short">None</string>
     <string name="priority_low">Low</string>
     <string name="priority_medium">Medium</string>
     <string name="priority_high">High</string>
@@ -97,7 +97,8 @@
     <string name="habit_this_month">This month</string>
     <string name="habit_activity">Activity</string>
     <string name="habit_no_data">Not enough history yet</string>
-    <string name="habits_empty_description">Track anything you want to keep up \u2014 done/not done, a count, an amount, or minutes.</string>
+    <string name="habit_no_data_short">Not yet</string>
+    <string name="habits_empty_description">Track anything you want to keep up: done/not done, a count, an amount, or minutes.</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
@@ -110,7 +111,7 @@
     <string name="settings_export">Export</string>
     <string name="settings_import">Import</string>
     <string name="settings_import_confirm_title">Replace all data?</string>
-    <string name="settings_import_confirm_body">Importing replaces everything currently in Cadence \u2014 tasks, habits, history and notes \u2014 with the contents of the backup. This cannot be undone. Export first if you want to keep what is here.</string>
+    <string name="settings_import_confirm_body">Importing replaces everything currently in Cadence, including tasks, habits, history and notes, with the contents of the backup. This cannot be undone. Export first if you want to keep what is here.</string>
     <string name="settings_import_confirm_action">Replace everything</string>
     <string name="settings_behaviour">Behaviour</string>
     <string name="settings_about">About</string>
@@ -153,7 +154,7 @@
     <string name="notes_search_hint">Search notes</string>
     <string name="notes_search_clear">Clear search</string>
     <string name="notes_empty_title">No notes yet</string>
-    <string name="notes_empty_description">Notes support Markdown \u2014 headings, lists, task checkboxes, code and emphasis.</string>
+    <string name="notes_empty_description">Notes support Markdown: headings, lists, task checkboxes, code and emphasis.</string>
     <string name="notes_empty_action">Write your first note</string>
     <string name="notes_no_matches_title">Nothing found</string>
     <string name="notes_no_matches_description">No note matches \u201c%1$s\u201d.</string>
@@ -174,6 +175,7 @@
     <string name="action_back">Back</string>
     <string name="action_delete">Delete</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_done">Done</string>
 
     <plurals name="habit_streak">
         <item quantity="one">%1$d day streak</item>
@@ -207,4 +209,86 @@
     <string name="widget_habit_description">One habit, its streak, and a stepper.</string>
     <string name="widget_heatmap_description">Thirteen weeks of activity.</string>
     <string name="widget_next_description">The next thing due.</string>
+
+    <!-- Notifications -->
+    <string name="channel_tasks">Task reminders</string>
+    <string name="channel_tasks_description">Reminders for tasks you have scheduled.</string>
+    <string name="channel_habits">Habit reminders</string>
+    <string name="channel_habits_description">Nudges for habits due today.</string>
+    <string name="channel_check_in">Daily check-in</string>
+    <string name="channel_check_in_description">An optional evening prompt to reflect on the day.</string>
+
+    <string name="notification_action_complete">Complete</string>
+    <string name="notification_action_snooze">Snooze</string>
+    <string name="notification_habit_title">%1$s</string>
+    <string name="notification_habit_body">Due today</string>
+    <string name="notification_check_in_title">How was today?</string>
+    <string name="notification_check_in_body">Mood, energy, and anything worth remembering.</string>
+    <string name="notification_snoozed">Snoozed for 10 minutes</string>
+
+    <!-- Reminder settings -->
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_notifications_permission">Allow notifications</string>
+    <string name="settings_notifications_permission_body">Cadence needs permission before it can remind you about anything.</string>
+    <string name="settings_exact_alarms">Allow exact timing</string>
+    <string name="settings_exact_alarms_body">Without this, reminders may arrive late when the device is idle.</string>
+    <string name="settings_quiet_hours">Quiet hours</string>
+    <string name="settings_quiet_hours_body">Reminders inside this window wait until it ends rather than being dropped.</string>
+    <string name="settings_check_in_reminder">Evening check-in prompt</string>
+    <string name="settings_check_in_reminder_body">A quiet nudge at 9pm to record how the day went.</string>
+    <string name="action_grant">Allow</string>
+
+    <!-- Pickers -->
+    <string name="picker_clear">Clear</string>
+    <string name="picker_time_title">Start time</string>
+
+    <!-- Recurrence -->
+    <string name="recurrence_title">Repeat</string>
+    <string name="recurrence_none">Does not repeat</string>
+    <string name="recurrence_daily">Every day</string>
+    <string name="recurrence_weekdays">Weekdays</string>
+    <string name="recurrence_weekly">Specific days</string>
+    <string name="recurrence_monthly_day">Monthly, same date</string>
+    <string name="recurrence_monthly_weekday">Monthly, same weekday</string>
+    <string name="recurrence_yearly">Yearly</string>
+    <string name="recurrence_every">Every</string>
+    <string name="recurrence_less">Fewer</string>
+    <string name="recurrence_more">More</string>
+    <string name="recurrence_unit_days">days</string>
+    <string name="recurrence_unit_weeks">weeks</string>
+    <string name="recurrence_unit_months">months</string>
+    <string name="recurrence_unit_years">years</string>
+
+    <!-- Task detail -->
+    <string name="task_detail_title">Task</string>
+    <string name="task_title_placeholder">What needs to be done?</string>
+    <string name="task_notes_placeholder">Notes</string>
+    <string name="task_field_date">Date</string>
+    <string name="task_field_time">Time</string>
+    <string name="task_field_duration">Duration</string>
+    <string name="task_field_priority">Priority</string>
+    <string name="task_field_repeat">Repeat</string>
+    <string name="task_field_reminder">Reminder</string>
+    <string name="task_field_none">None</string>
+    <string name="task_subtasks">Subtasks</string>
+    <string name="task_add_subtask">Add a subtask</string>
+    <string name="task_delete">Delete task</string>
+    <string name="task_deleted">Task deleted</string>
+    <string name="reminder_at_time">At the start time</string>
+    <string name="reminder_before">%1$d min before</string>
+    <string name="reminder_at">At %1$s</string>
+
+    <!-- Check-in -->
+    <string name="checkin_section">Check in</string>
+    <string name="checkin_prompt">How are you feeling?</string>
+    <string name="checkin_recorded">Today\u2019s check-in</string>
+    <string name="checkin_energy">Energy</string>
+    <string name="checkin_energy_level">Energy level %1$d of 5</string>
+    <string name="checkin_mood_1">Rough</string>
+    <string name="checkin_mood_2">Low</string>
+    <string name="checkin_mood_3">Okay</string>
+    <string name="checkin_mood_4">Good</string>
+    <string name="checkin_mood_5">Great</string>
+    <string name="checkin_history">Recent days</string>
+    <string name="checkin_note_placeholder">Anything worth remembering?</string>
 </resources>

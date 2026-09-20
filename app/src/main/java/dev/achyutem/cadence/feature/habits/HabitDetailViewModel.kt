@@ -107,7 +107,7 @@ class HabitDetailViewModel(
     }
 
     companion object {
-        /** Roughly six months — enough to show a pattern, small enough to stay one fast query. */
+        /** Roughly six months, enough to show a pattern, small enough to stay one fast query. */
         private const val HEATMAP_DAYS = 182L
 
         fun factory(habitId: Long): ViewModelProvider.Factory = viewModelFactory {

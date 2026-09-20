@@ -3,7 +3,7 @@
 > Status: **designed in Phase 0, implemented in Phase 9.**
 
 A local behavioural analytics engine that derives productivity patterns from the user's own
-history — **without sending anything anywhere**. This is the genuine differentiator: the same
+history, **without sending anything anywhere**. This is the genuine differentiator: the same
 class of feature that normally requires a cloud pipeline, done entirely on-device.
 
 ## The hard part is not the statistics
@@ -31,7 +31,7 @@ So the rules come first:
 - Completion rate by weekday (needs several weeks per weekday).
 - Time-of-day completion patterns.
 - Correlation between a habit and same-day task completion.
-- Relationship between number of tasks scheduled and proportion completed — likely the most
+- Relationship between number of tasks scheduled and proportion completed, likely the most
   genuinely useful one, and the easiest to word responsibly.
 - Habits trending away from their usual consistency.
 - Check-in mood/energy against completion, when enough check-ins exist.
@@ -39,7 +39,7 @@ So the rules come first:
 ## Implementation
 
 Deterministic, pure Kotlin in `domain/insights`. Each insight is a function from a bounded slice
-of history to `Insight?` — returning null when the data does not support it, which makes "not
+of history to `Insight?`, returning null when the data does not support it, which makes "not
 enough data" the default rather than an afterthought.
 
 Computed on demand over a bounded range and cached in memory for the session. Nothing is written

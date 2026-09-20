@@ -4,7 +4,7 @@ One phase at a time. Each phase ends with: builds clean, tests pass, app runs, d
 
 ---
 
-## Phase 0 — Foundation ✅ complete
+## Phase 0, Foundation ✅ complete
 
 Gradle (KTS + version catalog), Compose, Material 3, Room with the full v1 schema and exported
 schema file, DataStore, type-safe Navigation Compose, the theme system (3 modes × 5 accents +
@@ -16,7 +16,7 @@ emulator with settings persisting across process death.
 
 ---
 
-## Phase 1 — Todo core ✅ complete
+## Phase 1, Todo core ✅ complete
 
 Creation, completion, subtasks with derived parent state, priority, dates, times, duration,
 ordering. Today and Todos read real data.
@@ -31,7 +31,7 @@ Still open: editing an existing task, drag reordering, tags, and the task detail
 
 ---
 
-## Phase 2 — Recurrence ✅ complete
+## Phase 2, Recurrence ✅ complete
 
 One engine for tasks and habits, in `domain/recurrence`. 31 unit tests cover every case in
 `docs/RECURRENCE.md`: month-end clamping, last-weekday months, leap years, 29 February, interval
@@ -41,7 +41,7 @@ Still open: the recurrence picker UI, and attaching rules to tasks (habits alrea
 
 ---
 
-## Phase 3 — Habits ✅ complete
+## Phase 3, Habits ✅ complete
 
 All four metric types, targets, goal direction (at least / at most), schedules, entries, streaks
 and statistics. Detail screen with the heatmap.
@@ -60,8 +60,8 @@ Still open: editing a habit, archiving from the UI, custom recurrence, habit reo
 ## Notes ✅ complete (added outside the original plan)
 
 Fifth dock destination. Markdown notes with a heading and body, pinning, search, and an autosaving
-editor with a formatting bar. Custom Markdown subset — parser and Compose renderer, no dependency
-— covered by 19 unit tests focused on half-typed input.
+editor with a formatting bar. Custom Markdown subset, parser and Compose renderer, no dependency,
+covered by 19 unit tests focused on half-typed input.
 
 ---
 
@@ -75,7 +75,7 @@ Plus a display name used only for the greeting on Today.
 
 ---
 
-## Phase 4 — Calendar
+## Phase 4, Calendar
 
 Month, week and day views; the day timeline; task scheduling; habit indicators; date navigation.
 
@@ -84,17 +84,17 @@ data loaded behind them.
 
 ---
 
-## Phase 5 — Notifications
+## Phase 5, Notifications
 
 Task and habit reminders, recurring reminders, notification actions, reboot and time-zone
 rescheduling, quiet hours. See `docs/NOTIFICATIONS.md`.
 
-**Done when:** every edge case in that document is handled — especially reboot, DST and
+**Done when:** every edge case in that document is handled, especially reboot, DST and
 completed-before-firing.
 
 ---
 
-## Phase 6 — Visualisation
+## Phase 6, Visualisation
 
 The custom heatmap (no charting library), progress rings, habit statistics, weekly and monthly
 summaries.
@@ -104,7 +104,7 @@ adapts to accent and scheme.
 
 ---
 
-## Phase 7 — Daily check-in
+## Phase 7, Daily check-in
 
 Mood, energy, optional note, history and visual trends.
 
@@ -112,7 +112,7 @@ Mood, energy, optional note, history and visual trends.
 
 ---
 
-## Phase 8 — Widgets
+## Phase 8, Widgets
 
 The shared widget layer first, then the twelve widgets. See `docs/WIDGETS.md`.
 
@@ -121,21 +121,21 @@ opening the app, in both schemes and every accent.
 
 ---
 
-## Phase 9 — Insights
+## Phase 9, Insights
 
-The local analytics engine. See `docs/INSIGHTS.md` — the statistical-responsibility rules are
+The local analytics engine. See `docs/INSIGHTS.md`; the statistical-responsibility rules are
 the specification, not a caveat.
 
 ---
 
-## Phase 10 — Design polish
+## Phase 10, Design polish
 
 Typography, spacing, animation, haptics, gestures, transitions, empty/error/loading states, dark
 mode, accents, widget visuals, heatmap, calendar, Today. Budget real time here.
 
 ---
 
-## Phase 11 — Reliability
+## Phase 11, Reliability
 
 Process death, restart, reboot, notification scheduling, date and time-zone changes, recurrence
 edge cases, large datasets, years of history, widget refresh, database migrations.

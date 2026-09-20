@@ -7,7 +7,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 /**
- * Storage contract for time values. Deliberately explicit — ambiguous timestamp formats are the
+ * Storage contract for time values. Deliberately explicit, ambiguous timestamp formats are the
  * single most common source of bugs in an app like this.
  *
  * | Kotlin type | SQLite type | Encoding                      | Example        |

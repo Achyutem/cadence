@@ -10,7 +10,7 @@ import org.junit.Test
 
 /**
  * The exercises are pure functions to a list of phases, so a table is provably correct before
- * anything is ever rendered. The cases that matter are the progressions — a table whose rest or
+ * anything is ever rendered. The cases that matter are the progressions, a table whose rest or
  * hold moves the wrong way is both useless as training and, for a CO2 table, unsafe.
  */
 class BreathingExerciseTest {

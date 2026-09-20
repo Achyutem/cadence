@@ -48,7 +48,7 @@ import dev.achyutem.cadence.domain.notes.MarkdownSpan
  * Renders the Markdown subset in [Markdown].
  *
  * Parsing is memoised on the source string, so scrolling a long note does not re-parse it on
- * every frame — the parse happens once per edit, not once per recomposition.
+ * every frame, the parse happens once per edit, not once per recomposition.
  *
  * [onToggleTask] receives the *source line index* of a tapped checkbox, so the caller can rewrite
  * that line in the original text. The rendered view never becomes the source of truth.

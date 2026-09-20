@@ -18,7 +18,7 @@
     <!--
       Lint's advice is wrong here: a bare `mipmap-anydpi` folder is not recognised by the
       resource merger and the adaptive icon fails to link, regardless of minSdk. Verified by
-      trying it — see the comment in the icon XML.
+      trying it; see the comment in the icon XML.
     -->
     <issue id="ObsoleteSdkInt">
         <ignore path="src/main/res/mipmap-anydpi-v26" />

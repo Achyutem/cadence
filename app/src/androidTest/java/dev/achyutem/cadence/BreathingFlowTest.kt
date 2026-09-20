@@ -15,7 +15,7 @@ import org.junit.runner.RunWith
  *
  * The assertion that matters is the last one: leaving a session must put the dock back. A session
  * hides it to take the whole screen, and a bug that failed to restore it would strand the user on
- * a screen with no navigation — the kind of thing that is obvious in use and invisible in a
+ * a screen with no navigation; the kind of thing that is obvious in use and invisible in a
  * screenshot.
  */
 @RunWith(AndroidJUnit4::class)

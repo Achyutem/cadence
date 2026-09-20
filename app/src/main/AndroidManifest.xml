@@ -8,7 +8,7 @@
       with reminders.
 
       Glance depends on WorkManager, which merges ACCESS_NETWORK_STATE into any app that uses
-      it — so it can honour network constraints on work requests. Cadence never sets one, and
+      it, so it can honour network constraints on work requests. Cadence never sets one, and
       on an app that advertises having no network access it is exactly the entry a careful user
       checks. Removed here, and verified against the built artifact rather than this file:
 
@@ -21,6 +21,21 @@
     <uses-permission
         android:name="android.permission.ACCESS_NETWORK_STATE"
         tools:node="remove" />
+
+    <!--
+      Runtime permission, requested in context the first time a reminder is switched on, never on
+      first launch. A permission prompt before the user has asked for anything is how people learn
+      to deny by reflex.
+    -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!--
+      Cadence is a calendar-and-reminder app, which is a permitted use of exact alarms. Every
+      schedule still checks `canScheduleExactAlarms()` first and falls back to an inexact alarm
+      rather than failing silently, because a reminder a few minutes late beats no reminder.
+    -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:name=".CadenceApplication"
@@ -44,6 +59,25 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".core.notifications.ReminderReceiver"
+            android:exported="false" />
+
+        <!--
+          Rebuilds the reminder horizon after a reboot, an app update, or any clock change.
+          Alarms do not survive a reboot and become wrong when the zone moves.
+        -->
+        <receiver
+            android:name=".core.notifications.SystemEventReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+            </intent-filter>
+        </receiver>
 
         <!--
           Widget receivers.

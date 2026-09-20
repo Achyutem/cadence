@@ -50,8 +50,8 @@ import dev.achyutem.cadence.domain.task.Task
 /**
  * One task in a list.
  *
- * Completion is expressed three ways at once — the box fills, the title strikes through, and the
- * whole row fades back — because any one of them alone is either too subtle to notice in a dense
+ * Completion is expressed three ways at once, the box fills, the title strikes through, and the
+ * whole row fades back, because any one of them alone is either too subtle to notice in a dense
  * list or too loud to live with. Together they say "done" without the row shouting about it.
  *
  * The strike-through and the fade are animated on the same curve as the checkbox, so the row

@@ -124,7 +124,7 @@ private fun DrawScope.drawRoundedBar(width: Float, color: Color) {
  * The shared empty state.
  *
  * Left-aligned, not centred: these sit inside sections whose headers are left-aligned, and a
- * centred block of text in a left-aligned column reads as a mistake. Text only — the brief rules
+ * centred block of text in a left-aligned column reads as a mistake. Text only, the brief rules
  * out decorative illustrations, and an empty list is a moment to be quiet rather than cheerful.
  */
 @Composable
@@ -160,7 +160,7 @@ fun EmptyState(
 }
 
 /**
- * A centred empty state, for a whole screen with nothing in it yet — where there is no
+ * A centred empty state, for a whole screen with nothing in it yet, where there is no
  * left-aligned structure for it to line up with.
  */
 @Composable
@@ -230,7 +230,7 @@ fun MetricText(
  * The standard content surface: a hairline-bordered panel with a tight radius.
  *
  * Structure here comes from the border, not from a shadow or a tonal step. That reads as precise
- * rather than soft, and — unlike a shadow — it survives dark mode unchanged.
+ * rather than soft, and, unlike a shadow, it survives dark mode unchanged.
  */
 @Composable
 fun CadenceCard(
@@ -251,7 +251,7 @@ fun CadenceCard(
     }
 }
 
-/** A small inert label — a tag, a unit, a count. */
+/** A small inert label, a tag, a unit, a count. */
 @Composable
 fun CadenceChip(
     text: String,

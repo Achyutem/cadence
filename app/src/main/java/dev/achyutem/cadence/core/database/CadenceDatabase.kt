@@ -35,7 +35,7 @@ import dev.achyutem.cadence.core.database.entity.TaskTagCrossRef
  * ever needing a device with old data on it.
  *
  * Migration policy: never destructive. `fallbackToDestructiveMigration` is deliberately *not*
- * used — this database holds years of a person's history and there is no cloud copy to restore
+ * used; this database holds years of a person's history and there is no cloud copy to restore
  * from. A missing migration should fail loudly in development, not silently wipe the user.
  */
 @Database(
@@ -73,7 +73,7 @@ abstract class CadenceDatabase : RoomDatabase() {
          * v1 → v2: added the `notes` table.
          *
          * Written by hand rather than generated, and it must match the schema Room expects
-         * exactly — column order, types, NOT NULL and DEFAULT all included — or Room's identity
+         * exactly, column order, types, NOT NULL and DEFAULT all included, or Room's identity
          * check fails at open time on an upgraded install while passing on a fresh one. That is
          * precisely the failure mode `MigrationTest` exists to catch before a user does.
          */

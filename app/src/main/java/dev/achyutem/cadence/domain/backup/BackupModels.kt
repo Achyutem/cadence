@@ -14,7 +14,7 @@ import kotlinx.serialization.Serializable
  * revised, and [BackupFile.formatVersion] says which revision a file is.
  *
  * Every date and time is written as ISO text rather than a number. A backup should be readable
- * and repairable in a text editor years from now, when the reader may not be this app — an epoch
+ * and repairable in a text editor years from now, when the reader may not be this app, an epoch
  * millisecond is not something a person can check.
  *
  * Unknown keys are ignored on read, so a file written by a *newer* version still restores

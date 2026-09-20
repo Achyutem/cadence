@@ -95,6 +95,11 @@ fun SettingsScreen(
 
     // Storage Access Framework: the user picks the file, so Cadence needs no storage permission
     // and never sees anything they did not choose.
+    // Requested in context, the first time the user turns a reminder on, never at launch.
+    val notificationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted -> if (granted) viewModel.rescheduleReminders() }
+
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json"),
     ) { uri -> uri?.let { viewModel.export(context, it) } }
@@ -105,6 +110,24 @@ fun SettingsScreen(
 
     var confirmImport by remember { mutableStateOf(false) }
 
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    var notificationsAllowed by remember {
+        mutableStateOf(
+            androidx.core.content.ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.POST_NOTIFICATIONS,
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        )
+    }
+    // Re-read on resume: the user may have granted it in system settings and come back.
+    androidx.lifecycle.compose.LifecycleResumeEffect(Unit) {
+        notificationsAllowed = androidx.core.content.ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.POST_NOTIFICATIONS,
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        onPauseOrDispose { }
+    }
+
     SettingsContent(
         preferences = preferences,
         transfer = transfer,
@@ -114,6 +137,24 @@ fun SettingsScreen(
         onDynamicColor = viewModel::setDynamicColor,
         onReducedMotion = viewModel::setReducedMotion,
         onWeekStart = viewModel::setWeekStart,
+        onQuietHours = viewModel::setQuietHoursEnabled,
+        onCheckInPrompt = viewModel::setCheckInPrompt,
+        notificationsAllowed = notificationsAllowed,
+        exactAlarmsAllowed = viewModel.canScheduleExact(),
+        onRequestNotifications = {
+            notificationPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        },
+        onRequestExactAlarms = {
+            // There is no runtime prompt for exact alarms; the user grants it in system settings.
+            runCatching {
+                context.startActivity(
+                    android.content.Intent(
+                        android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                        android.net.Uri.parse("package:${context.packageName}"),
+                    ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            }
+        },
         onExport = { exportLauncher.launch(viewModel.suggestedFileName()) },
         onImport = { confirmImport = true },
         onDismissTransfer = viewModel::dismissTransfer,
@@ -160,6 +201,12 @@ private fun SettingsContent(
     onDynamicColor: (Boolean) -> Unit,
     onReducedMotion: (Boolean) -> Unit,
     onWeekStart: (DayOfWeek) -> Unit,
+    onQuietHours: (Boolean) -> Unit,
+    onCheckInPrompt: (Boolean) -> Unit,
+    notificationsAllowed: Boolean,
+    exactAlarmsAllowed: Boolean,
+    onRequestNotifications: () -> Unit,
+    onRequestExactAlarms: () -> Unit,
     onExport: () -> Unit,
     onImport: () -> Unit,
     onDismissTransfer: () -> Unit,
@@ -243,6 +290,43 @@ private fun SettingsContent(
                 selected = preferences.weekStartsOn,
                 onSelect = onWeekStart,
                 label = { it.shortLabel() },
+            )
+            Spacer(Modifier.height(Spacing.xl))
+        }
+
+        item(key = "notifications") {
+            SectionHeader(title = stringResource(R.string.settings_notifications))
+            Spacer(Modifier.height(Spacing.xs))
+
+            if (!notificationsAllowed) {
+                PermissionRow(
+                    title = stringResource(R.string.settings_notifications_permission),
+                    body = stringResource(R.string.settings_notifications_permission_body),
+                    onGrant = onRequestNotifications,
+                )
+                Spacer(Modifier.height(Spacing.xs))
+            } else if (!exactAlarmsAllowed) {
+                // Only worth mentioning once notifications work at all; two permission prompts
+                // stacked together is how people learn to ignore both.
+                PermissionRow(
+                    title = stringResource(R.string.settings_exact_alarms),
+                    body = stringResource(R.string.settings_exact_alarms_body),
+                    onGrant = onRequestExactAlarms,
+                )
+                Spacer(Modifier.height(Spacing.xs))
+            }
+
+            ToggleRow(
+                title = stringResource(R.string.settings_quiet_hours),
+                description = stringResource(R.string.settings_quiet_hours_body),
+                checked = preferences.quietHoursEnabled,
+                onCheckedChange = onQuietHours,
+            )
+            ToggleRow(
+                title = stringResource(R.string.settings_check_in_reminder),
+                description = stringResource(R.string.settings_check_in_reminder_body),
+                checked = preferences.checkInPromptEnabled,
+                onCheckedChange = onCheckInPrompt,
             )
             Spacer(Modifier.height(Spacing.xl))
         }
@@ -351,7 +435,7 @@ private fun NameField(value: String, onValueChange: (String) -> Unit) {
 /**
  * Accent swatches.
  *
- * Selection is a ring that grows around the swatch rather than a tick drawn on top of it — the
+ * Selection is a ring that grows around the swatch rather than a tick drawn on top of it, the
  * colour is the content here, and covering it up to say "this one" defeats the purpose.
  */
 @Composable
@@ -415,7 +499,7 @@ private fun AccentSwatch(
         contentAlignment = Alignment.Center,
     ) {
         // The ring is drawn *outside* a constant-size swatch rather than inside it. Insetting the
-        // fill to make room made the selected colour visibly smaller than its neighbours — a
+        // fill to make room made the selected colour visibly smaller than its neighbours, a
         // bullseye, when the swatch is the one thing that should not change.
         Canvas(modifier = Modifier.size(34.dp)) {
             val centre = size.minDimension / 2f
@@ -481,6 +565,39 @@ private fun ToggleRow(
     }
 }
 
+/** A permission the app cannot grant itself, stated plainly with one way to fix it. */
+@Composable
+private fun PermissionRow(title: String, body: String, onGrant: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(Radius.shapeMd)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .border(Borders.hairline, CadenceTheme.colors.border, Radius.shapeMd)
+            .padding(Spacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = body,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(Modifier.size(Spacing.xs))
+        CadenceButton(
+            text = stringResource(R.string.action_grant),
+            tone = ButtonTone.Primary,
+            onClick = onGrant,
+        )
+    }
+}
+
 private fun ThemeMode.labelRes(): Int = when (this) {
     ThemeMode.SYSTEM -> R.string.theme_system
     ThemeMode.LIGHT -> R.string.theme_light
@@ -493,7 +610,9 @@ private fun SettingsPreviewLight() = CadencePreviewTheme {
     SettingsContent(
         UserPreferences.Default.copy(displayName = "Achyutem"),
         DataTransferState.Idle,
-        {}, {}, {}, {}, {}, {}, {}, {}, {},
+        {}, {}, {}, {}, {}, {}, {}, {},
+        notificationsAllowed = true, exactAlarmsAllowed = true,
+        {}, {}, {}, {}, {},
     )
 }
 
@@ -503,6 +622,8 @@ private fun SettingsPreviewDark() = CadencePreviewTheme(dark = true, accent = Ac
     SettingsContent(
         UserPreferences.Default.copy(accentColor = AccentColor.GREEN, themeMode = ThemeMode.DARK),
         DataTransferState.Idle,
-        {}, {}, {}, {}, {}, {}, {}, {}, {},
+        {}, {}, {}, {}, {}, {}, {}, {},
+        notificationsAllowed = false, exactAlarmsAllowed = false,
+        {}, {}, {}, {}, {},
     )
 }

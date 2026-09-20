@@ -10,7 +10,7 @@ import org.junit.Test
 /**
  * The Markdown subset.
  *
- * The important property is not that it parses correct documents — it is that it never mangles an
+ * The important property is not that it parses correct documents; it is that it never mangles an
  * *incorrect* one. Notes are edited character by character, so the parser sees half-typed syntax
  * constantly and must leave it alone rather than reformatting the rest of the note.
  */

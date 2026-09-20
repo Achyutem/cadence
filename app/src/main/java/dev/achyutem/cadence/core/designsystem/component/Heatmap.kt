@@ -53,7 +53,7 @@ import kotlin.math.floor
  * ### Why this is drawn, not composed
  *
  * A year is 365 cells. As composables that is 365 layout nodes plus their modifiers, re-measured
- * on every recomposition — which is exactly the thing that makes a heatmap the slowest screen in
+ * on every recomposition, which is exactly the thing that makes a heatmap the slowest screen in
  * an app that has one. Here the entire grid is **one `Canvas`**: one layout node, one draw pass,
  * and cell geometry that is pure arithmetic. Adding a second year costs a few hundred more
  * `drawRoundRect` calls and nothing else.
@@ -66,7 +66,7 @@ import kotlin.math.floor
  *
  * The component owns its own horizontal scrolling. That is not a convenience: the weekday
  * gutter has to stay **pinned** while the grid scrolls under it, and a caller that wrapped the
- * whole thing in a `horizontalScroll` would drag the labels off the screen along with the cells —
+ * whole thing in a `horizontalScroll` would drag the labels off the screen along with the cells,
  * leaving a grid nobody can read a row of.
  *
  * @param levels intensity 0..4 per date, from `HabitStatistics.heatmapLevels`.
@@ -81,7 +81,7 @@ fun Heatmap(
     cellSize: Dp = 13.dp,
     cellGap: Dp = 3.dp,
     onDateClick: ((LocalDate) -> Unit)? = null,
-    /** Highlighted with a ring — normally today. */
+    /** Highlighted with a ring, normally today. */
     markedDate: LocalDate? = null,
     /** Start scrolled to the most recent week, which is what anyone looks at first. */
     startAtEnd: Boolean = true,
@@ -168,7 +168,7 @@ fun Heatmap(
                     for (row in 0..6) {
                         val date = gridStart.plusDays((column * 7L) + row)
                         // Cells outside the requested range are not drawn at all, which is what
-                        // gives the grid its ragged first and last columns — same as GitHub.
+                        // gives the grid its ragged first and last columns, same as GitHub.
                         if (date < startDate || date > endDate) continue
 
                         val level = levels[date] ?: 0
@@ -200,7 +200,7 @@ fun Heatmap(
  * Month names above the grid, positioned over the first week of each month.
  *
  * A label is skipped when it would collide with the previous one, which happens with narrow cells
- * and short months — better a missing label than two overlapping ones.
+ * and short months, better a missing label than two overlapping ones.
  */
 @Composable
 private fun MonthLabels(gridStart: LocalDate, weekCount: Int, stepDp: Dp) {

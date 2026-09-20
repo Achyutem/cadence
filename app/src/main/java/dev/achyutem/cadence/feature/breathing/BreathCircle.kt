@@ -31,7 +31,7 @@ import dev.achyutem.cadence.domain.breathing.asClock
  * to do, which is the state most of these exercises are done in.
  *
  * Size is driven directly by phase progress rather than by an infinite looping animation, so the
- * circle can never drift out of step with the countdown — the two are the same number.
+ * circle can never drift out of step with the countdown; the two are the same number.
  *
  * A ring around it tracks the phase, giving a precise read when you do want one.
  *

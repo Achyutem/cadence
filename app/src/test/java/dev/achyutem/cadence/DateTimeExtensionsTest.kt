@@ -25,8 +25,8 @@ import java.time.ZoneId
 
 /**
  * Date arithmetic the recurrence engine, the calendar and the heatmap all depend on. These are
- * pure functions, so the edge cases that are painful to reproduce on a device — leap days, DST,
- * month ends, week starts — are cheap to pin down here.
+ * pure functions, so the edge cases that are painful to reproduce on a device, leap days, DST,
+ * month ends, week starts, are cheap to pin down here.
  */
 class DateTimeExtensionsTest {
 
@@ -108,7 +108,7 @@ class DateTimeExtensionsTest {
 
     @Test
     fun `last weekday of month is detected regardless of whether it is the fourth or fifth`() {
-        // "Last Friday of every month" — September 2026 has four Fridays, so it is the 4th.
+        // "Last Friday of every month"; September 2026 has four Fridays, so it is the 4th.
         assertTrue(LocalDate.of(2026, 9, 25).isLastWeekdayOfMonth())
         assertFalse(LocalDate.of(2026, 9, 18).isLastWeekdayOfMonth())
         // July 2026 has five Fridays; the 31st is the last.

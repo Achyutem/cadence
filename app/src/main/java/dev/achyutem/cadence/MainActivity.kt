@@ -11,6 +11,7 @@ import dev.achyutem.cadence.core.designsystem.theme.CadenceTheme
 import dev.achyutem.cadence.navigation.CadenceApp
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
 
 class MainActivity : ComponentActivity() {
@@ -28,6 +29,13 @@ class MainActivity : ComponentActivity() {
             started = SharingStarted.Eagerly,
             initialValue = UserPreferences.Default,
         )
+
+        // Roll the reminder horizon forward on every launch. Alarms are only laid down a week
+        // ahead, so something has to extend the window; the app opening is the most reliable
+        // trigger there is, and the reboot receiver covers the rest.
+        lifecycleScope.launch {
+            container.reminderScheduler.rescheduleAll()
+        }
 
         setContent {
             val preferences by preferencesFlow.collectAsStateWithLifecycle()

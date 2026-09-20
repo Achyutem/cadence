@@ -57,7 +57,7 @@ sealed interface BackupResult {
  *
  * ### Import replaces; it does not merge
  *
- * Merging two histories requires identity that survives export — which means either stable UUIDs
+ * Merging two histories requires identity that survives export, which means either stable UUIDs
  * on every row or a conflict-resolution policy the user has to understand. Both are real designs;
  * neither is what "restore my backup" means. So import is a **full replace**, stated plainly in
  * the confirmation, and it is the only destructive action in the app.

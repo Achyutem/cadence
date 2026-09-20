@@ -47,7 +47,7 @@ import dev.achyutem.cadence.core.designsystem.token.TouchTarget
  *
  * The earlier version cross-faded each option's background independently. That is the cheap way
  * to build this, and it reads cheap: at any moment mid-transition two chips are half-visible and
- * none of them is the selection. Here there is exactly one chip, and it travels — so the control
+ * none of them is the selection. Here there is exactly one chip, and it travels, so the control
  * always shows precisely one selected thing, and the movement itself tells you where the
  * selection went. It is the difference between a control that changes and a control that
  * *responds*.

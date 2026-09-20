@@ -56,7 +56,7 @@ private enum class HabitSchedule { DAILY, WEEKDAYS, WEEKENDS }
 /**
  * Habit creation.
  *
- * Only a name is required. Everything else has a working default — a boolean habit, every day —
+ * Only a name is required. Everything else has a working default, a boolean habit, every day,
  * so the fast path is type a name and press Create. The extra fields appear in place rather than
  * behind an "advanced" disclosure, because for a habit the target *is* the point and hiding it
  * would mean most habits get created wrong and edited immediately.
@@ -64,7 +64,7 @@ private enum class HabitSchedule { DAILY, WEEKDAYS, WEEKENDS }
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun HabitEditorSheet(
-    /** Anchor for any recurrence rule created here. From the app clock — see `CLAUDE.md` #15. */
+    /** Anchor for any recurrence rule created here. From the app clock; see `CLAUDE.md` #15. */
     today: LocalDate,
     onDismiss: () -> Unit,
     onCreate: (

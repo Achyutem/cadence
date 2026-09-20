@@ -59,7 +59,7 @@ class TodosViewModel(
     ) { currentFilter, currentDay, preferences ->
         Triple(currentFilter, currentDay, preferences)
     }.flatMapLatest { (currentFilter, currentDay, preferences) ->
-        // Range is chosen per filter so the query stays bounded — "all" still means a window,
+        // Range is chosen per filter so the query stays bounded, "all" still means a window,
         // not the whole table (see CLAUDE.md #22).
         val (start, end) = when (currentFilter) {
             TaskFilter.TODAY -> currentDay to currentDay
@@ -143,7 +143,7 @@ class TodosViewModel(
         val now = clock.now()
         if (task.hasSubtasks) {
             // A parent's completion is derived, so "complete the parent" means completing its
-            // children — writing the parent's own flag would be ignored by the domain model and
+            // children, writing the parent's own flag would be ignored by the domain model and
             // would leave the UI and the data saying different things.
             task.subtasks.forEach { child ->
                 tasks.setCompleted(child.id, completed, if (completed) now else null)

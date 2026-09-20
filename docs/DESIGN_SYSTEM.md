@@ -5,10 +5,10 @@
 Cadence should feel **premium, calm, fast, intentional, slightly dense**. The references in the
 brief are read as principles, not as surfaces to copy:
 
-- **TickTick** — productivity density, one-tap completion, useful widgets.
-- **Linear** — restraint, typography, spacing, polished transitions.
-- **GitHub** — contribution heatmaps, historical data density.
-- **Apple** — calmness, animation restraint, visual clarity.
+- **TickTick**, productivity density, one-tap completion, useful widgets.
+- **Linear**, restraint, typography, spacing, polished transitions.
+- **GitHub**, contribution heatmaps, historical data density.
+- **Apple**, calmness, animation restraint, visual clarity.
 
 Nothing proprietary is reproduced. The identity comes from the scale, the neutral palette and the
 floating dock, not from imitation.
@@ -35,8 +35,8 @@ saturation it reads as calm, and it stops every accent from looking dirty agains
 Five shipped accents: blue, purple, green, orange, pink. Each is a **hand-tuned pair of light and
 dark ramps**, not a generated seed.
 
-Seed generation was rejected deliberately. Generated schemes drift — the "same" blue yields a
-different container tone in each scheme and contrast ratios wander — and Glance widgets cannot run
+Seed generation was rejected deliberately. Generated schemes drift, the "same" blue yields a
+different container tone in each scheme and contrast ratios wander, and Glance widgets cannot run
 Material's colour generation at all, so widgets and app would diverge. Five fixed accents tuned
 once buys predictable contrast everywhere. Every `on*` colour clears 4.5:1 against its pairing.
 
@@ -48,12 +48,12 @@ default.
 Five levels, **derived** from the active accent by blending toward the surface rather than
 hand-authored per accent:
 
-- Level 0 — empty. Visible enough to read as a grid, quiet enough to disappear.
-- Levels 1–4 — a wash of accent through to the accent itself.
+- Level 0, empty. Visible enough to read as a grid, quiet enough to disappear.
+- Levels 1–4, a wash of accent through to the accent itself.
 
 Dark mode uses steeper blend fractions, because identical fractions read much darker against a
 near-black background. `HeatmapRampTest` guards that all five levels are distinct and
-monotonically increasing — a ramp with two equal steps would render "once" and "four times"
+monotonically increasing; a ramp with two equal steps would render "once" and "four times"
 identically.
 
 ## Typography
@@ -62,14 +62,14 @@ identically.
 APK. Character comes from the scale, not the face:
 
 - Tight negative tracking on large text (`displaySmall` at −1.2sp).
-- Wide tracking (1.0sp) on the small uppercase section labels — that is what makes `TODOS` read as
+- Wide tracking (1.0sp) on the small uppercase section labels; that is what makes `TODOS` read as
   structure rather than content.
 - Three weights in play: Light (date header only), Normal/Medium (body), SemiBold (titles).
 - `includeFontPadding = false` and `LineHeightStyle.Trim.Both`, so a headline's optical box matches
   its visual box. Without trimming, large text carries a stubborn gap that makes careful spacing
   impossible.
 
-**Tabular figures** (`TextStyle.tabularFigures`) on anything that changes in place — percentages,
+**Tabular figures** (`TextStyle.tabularFigures`) on anything that changes in place, percentages,
 streak counts, habit values, timeline clock labels. Proportional digits jitter horizontally as
 they tick, which is exactly the kind of small ugliness that makes an app feel unfinished.
 
@@ -96,8 +96,8 @@ hairline outlines, not shadows.
 | `EXPRESSIVE` | 420 | heatmap period changes |
 
 All durations pass through `CadenceTheme.duration()`, which multiplies by `LocalMotionScale`.
-Reduced motion sets that scale to **0**, so animations resolve instantly rather than being removed
-— state still lands correctly and no component needs to branch on "are animations on".
+Reduced motion sets that scale to **0**, so animations resolve instantly rather than being removed,
+state still lands correctly and no component needs to branch on "are animations on".
 
 ## The dock
 
@@ -105,7 +105,7 @@ Cadence's signature control: a floating pill, narrower than the screen, drawn *o
 rather than occupying a `Scaffold` bottom bar.
 
 What makes it feel like an app control rather than a system one: **only the selected item shows its
-label**, and that label expands horizontally as the pill grows around it. Nothing jumps — the
+label**, and that label expands horizontally as the pill grows around it. Nothing jumps, the
 unselected items simply give up width. Four quiet icons, one clearly-named destination.
 
 Selected items also swap to a filled icon variant; the weight change registers before the colour
@@ -120,14 +120,14 @@ names.
   widget's semantics, so nothing is announced twice.
 - Text scales with the system font size; no fixed-height text containers.
 - Reduced motion is honoured globally.
-- Colour is never the only signal — completion also changes shape and weight.
+- Colour is never the only signal, completion also changes shape and weight.
 
 ---
 
 ## Revision: the Geist pass
 
 The design language was reworked after the first build. The brief asked for the philosophy behind
-Vercel and Next.js — clean, precise, fast — while keeping Cadence's five accents prominent.
+Vercel and Next.js, clean, precise, fast, while keeping Cadence's five accents prominent.
 
 **What changed and why:**
 
@@ -160,21 +160,21 @@ never where you last saw it. With five destinations that stops being a quirk and
 
 Now tabs are **fixed width with a sliding indicator**. Positions are constant, every target is the
 same size, and the only thing that moves is the indicator travelling to the tab you chose. No tab
-draws a label, so all five carry content descriptions — and `NavigationTest` drives the dock that
+draws a label, so all five carry content descriptions, and `NavigationTest` drives the dock that
 way on purpose, which means a tab a screen reader cannot find is a failing test.
 
 ### The completion checkbox
 
 The most-used control in the app, so it gets the most attention. Three things happen together:
 the box fills on a spring, the tick is **drawn along its own path** rather than faded in, and a
-haptic fires on completion only — never on un-completing, because undoing is a correction and
+haptic fires on completion only, never on un-completing, because undoing is a correction and
 should not be congratulated.
 
 A cross-faded glyph looks like a state change. A drawn stroke looks like an action you performed.
 
 ### Performance note
 
-Both sliding indicators use `Modifier.offset { }` — the lambda overload — not `offset(x = …)`.
+Both sliding indicators use `Modifier.offset { }`, the lambda overload, not `offset(x = …)`.
 Reading an animated value during composition recomposes on every frame; deferring the read to the
 layout phase means a frame only re-lays-out. Lint's `UseOfNonLambdaOffsetOverload` caught this,
 which is a good argument for running lint with `warningsAsErrors`.

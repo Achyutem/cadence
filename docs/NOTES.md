@@ -6,7 +6,7 @@ Notes are the fifth dock destination: a heading and a body, with Markdown.
 
 Not a parsed tree, not rich-text spans. Everything follows from that:
 
-- It is trivially exportable and diffable — a note survives leaving this app intact.
+- It is trivially exportable and diffable, a note survives leaving this app intact.
 - It cannot become corrupt in a way that loses words. A parser bug shows wrong formatting; a
   broken span model loses text.
 - The renderer can improve later without a migration, because the source of truth is what the
@@ -17,7 +17,7 @@ Not a parsed tree, not rich-text spans. Everything follows from that:
 ## The Markdown subset
 
 No Markdown library. Full CommonMark plus a Compose renderer is a large dependency for syntax a
-personal notes app never uses — reference links, HTML blocks, setext headings, tables.
+personal notes app never uses, reference links, HTML blocks, setext headings, tables.
 
 Supported: `#`/`##`/`###` headings, `-`/`*` bullets, `1.` numbered items, `- [ ]` / `- [x]` tasks,
 `>` quotes, fenced code, `---` rules, and inline `**bold**`, `*italic*`, `` `code` ``, `~~strike~~`.
@@ -37,7 +37,7 @@ bold throughout. True nesting needs a real inline grammar and the payoff here is
 A note is a document. Losing one because the user backed out is unacceptable, and a save button
 makes that the user's problem.
 
-Edits are debounced by 600ms, and the editor flushes on the way out — via the back gesture, the
+Edits are debounced by 600ms, and the editor flushes on the way out, via the back gesture, the
 toolbar, or the composable leaving the tree. The debounce is a performance optimisation, never a
 window in which work can be lost. `NotesFlowTest` asserts exactly this: it types, leaves, and
 expects the note in the list.
@@ -52,7 +52,7 @@ maintained on write.
 
 A note list renders many previews per frame; running a Markdown parser over full bodies to do that
 would make scrolling the slowest thing in the app. It is a cache of *presentation*, never a source
-of truth — it is regenerated from `content` on every save, and on import, rather than being trusted
+of truth; it is regenerated from `content` on every save, and on import, rather than being trusted
 from the backup file.
 
 The list query also does not select `content` at all: bodies can be thousands of characters and the

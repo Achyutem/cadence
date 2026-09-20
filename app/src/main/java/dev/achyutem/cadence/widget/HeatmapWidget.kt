@@ -36,7 +36,7 @@ import java.time.LocalDate
  * ### Why this one is built from nested rows instead of a Canvas
  *
  * The in-app heatmap is a single `Canvas` because 365 composables would be too many layout nodes.
- * Glance has no Canvas at all — a widget is a `RemoteViews` tree — so the grid here is literal
+ * Glance has no Canvas at all; a widget is a `RemoteViews` tree, so the grid here is literal
  * boxes, and that puts a hard ceiling on cell count: `RemoteViews` has a real size limit and
  * blowing it makes the launcher silently drop the widget.
  *
@@ -93,7 +93,7 @@ class HeatmapWidget : GlanceAppWidget() {
                 start.minusDays(delta.toLong())
             }
 
-            // Rows are weekdays, columns are weeks — the same orientation as the app.
+            // Rows are weekdays, columns are weeks, the same orientation as the app.
             Column {
                 for (row in 0..6) {
                     Row {

@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.lerp
  * is the entire point of using accent sparingly.
  *
  * Light mode is white-on-white separated by borders. Dark mode bottoms out at near-black rather
- * than charcoal — on an OLED phone that is a genuinely darker, calmer surface, and it makes the
+ * than charcoal, on an OLED phone that is a genuinely darker, calmer surface, and it makes the
  * hairline borders the thing that defines structure in both schemes.
  */
 private object Neutral {
@@ -82,7 +82,7 @@ data class CadenceColors(
     val divider: Color,
     /** Default border for cards, inputs and controls. */
     val border: Color,
-    /** Border for hovered/focused/selected surfaces — one step up in contrast. */
+    /** Border for hovered/focused/selected surfaces, one step up in contrast. */
     val borderStrong: Color,
     /** The floating dock's own surface. */
     val dockSurface: Color,
@@ -94,7 +94,7 @@ data class CadenceColors(
      *
      * This cannot be a Material slot: the selected chip must read as raised above its track in
      * both schemes, and no single `surfaceContainer*` role does that. In light mode "raised"
-     * means whiter than the track; in dark mode it means lighter than the track — opposite
+     * means whiter than the track; in dark mode it means lighter than the track, opposite
      * directions on the tonal ramp.
      */
     val segmentSelected: Color,
@@ -127,7 +127,7 @@ fun cadenceColors(accent: AccentPalette, dark: Boolean): CadenceColors {
 /**
  * The GitHub-style intensity ramp.
  *
- * Level 0 is an empty cell — visible enough to read as a grid, quiet enough to disappear. Levels
+ * Level 0 is an empty cell, visible enough to read as a grid, quiet enough to disappear. Levels
  * 1..4 walk from a wash of the accent to the accent itself. Dark mode uses steeper blend
  * fractions, because identical fractions read far darker against a near-black background.
  */

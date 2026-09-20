@@ -14,7 +14,7 @@ import dev.achyutem.cadence.core.designsystem.theme.palette
  * The widget colour bridge.
  *
  * Glance cannot use `MaterialTheme`, `CompositionLocal`-based design tokens, or Material's colour
- * generation — a widget renders into a `RemoteViews` tree in the launcher's process. So the app's
+ * generation, a widget renders into a `RemoteViews` tree in the launcher's process. So the app's
  * palette has to be reachable as plain values.
  *
  * This is exactly why the accents in `designsystem/theme/Accent.kt` are **hand-tuned constants
@@ -22,7 +22,7 @@ import dev.achyutem.cadence.core.designsystem.theme.palette
  * app, so a widget and the screen behind it can never drift apart.
  *
  * Light and dark are supplied as a pair to Glance's `ColorProvider`, which picks per the
- * launcher's current configuration — a widget must follow the system theme even when the app is
+ * launcher's current configuration; a widget must follow the system theme even when the app is
  * pinned to Light or Dark, because it lives on someone else's surface. The stored [ThemeMode] is
  * honoured only when it is an explicit override.
  */

@@ -147,7 +147,8 @@ fun HabitDetailScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
                 StatTile(
                     label = stringResource(R.string.habit_consistency),
-                    value = state.monthRate.percent?.let { "$it%" } ?: "—",
+                    value = state.monthRate.percent?.let { "$it%" }
+                        ?: stringResource(R.string.habit_no_data_short),
                     caption = if (state.monthRate.hasData) {
                         "${state.monthRate.completed} / ${state.monthRate.scheduled} days"
                     } else {

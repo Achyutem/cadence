@@ -59,7 +59,7 @@ import dev.achyutem.cadence.domain.breathing.totalSeconds
 /**
  * Breathe.
  *
- * Two modes in one destination: a list of exercises, and — once one is running — a full-screen
+ * Two modes in one destination: a list of exercises, and, once one is running, a full-screen
  * session that replaces it. A running session takes the whole screen deliberately: these
  * exercises want your attention on one thing, and a dock floating over a breath-hold is an
  * invitation to tap away mid-round.
@@ -178,7 +178,7 @@ private fun ExerciseList(
  *
  * Shown on the list rather than behind a one-time dismissal, and written as instructions rather
  * than as a disclaimer. Breath-hold training can cause a blackout with no warning sensation,
- * which is exactly why it is dangerous in water — and why a line of text here is not boilerplate.
+ * which is exactly why it is dangerous in water, and why a line of text here is not boilerplate.
  */
 @Composable
 private fun SafetyNotice() {

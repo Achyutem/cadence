@@ -65,7 +65,7 @@ import dev.achyutem.cadence.core.designsystem.theme.CadenceTheme
  * The note editor.
  *
  * Two modes over one document: a plain Markdown text field, and a rendered preview whose
- * checkboxes are tappable. There is no save button — see [NoteEditorViewModel].
+ * checkboxes are tappable. There is no save button; see [NoteEditorViewModel].
  */
 @Composable
 fun NoteEditorScreen(
@@ -81,8 +81,8 @@ fun NoteEditorScreen(
     // Read here: `transitionSpec` below runs outside composition and cannot call into the theme.
     val modeFadeMillis = CadenceTheme.duration(Motion.QUICK)
 
-    // Whatever route the user takes out of this screen — back gesture, toolbar, process moving to
-    // the background — the pending debounce is flushed first.
+    // Whatever route the user takes out of this screen, back gesture, toolbar, process moving to
+    // the background; the pending debounce is flushed first.
     DisposableEffect(Unit) {
         onDispose { viewModel.saveNow() }
     }
@@ -149,7 +149,7 @@ fun NoteEditorScreen(
     }
 }
 
-/** A borderless text field that looks like the text it holds — used for the note's heading. */
+/** A borderless text field that looks like the text it holds, used for the note's heading. */
 @Composable
 private fun PlainTextField(
     value: String,
@@ -230,7 +230,7 @@ private fun EditorToolbar(
  * The Markdown text field plus its formatting bar.
  *
  * The bar operates on the current selection: with text selected it wraps it, with nothing
- * selected it inserts the markers and places the caret between them — so tapping **B** and typing
+ * selected it inserts the markers and places the caret between them, so tapping **B** and typing
  * does what you expect either way. That behaviour is the whole reason to keep a
  * [TextFieldValue] here rather than a plain string: without the selection there is nothing to
  * wrap and nowhere sensible to leave the caret.

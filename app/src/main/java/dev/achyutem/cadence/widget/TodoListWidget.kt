@@ -35,7 +35,7 @@ import dev.achyutem.cadence.domain.task.Task
  * Today's tasks, tickable in place.
  *
  * Uses Glance's `LazyColumn`, so a long list actually scrolls on the home screen rather than
- * being silently truncated — the thing that makes a todo widget usable rather than decorative.
+ * being silently truncated; the thing that makes a todo widget usable rather than decorative.
  *
  * Overdue tasks are shown above today's, because an overdue task is the only item here that is
  * already a problem.

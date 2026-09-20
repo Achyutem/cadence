@@ -163,7 +163,7 @@ class BreathingViewModel(
         }
     }
 
-    /** Stop early. The session is still logged — where you stopped is the measurement. */
+    /** Stop early. The session is still logged, where you stopped is the measurement. */
     fun stop() {
         val current = _run.value
         ticker?.cancel()

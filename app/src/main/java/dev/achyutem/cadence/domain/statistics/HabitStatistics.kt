@@ -10,7 +10,7 @@ import java.time.LocalDate
  * Everything derived from habit history.
  *
  * Nothing in here is stored. Streaks, rates and averages are functions of the entry rows plus the
- * habit's recurrence rule, computed on demand — which is why editing a day in the past
+ * habit's recurrence rule, computed on demand, which is why editing a day in the past
  * immediately corrects every number that depends on it, and why no two screens can ever disagree.
  *
  * Pure functions with no clock and no database, so every rule below is unit-testable.
@@ -96,7 +96,7 @@ object HabitStatistics {
      * Completion rate over a window: completed days ÷ scheduled days.
      *
      * The denominator is **scheduled** days, not calendar days. A weekday habit measured over a
-     * month is judged against ~22 days, not 30 — anything else quietly punishes the user for
+     * month is judged against ~22 days, not 30, anything else quietly punishes the user for
      * having chosen a schedule.
      *
      * Days before the habit existed are excluded, and so are days in the future: a habit created
@@ -175,7 +175,7 @@ object HabitStatistics {
         }
     }
 
-    /** A null rule means "every day" — substituted rather than special-cased at every call site. */
+    /** A null rule means "every day", substituted rather than special-cased at every call site. */
     private fun isScheduled(
         rule: RecurrenceRuleEntity?,
         date: LocalDate,

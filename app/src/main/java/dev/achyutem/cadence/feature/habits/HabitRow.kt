@@ -41,7 +41,7 @@ import dev.achyutem.cadence.domain.habit.Habit
 /**
  * One habit for one day.
  *
- * Boolean habits get a checkbox — the same control as a task, because it is the same gesture.
+ * Boolean habits get a checkbox; the same control as a task, because it is the same gesture.
  * Everything else gets −/+ steppers and a progress bar, so logging four glasses of water is four
  * taps in one place rather than four trips into a detail screen.
  *

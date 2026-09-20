@@ -2,7 +2,7 @@
 
 ## What Cadence is
 
-A **personal daily operating system** — not another habit tracker.
+A **personal daily operating system**, not another habit tracker.
 
 It answers five questions, and every feature has to serve one of them:
 
@@ -19,20 +19,20 @@ everywhere else. Pleasant to open six times a day.
 
 ## Screens
 
-**Today** — the most important screen and the start destination. Date, greeting, progress, what
+**Today**, the most important screen and the start destination. Date, greeting, progress, what
 is happening soon, unfinished scheduled tasks, habits, and an optional check-in. Priority order:
 things happening soon → incomplete scheduled tasks → important tasks → habits → remaining tasks →
 reflection.
 
-**Todos** — the full task list: create, edit, complete, subtask, prioritise, schedule, reorder.
+**Todos**, the full task list: create, edit, complete, subtask, prioritise, schedule, reorder.
 Creation is one tap and one line of text.
 
-**Habits** — the habit list with today's state, and a detail screen carrying the heatmap, streaks
+**Habits**, the habit list with today's state, and a detail screen carrying the heatmap, streaks
 and statistics.
 
-**Settings** — deliberately short. Appearance, notifications, behaviour, data.
+**Settings**, deliberately short. Appearance, notifications, behaviour, data.
 
-**Calendar** — month for overview, week for planning, day for a timeline. Reached from Today
+**Calendar**, month for overview, week for planning, day for a timeline. Reached from Today
 rather than occupying a fifth dock slot.
 
 ## Tasks
@@ -49,7 +49,7 @@ Four metric types under one model: **boolean** (meditate), **count** (75/50 push
 coffees" works as naturally as "at least eight glasses".
 
 Habit history is stored per day, so streaks, rates, averages and heatmaps are all reconstructions
-of what actually happened — and correcting a past day corrects everything downstream.
+of what actually happened, and correcting a past day corrects everything downstream.
 
 ## Daily check-in
 
@@ -62,7 +62,7 @@ No gamification of any kind. No XP, levels, badges, coins, points, confetti or a
 Streaks are information.
 
 No accounts, sync, social features, collaboration, ads, analytics, or external integrations. No
-LLM dependency in V1 — though the data model is shaped so a deterministic parser or an optional
+LLM dependency in V1, though the data model is shaped so a deterministic parser or an optional
 later intelligence layer could read it without a migration.
 
 ## Quality bar

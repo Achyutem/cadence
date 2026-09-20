@@ -30,7 +30,34 @@ sealed interface DataTransferState {
 class SettingsViewModel(
     private val settings: SettingsRepository,
     private val backup: BackupEngine,
+    private val reminders: dev.achyutem.cadence.core.notifications.ReminderScheduler,
 ) : ViewModel() {
+
+    /** Whether the system will honour an exact alarm right now. */
+    fun canScheduleExact(): Boolean = reminders.canScheduleExact()
+
+    /**
+     * Rebuild the reminder horizon.
+     *
+     * Called after any setting that changes what should fire or when: quiet hours, the check-in
+     * prompt, and after the notification permission is granted.
+     */
+    fun rescheduleReminders() = viewModelScope.launch { reminders.rescheduleAll() }
+
+    fun setQuietHoursEnabled(enabled: Boolean) = viewModelScope.launch {
+        settings.setQuietHoursEnabled(enabled)
+        reminders.rescheduleAll()
+    }
+
+    fun setQuietHours(start: java.time.LocalTime, end: java.time.LocalTime) = viewModelScope.launch {
+        settings.setQuietHours(start, end)
+        reminders.rescheduleAll()
+    }
+
+    fun setCheckInPrompt(enabled: Boolean) = viewModelScope.launch {
+        settings.setCheckInPromptEnabled(enabled)
+        reminders.rescheduleAll()
+    }
 
     val preferences: StateFlow<UserPreferences> = settings.preferences.stateIn(
         scope = viewModelScope,
@@ -95,7 +122,11 @@ class SettingsViewModel(
 
     companion object {
         val Factory = cadenceViewModelFactory { container ->
-            SettingsViewModel(container.settingsRepository, container.backupEngine)
+            SettingsViewModel(
+                container.settingsRepository,
+                container.backupEngine,
+                container.reminderScheduler,
+            )
         }
     }
 }

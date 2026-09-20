@@ -9,7 +9,7 @@ import dev.achyutem.cadence.core.datastore.AccentColor
  *
  * These are hand-tuned rather than generated from a seed. Generated schemes drift: the "same"
  * blue produces a different container tone in light and dark, and contrast ratios wander. Since
- * Cadence ships five fixed accents, tuning them once buys predictable contrast everywhere —
+ * Cadence ships five fixed accents, tuning them once buys predictable contrast everywhere,
  * including in Glance widgets, which cannot run Material's colour generation at all.
  *
  * Every `on*` colour below clears 4.5:1 against its pairing.
@@ -94,7 +94,7 @@ val AccentColor.palette: AccentPalette
         AccentColor.PINK -> PinkPalette
     }
 
-/** The swatch shown in Settings — the light primary reads well on both backgrounds. */
+/** The swatch shown in Settings; the light primary reads well on both backgrounds. */
 val AccentColor.swatch: Color
     get() = palette.lightPrimary
 

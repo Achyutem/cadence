@@ -22,7 +22,7 @@ import dev.achyutem.cadence.core.time.formatHourMinute
 /**
  * One task: the next thing due.
  *
- * The smallest useful widget, and the one that answers the most common glance — not "what is on
+ * The smallest useful widget, and the one that answers the most common glance, not "what is on
  * my list" but "what is next". Timed tasks win over untimed ones; overdue tasks win over both.
  */
 class NextTaskWidget : GlanceAppWidget() {
