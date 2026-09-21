@@ -58,7 +58,6 @@ interface TaskDao {
         WHERE archived = 0
           AND parentTaskId IS NULL
           AND scheduledDate IS NULL
-          AND completed = 0
         ORDER BY sortOrder ASC, id ASC
         """
     )
@@ -123,8 +122,27 @@ interface TaskDao {
     @Query("DELETE FROM tasks WHERE id = :id")
     suspend fun deleteById(id: Long)
 
-    @Query("UPDATE tasks SET completed = :completed, completedAt = :at, updatedAt = :at WHERE id = :id")
-    suspend fun setCompleted(id: Long, completed: Boolean, at: Instant?)
+    /**
+     * Tick or untick a task.
+     *
+     * Two timestamps, not one. `completedAt` is nullable and is cleared when a task is unticked;
+     * `updatedAt` is NOT NULL and is *always* now. Sharing one parameter between them meant
+     * unticking passed null to both and the write died on the constraint, which crashed the app
+     * on the second tap of any checkbox.
+     */
+    @Query(
+        """
+        UPDATE tasks
+        SET completed = :completed, completedAt = :completedAt, updatedAt = :updatedAt
+        WHERE id = :id
+        """
+    )
+    suspend fun setCompleted(
+        id: Long,
+        completed: Boolean,
+        completedAt: Instant?,
+        updatedAt: Instant,
+    )
 
     @Query("UPDATE tasks SET archived = :archived, updatedAt = :at WHERE id = :id")
     suspend fun setArchived(id: Long, archived: Boolean, at: Instant)

@@ -127,6 +127,18 @@ Simple many-to-many, both sides `ON DELETE CASCADE`.
   column. See `docs/INSIGHTS.md` and `CLAUDE.md` #12.
 - **Every read is range-bounded or id-bounded.** There is deliberately no `SELECT * FROM tasks`.
 
+## Two timestamps, not one
+
+`tasks.completedAt` is nullable and `tasks.updatedAt` is NOT NULL, and they are never the same
+parameter. `setCompleted` briefly shared one between them, so unticking passed null to both and
+the write died on the constraint, crashing the app on the second tap of any checkbox. Guarded by
+`DatabaseSmokeTest`.
+
+Queries also do not decide policy. `observeBacklog` used to filter `completed = 0`, which meant
+ticking an undated task erased it from the UI no matter what the user had chosen under "completed
+tasks". Whether to show finished work is a preference the ViewModel applies; the query's job is
+to return the rows.
+
 ## Migrations so far
 
 **v1 → v2**, added the `notes` table.

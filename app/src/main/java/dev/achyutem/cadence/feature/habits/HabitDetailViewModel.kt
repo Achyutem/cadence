@@ -175,7 +175,11 @@ class HabitDetailViewModel(
     fun setReminder(reminder: dev.achyutem.cadence.core.database.entity.ReminderEntity?) =
         viewModelScope.launch {
             val current = habits.getById(habitId) ?: return@launch
-            val newId = reminder?.let { recurrence.insertReminder(it) }
+                // `id = 0` so Room assigns a fresh one. Callers legitimately hand us an edited copy
+            // of the existing reminder, which still carries its primary key; inserting that is a
+            // UNIQUE violation, and it crashed the app on the second tap of the reminder row.
+            // The old row is deleted just below, so this is a replace, not a duplicate.
+            val newId = reminder?.let { recurrence.insertReminder(it.copy(id = 0)) }
             habits.update(current.copy(reminderId = newId, updatedAt = clock.now()))
             current.reminderId?.let { old ->
                 recurrence.getReminder(old)?.let { recurrence.deleteReminder(it) }

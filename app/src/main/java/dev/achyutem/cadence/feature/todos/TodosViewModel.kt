@@ -87,8 +87,12 @@ class TodosViewModel(
                 scheduled = scheduled.map { it.build() }
                     .filterNot { hideCompleted && it.completed }
                     .orderedForDay(sinkCompleted = sink),
+                // Same treatment as the scheduled list. The query used to exclude completed
+                // tasks outright, so ticking an undated task made it vanish with no way to see
+                // or undo it, whatever the user had chosen under "completed tasks".
                 backlog = backlog.map { it.build() }
-                    .filterNot { hideCompleted && it.completed },
+                    .filterNot { hideCompleted && it.completed }
+                    .orderedForDay(sinkCompleted = sink),
                 preferences = preferences,
                 loading = false,
             )
@@ -147,10 +151,10 @@ class TodosViewModel(
             // children, writing the parent's own flag would be ignored by the domain model and
             // would leave the UI and the data saying different things.
             task.subtasks.forEach { child ->
-                tasks.setCompleted(child.id, completed, if (completed) now else null)
+                tasks.setCompleted(child.id, completed, if (completed) now else null, now)
             }
         }
-        tasks.setCompleted(task.id, completed, if (completed) now else null)
+        tasks.setCompleted(task.id, completed, if (completed) now else null, now)
         onDataChanged()
     }
 

@@ -115,3 +115,15 @@ about it in system settings. That is the trade Android imposes for an in-app sou
 
 Changing the sound also reschedules every alarm. An alarm already scheduled would otherwise fire
 into the channel that was just deleted.
+
+## "Granted" is not the same question as "will it appear"
+
+`POST_NOTIFICATIONS` is a runtime permission on Android 13 and a meaningless string before it, so
+the permission check alone is wrong at both ends of the range. Asking for it on Android 12 returns
+*denied* and would silence every reminder there; answering an unconditional *granted* instead
+tells a user who has switched notifications off in system settings that everything is fine.
+
+`NotificationManagerCompat.areNotificationsEnabled()` answers the question that matters on every
+version, and is what both the receiver and the Settings row use. The runtime permission only
+decides **how** to offer it back: a prompt on 13 and up, a link into system notification settings
+below that, where there is nothing to prompt for.

@@ -193,9 +193,9 @@ class CalendarViewModel(
             tasks.setOccurrenceCompleted(task.id, occurrence, completed, at)
         } else {
             task.subtasks.forEach { child ->
-                tasks.setCompleted(child.id, completed, if (completed) at else null)
+                tasks.setCompleted(child.id, completed, if (completed) at else null, at)
             }
-            tasks.setCompleted(task.id, completed, if (completed) at else null)
+            tasks.setCompleted(task.id, completed, if (completed) at else null, at)
         }
         onDataChanged()
     }

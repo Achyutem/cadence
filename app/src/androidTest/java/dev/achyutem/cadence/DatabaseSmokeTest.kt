@@ -173,4 +173,50 @@ class DatabaseSmokeTest {
         assertEquals(false, occurrence?.completed)
         assertNull(occurrence?.completedAt)
     }
+
+    /**
+     * Unticking a task.
+     *
+     * `setCompleted` used to share one parameter between `completedAt` and `updatedAt`, so
+     * unticking passed null to both and the NOT NULL constraint on `updatedAt` took the app down
+     * on the second tap of any checkbox. Cheap to get wrong, cheap to guard.
+     */
+    @Test
+    fun aTaskCanBeUntickedWithoutViolatingTheUpdatedAtConstraint() = runTest {
+        val id = db.taskDao().insert(
+            TaskEntity(title = "Buy milk", createdAt = now, updatedAt = now),
+        )
+        val later = now.plusSeconds(60)
+
+        db.taskDao().setCompleted(id, completed = true, completedAt = now, updatedAt = now)
+        assertEquals(true, db.taskDao().getById(id)?.completed)
+
+        db.taskDao().setCompleted(id, completed = false, completedAt = null, updatedAt = later)
+
+        val task = db.taskDao().getById(id)
+        assertEquals(false, task?.completed)
+        assertNull("completedAt is cleared", task?.completedAt)
+        assertEquals("updatedAt is always now", later, task?.updatedAt)
+    }
+
+    /**
+     * A completed undated task is still a task.
+     *
+     * The backlog query used to hard-code `completed = 0`, so ticking something with no date made
+     * it disappear with no way to see or undo it, whatever the user had chosen under "completed
+     * tasks". Whether to show completed work is a preference, not a fact about the query.
+     */
+    @Test
+    fun theBacklogKeepsCompletedTasks() = runTest {
+        val id = db.taskDao().insert(
+            TaskEntity(title = "No date", createdAt = now, updatedAt = now),
+        )
+        db.taskDao().setCompleted(id, completed = true, completedAt = now, updatedAt = now)
+
+        val backlog = db.taskDao().observeBacklog().first()
+
+        assertEquals(1, backlog.size)
+        assertEquals(true, backlog.single().completed)
+    }
+
 }

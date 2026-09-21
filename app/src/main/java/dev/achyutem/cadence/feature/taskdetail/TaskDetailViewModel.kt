@@ -112,9 +112,9 @@ class TaskDetailViewModel(
     fun setCompleted(completed: Boolean) = viewModelScope.launch {
         val at = clock.now()
         tasks.observeSubtasks(taskId).first().forEach { child ->
-            tasks.setCompleted(child.id, completed, if (completed) at else null)
+            tasks.setCompleted(child.id, completed, if (completed) at else null, at)
         }
-        tasks.setCompleted(taskId, completed, if (completed) at else null)
+        tasks.setCompleted(taskId, completed, if (completed) at else null, at)
         refreshKey.value++
         afterWrite()
     }
@@ -138,7 +138,11 @@ class TaskDetailViewModel(
 
     fun setReminder(reminder: ReminderEntity?) = viewModelScope.launch {
         val current = tasks.getById(taskId) ?: return@launch
-        val newId = reminder?.let { recurrence.insertReminder(it) }
+            // `id = 0` so Room assigns a fresh one. Callers legitimately hand us an edited copy
+            // of the existing reminder, which still carries its primary key; inserting that is a
+            // UNIQUE violation, and it crashed the app on the second tap of the reminder row.
+            // The old row is deleted just below, so this is a replace, not a duplicate.
+            val newId = reminder?.let { recurrence.insertReminder(it.copy(id = 0)) }
         tasks.update(current.copy(reminderId = newId, updatedAt = clock.now()))
         current.reminderId?.let { old ->
             recurrence.getReminder(old)?.let { recurrence.deleteReminder(it) }
@@ -165,7 +169,9 @@ class TaskDetailViewModel(
     }
 
     fun setSubtaskCompleted(subtask: Task, completed: Boolean) = viewModelScope.launch {
-        tasks.setCompleted(subtask.id, completed, if (completed) clock.now() else null)
+        clock.now().let { at ->
+            tasks.setCompleted(subtask.id, completed, if (completed) at else null, at)
+        }
         afterWrite()
     }
 

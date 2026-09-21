@@ -115,7 +115,7 @@ class ReminderReceiver : BroadcastReceiver() {
         val at = container.clock.now()
 
         when (target) {
-            ReminderTarget.TASK -> container.taskDao.setCompleted(entityId, true, at)
+            ReminderTarget.TASK -> container.taskDao.setCompleted(entityId, true, at, at)
             ReminderTarget.HABIT -> {
                 val habit = container.habitDao.getById(entityId) ?: return
                 val existing = container.habitDao.getEntry(entityId, date)
@@ -236,6 +236,6 @@ class ReminderReceiver : BroadcastReceiver() {
             ((target.ordinal * 31 + entityId.hashCode()) * 31 + date.toEpochDay().toInt())
 
         fun hasNotificationPermission(context: Context): Boolean =
-            NotificationPermission.isGranted(context)
+            NotificationPermission.isEnabled(context)
     }
 }

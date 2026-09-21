@@ -271,6 +271,7 @@
     <string name="settings_notifications">Notifications</string>
     <string name="settings_notifications_permission">Allow notifications</string>
     <string name="settings_notifications_permission_body">Cadence needs permission before it can remind you about anything.</string>
+    <string name="settings_notifications_blocked_body">Notifications for Cadence are switched off for this device. Reminders will not appear until they are turned back on.</string>
     <string name="settings_exact_alarms">Allow exact timing</string>
     <string name="settings_exact_alarms_body">Without this, reminders may arrive late when the device is idle.</string>
     <string name="settings_sound">Reminder sound</string>

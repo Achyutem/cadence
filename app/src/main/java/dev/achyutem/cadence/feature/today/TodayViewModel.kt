@@ -223,10 +223,10 @@ class TodayViewModel(
         val at = clock.now()
         if (task.hasSubtasks) {
             task.subtasks.forEach { child ->
-                tasks.setCompleted(child.id, completed, if (completed) at else null)
+                tasks.setCompleted(child.id, completed, if (completed) at else null, at)
             }
         }
-        tasks.setCompleted(task.id, completed, if (completed) at else null)
+        tasks.setCompleted(task.id, completed, if (completed) at else null, at)
         onDataChanged()
     }
 

@@ -73,6 +73,14 @@ an in-app toggle we invented.
 launch. A permission prompt before the user has asked for anything is how people learn to deny by
 reflex.
 
+## Replacing a reminder clears its id
+
+The detail screens hand the ViewModel an edited copy of the existing reminder, which still carries
+its primary key; inserting that is a UNIQUE violation. It crashed the app on the second tap of the
+reminder row, which is also the most likely reason someone would report that reminders "do not
+work" at all: the first tap created one, the second killed the app before anything could be saved.
+Inserts clear the id, and the old row is deleted straight after, so this is a replace.
+
 ## Who rebuilds the horizon
 
 Alarms are laid down a week ahead, so something has to extend the window and something has to

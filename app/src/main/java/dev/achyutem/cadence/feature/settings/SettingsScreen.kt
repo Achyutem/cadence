@@ -134,11 +134,11 @@ fun SettingsScreen(
 
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var notificationsAllowed by remember {
-        mutableStateOf(NotificationPermission.isGranted(context))
+        mutableStateOf(NotificationPermission.isEnabled(context))
     }
     // Re-read on resume: the user may have granted it in system settings and come back.
     androidx.lifecycle.compose.LifecycleResumeEffect(Unit) {
-        notificationsAllowed = NotificationPermission.isGranted(context)
+        notificationsAllowed = NotificationPermission.isEnabled(context)
         onPauseOrDispose { }
     }
 
@@ -157,7 +157,13 @@ fun SettingsScreen(
         notificationsAllowed = notificationsAllowed,
         exactAlarmsAllowed = viewModel.canScheduleExact(),
         onRequestNotifications = {
-            notificationPermission.launch(NotificationPermission.NAME)
+            if (NotificationPermission.isRequestable) {
+                notificationPermission.launch(NotificationPermission.NAME)
+            } else {
+                // No runtime permission to ask for on Android 12; the switch lives in system
+                // settings, so take them there rather than showing a button that does nothing.
+                runCatching { context.startActivity(NotificationPermission.settingsIntent(context)) }
+            }
         },
         onRequestExactAlarms = {
             // There is no runtime prompt for exact alarms; the user grants it in system settings.
@@ -332,7 +338,13 @@ private fun SettingsContent(
             if (!notificationsAllowed) {
                 PermissionRow(
                     title = stringResource(R.string.settings_notifications_permission),
-                    body = stringResource(R.string.settings_notifications_permission_body),
+                    body = stringResource(
+                        if (NotificationPermission.isRequestable) {
+                            R.string.settings_notifications_permission_body
+                        } else {
+                            R.string.settings_notifications_blocked_body
+                        },
+                    ),
                     onGrant = onRequestNotifications,
                 )
                 Spacer(Modifier.height(Spacing.xs))

@@ -48,9 +48,9 @@ class ToggleTaskAction : ActionCallback {
         // A parent's completion is derived from its children, so completing one from a widget has
         // to complete the children too, exactly as the in-app path does.
         container.taskDao.observeSubtasks(taskId).first().forEach { child ->
-            container.taskDao.setCompleted(child.id, completed, if (completed) at else null)
+            container.taskDao.setCompleted(child.id, completed, if (completed) at else null, at)
         }
-        container.taskDao.setCompleted(taskId, completed, if (completed) at else null)
+        container.taskDao.setCompleted(taskId, completed, if (completed) at else null, at)
 
         CadenceWidgets.updateAll(context)
     }
