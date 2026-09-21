@@ -2,6 +2,9 @@ package dev.achyutem.cadence.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -52,14 +55,22 @@ class SingleHabitWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val container = context.appContainer()
 
-        // Loading happens here, not in the composition: `provideGlance` is the suspend boundary,
-        // and a Glance composable has no way to run suspending work of its own.
+        // Which habit is a one-shot read: it changes only when the user reconfigures the widget,
+        // which restarts the session anyway.
         val configured = getAppWidgetState(context, PreferencesGlanceStateDefinition, id)[HABIT_ID_KEY]
         val habitId = configured
             ?: container.habitDao.observeActive().first().firstOrNull()?.id
-        val snapshot = habitId?.let { container.loadHabitSnapshot(it, HEATMAP_DAYS) }
 
-        provideContent { Content(snapshot) }
+        // Its contents are not. Collected inside the composition so the session follows the
+        // database; see `widgetSnapshotFlow` for why that matters.
+        val initial = habitId?.let { container.loadHabitSnapshot(it, HEATMAP_DAYS) }
+        provideContent {
+            val flow = remember(habitId) {
+                habitId?.let { container.habitSnapshotFlow(it, HEATMAP_DAYS) }
+            }
+            val snapshot = flow?.collectAsState(initial)?.value ?: initial
+            Content(snapshot)
+        }
     }
 
     @Composable

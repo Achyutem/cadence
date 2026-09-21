@@ -72,6 +72,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -502,9 +503,14 @@ private fun NameField(value: String, onValueChange: (String) -> Unit) {
 /**
  * The accent picker.
  *
- * A dropdown rather than a grid of swatches. Eleven of them tiled across the screen turned the
+ * A dropdown rather than a grid of swatches. Ten of them tiled across the screen turned the
  * quietest section of Settings into its loudest thing, and a row of unlabelled dots makes you
  * guess which one is "sepia". Collapsed it is one line: the current colour and its name.
+ *
+ * The menu is anchored to the **value**, not to the whole row. `DropdownMenu` positions itself
+ * against its parent's top-left corner, so hanging it off the full-width row dropped it out of
+ * the far left of the screen, nowhere near the thing that was tapped. Wrapping just the swatch
+ * and label puts it where a dropdown belongs: directly under what it is changing.
  */
 @Composable
 private fun AccentRow(
@@ -516,73 +522,79 @@ private fun AccentRow(
     var expanded by remember { mutableStateOf(false) }
     val dark = isSystemInDarkTheme()
 
-    Box(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(Radius.shapeMd)
-                .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                .border(Borders.hairline, CadenceTheme.colors.border, Radius.shapeMd)
-                .clickable(enabled = enabled) { expanded = true }
-                .padding(horizontal = Spacing.sm, vertical = Spacing.xs),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(R.string.settings_accent),
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (enabled) {
-                    MaterialTheme.colorScheme.onSurface
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                modifier = Modifier.weight(1f),
-            )
-            AccentDot(accent = selected, enabled = enabled, dark = dark)
-            Spacer(Modifier.width(Spacing.xs))
-            Text(
-                text = stringResource(selected.labelRes),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Icon(
-                imageVector = Icons.Rounded.ExpandMore,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(18.dp),
-            )
-        }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(Radius.shapeMd)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .border(Borders.hairline, CadenceTheme.colors.border, Radius.shapeMd)
+            .clickable(enabled = enabled) { expanded = true }
+            .padding(horizontal = Spacing.sm, vertical = Spacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.settings_accent),
+            style = MaterialTheme.typography.bodyLarge,
+            color = if (enabled) {
+                MaterialTheme.colorScheme.onSurface
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            modifier = Modifier.weight(1f),
+        )
 
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            containerColor = MaterialTheme.colorScheme.surface,
-            shape = Radius.shapeMd,
-        ) {
-            AccentColor.entries.forEach { accent ->
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = stringResource(accent.labelRes),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                    },
-                    leadingIcon = { AccentDot(accent = accent, enabled = true, dark = dark) },
-                    trailingIcon = {
-                        if (accent == selected) {
-                            Icon(
-                                imageVector = Icons.Rounded.Check,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp),
-                            )
-                        }
-                    },
-                    onClick = {
-                        onSelect(accent)
-                        expanded = false
-                    },
+        Box {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                AccentDot(accent = selected, enabled = enabled, dark = dark)
+                Spacer(Modifier.width(Spacing.xs))
+                Text(
+                    text = stringResource(selected.labelRes),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Icon(
+                    imageVector = Icons.Rounded.ExpandMore,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                // Clear of the row rather than sitting on top of it, and right-aligned so the
+                // menu's edge lines up with the value it belongs to.
+                offset = DpOffset(x = (-96).dp, y = Spacing.xs),
+                containerColor = MaterialTheme.colorScheme.surface,
+                shape = Radius.shapeMd,
+            ) {
+                AccentColor.entries.forEach { accent ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = stringResource(accent.labelRes),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        },
+                        leadingIcon = { AccentDot(accent = accent, enabled = true, dark = dark) },
+                        trailingIcon = {
+                            if (accent == selected) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Check,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+                        },
+                        onClick = {
+                            onSelect(accent)
+                            expanded = false
+                        },
+                    )
+                }
             }
         }
     }
@@ -667,9 +679,16 @@ private fun SoundRow(sound: NotificationSound, onSelect: (NotificationSound) -> 
             text = stringResource(R.string.settings_sound_body),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            // Held short of the value above it. Run full width, the caption reached under the
+            // tone's name and the row read as one long paragraph with a word stuck to its top
+            // right corner.
+            modifier = Modifier.fillMaxWidth(CAPTION_WIDTH),
         )
     }
 }
+
+/** How much of the row a secondary caption may use before it collides with the value. */
+private const val CAPTION_WIDTH = 0.75f
 
 /** The tone's own title, straight from the system, so it matches what the picker showed. */
 @Composable

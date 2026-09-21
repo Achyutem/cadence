@@ -124,6 +124,7 @@ class SettingsRepository(context: Context) {
         this[Keys.boxRounds] = breathing.boxRounds
         this[Keys.staticBreatheUp] = breathing.staticBreatheUpSeconds
         this[Keys.staticHold] = breathing.staticHoldSeconds
+        this[Keys.staticHoldIncrement] = breathing.staticHoldIncrementSeconds
         this[Keys.staticRounds] = breathing.staticRounds
         this[Keys.co2Hold] = breathing.co2HoldSeconds
         this[Keys.co2StartRest] = breathing.co2StartRestSeconds
@@ -161,6 +162,7 @@ class SettingsRepository(context: Context) {
         val boxRounds = intPreferencesKey("breathing_box_rounds")
         val staticBreatheUp = intPreferencesKey("breathing_static_breathe_up")
         val staticHold = intPreferencesKey("breathing_static_hold")
+        val staticHoldIncrement = intPreferencesKey("breathing_static_hold_increment")
         val staticRounds = intPreferencesKey("breathing_static_rounds")
         val co2Hold = intPreferencesKey("breathing_co2_hold")
         val co2StartRest = intPreferencesKey("breathing_co2_start_rest")
@@ -209,6 +211,8 @@ class SettingsRepository(context: Context) {
             boxRounds = prefs[Keys.boxRounds] ?: defaults.boxRounds,
             staticBreatheUpSeconds = prefs[Keys.staticBreatheUp] ?: defaults.staticBreatheUpSeconds,
             staticHoldSeconds = prefs[Keys.staticHold] ?: defaults.staticHoldSeconds,
+            staticHoldIncrementSeconds = prefs[Keys.staticHoldIncrement]
+                ?: defaults.staticHoldIncrementSeconds,
             staticRounds = prefs[Keys.staticRounds] ?: defaults.staticRounds,
             co2HoldSeconds = prefs[Keys.co2Hold] ?: defaults.co2HoldSeconds,
             co2StartRestSeconds = prefs[Keys.co2StartRest] ?: defaults.co2StartRestSeconds,

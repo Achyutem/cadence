@@ -17,9 +17,21 @@ no parallel query layer, and no second notion of "is this habit due today", whic
 way a widget and its app quietly start disagreeing about the user's day. A streak on the home
 screen is computed by the same `HabitStatistics.currentStreak` the detail screen uses.
 
-Loading is a one-shot suspend read in `provideGlance`, not a Flow: `provideGlance` runs once per
-update and the composition is then serialised into a `RemoteViews` tree. There is nothing on the
-other side to receive a second emission.
+Loading is a **Flow collected inside `provideContent`**, seeded by a one-shot read so the first
+frame is never empty.
+
+That distinction is the whole of a bug worth remembering. Glance keeps a *session* alive while a
+widget is on screen, and `update()` recomposes that session rather than re-running
+`provideGlance`. A snapshot read outside `provideContent` is therefore captured once and redrawn
+forever: tapping a stepper wrote the new value, asked every widget to refresh, and the widget
+re-rendered the numbers it had loaded before the tap. A probe confirmed the data was never wrong
+(`wrote=6.0 reread=6.0`), only the frame.
+
+The trigger is Room's invalidation tracker over the tables widgets draw from, rather than a
+`combine` of a dozen query flows: one subscription, no chance of forgetting a table, and the
+reload calls the same loader the seed does, so the two can never disagree. A visible widget now
+follows the database on its own, which makes `CadenceWidgets.updateAll` belt and braces for
+sessions that are not running rather than the only thing keeping a widget honest.
 
 ## Why the accents are hand-tuned constants
 

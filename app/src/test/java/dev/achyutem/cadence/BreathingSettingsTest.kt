@@ -69,6 +69,33 @@ class BreathingSettingsTest {
     }
 
     @Test
+    fun `static apnea holds can grow by a step you choose`() {
+        // Three rounds of a minute, ten seconds more each time, written as the numbers a user
+        // would type into the sheet.
+        val exercise = BreathingExercise.StaticApnea(
+            rounds = 3,
+            holdSeconds = 60,
+            holdIncrementSeconds = 10,
+            breatheUpSeconds = 60,
+        )
+
+        val holds = exercise.expand()
+            .filter { it.kind == BreathPhaseKind.HOLD_FULL }
+            .map { it.seconds }
+
+        assertEquals(listOf(60, 70, 80), holds)
+        assertEquals(80, exercise.finalHoldSeconds())
+    }
+
+    @Test
+    fun `a zero increment leaves every static apnea round the same`() {
+        val holds = BreathingExercise.StaticApnea(rounds = 4, holdSeconds = 90).expand()
+            .filter { it.kind == BreathPhaseKind.HOLD_FULL }
+            .map { it.seconds }
+        assertEquals(listOf(90, 90, 90, 90), holds)
+    }
+
+    @Test
     fun `static apnea rounds are the users to set`() {
         val five = BreathingExercise.StaticApnea().with(BreathField.ROUNDS, 5)
         assertEquals(5, five.valueOf(BreathField.ROUNDS))

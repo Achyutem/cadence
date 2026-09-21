@@ -23,30 +23,17 @@ data class AccentPalette(
     val darkOnPrimary: Color,
     val darkContainer: Color,
     val darkOnContainer: Color,
-    /**
-     * What the heatmap ramps toward, when the primary itself will not do.
-     *
-     * The ramp normally walks from an empty grid cell to the primary, which works for any accent
-     * with contrast against the surface. A pale accent in a light scheme has none: every level
-     * lands within a percent of the empty cell and "once" and "four times" render identically.
-     * Those accents name a darker seed here; everything else leaves it null and uses the primary.
-     */
-    val lightHeatmapSeed: Color? = null,
-    val darkHeatmapSeed: Color? = null,
 ) {
     fun primary(dark: Boolean): Color = if (dark) darkPrimary else lightPrimary
-
-    fun heatmapSeed(dark: Boolean): Color =
-        (if (dark) darkHeatmapSeed else lightHeatmapSeed) ?: primary(dark)
     fun onPrimary(dark: Boolean): Color = if (dark) darkOnPrimary else lightOnPrimary
     fun container(dark: Boolean): Color = if (dark) darkContainer else lightContainer
     fun onContainer(dark: Boolean): Color = if (dark) darkOnContainer else lightOnContainer
 }
 
 /*
- * The eleven accents.
+ * The ten accents.
  *
- * Nine hues plus two neutrals. The first set was tuned for restraint and came out muted: readable,
+ * Eight hues plus two neutrals. The first set was tuned for restraint and came out muted: readable,
  * but flat next to a white surface. These are pitched brighter in light mode and clearly lighter
  * in dark mode, where an accent has to carry against near-black rather than white.
  *
@@ -167,28 +154,6 @@ private val GreyPalette = AccentPalette(
     darkOnContainer = Color(0xFFE6E9ED),
 )
 
-/**
- * White, as far as white can go.
- *
- * In dark mode this is literally white. In light mode a white primary on a white surface is not a
- * subtle design choice, it is an invisible button, so it becomes the palest chip that still reads
- * as a shape, with near-black text on it. The heatmap ramp that derives from it is quiet by
- * definition; that is what choosing white in a light scheme asks for.
- */
-private val WhitePalette = AccentPalette(
-    lightPrimary = Color(0xFFD4D4D8),
-    lightOnPrimary = Color(0xFF18181B),
-    lightContainer = Color(0xFFF1F1F3),
-    lightOnContainer = Color(0xFF27272A),
-    darkPrimary = Color(0xFFFFFFFF),
-    darkOnPrimary = Color(0xFF0A0A0A),
-    darkContainer = Color(0xFF3F3F46),
-    darkOnContainer = Color(0xFFFAFAFA),
-    // A near-white primary and a near-white grid cannot make a ramp. The heatmap reaches for a
-    // mid grey instead, which is as close to "white" as a legible light-scheme grid gets.
-    lightHeatmapSeed = Color(0xFF8E8E93),
-)
-
 /** Black on a light scheme, white on a dark one. Maximum contrast, no hue at all. */
 private val MonoPalette = AccentPalette(
     lightPrimary = Color(0xFF18181B),
@@ -212,7 +177,6 @@ val AccentColor.palette: AccentPalette
         AccentColor.BLUE -> BluePalette
         AccentColor.MAGENTA -> MagentaPalette
         AccentColor.GREY -> GreyPalette
-        AccentColor.WHITE -> WhitePalette
         AccentColor.MONO -> MonoPalette
     }
 
@@ -237,6 +201,5 @@ val AccentColor.labelRes: Int
         AccentColor.BLUE -> R.string.accent_blue
         AccentColor.MAGENTA -> R.string.accent_magenta
         AccentColor.GREY -> R.string.accent_grey
-        AccentColor.WHITE -> R.string.accent_white
         AccentColor.MONO -> R.string.accent_mono
     }

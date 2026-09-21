@@ -12,6 +12,9 @@ import dev.achyutem.cadence.domain.statistics.HabitStatistics
 import dev.achyutem.cadence.domain.task.Task
 import dev.achyutem.cadence.domain.task.orderedForDay
 import dev.achyutem.cadence.domain.task.toTask
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 
@@ -45,6 +48,56 @@ data class WidgetSnapshot(
 /** The container, reached the same way the app reaches it. */
 fun Context.appContainer(): AppContainer =
     (applicationContext as CadenceApplication).container
+
+/**
+ * Tables every widget's content is derived from.
+ *
+ * Used as an invalidation trigger, not a query: any write to one of these means at least one
+ * widget is now showing something that is no longer true.
+ */
+private val WIDGET_TABLES = arrayOf(
+    "tasks",
+    "task_occurrences",
+    "habits",
+    "habit_entries",
+    "recurrence_rules",
+    "notes",
+)
+
+/**
+ * The snapshot, as a stream.
+ *
+ * ### Why a Flow and not the one-shot read
+ *
+ * Glance keeps a **session** alive while a widget is on screen, and `update()` recomposes that
+ * session rather than re-running `provideGlance`. A snapshot loaded outside `provideContent` is
+ * therefore captured once and redrawn forever: tapping a stepper wrote the new value, asked every
+ * widget to refresh, and the widget dutifully re-rendered the numbers it had loaded before the
+ * tap. The data was never wrong, only the frame.
+ *
+ * Reading through a Flow collected *inside* the composition fixes it at the root. It also means
+ * a widget follows the database on its own while it is visible, so `CadenceWidgets.updateAll` is
+ * now belt and braces for sessions that are not running, rather than the only thing keeping a
+ * widget honest.
+ *
+ * The trigger is Room's invalidation tracker rather than a `combine` of a dozen query flows: one
+ * subscription, no chance of forgetting a table, and the reload is the same function the one-shot
+ * path uses, so the two can never disagree.
+ */
+fun AppContainer.widgetSnapshotFlow(): Flow<WidgetSnapshot> =
+    combine(
+        database.invalidationTracker.createFlow(*WIDGET_TABLES),
+        settingsRepository.preferences,
+    ) { _, _ -> }
+        .map { loadWidgetSnapshot() }
+
+/** The single-habit snapshot, as a stream. See [widgetSnapshotFlow]. */
+fun AppContainer.habitSnapshotFlow(habitId: Long, heatmapDays: Long): Flow<HabitWidgetSnapshot> =
+    combine(
+        database.invalidationTracker.createFlow(*WIDGET_TABLES),
+        settingsRepository.preferences,
+    ) { _, _ -> }
+        .map { loadHabitSnapshot(habitId, heatmapDays) }
 
 suspend fun AppContainer.loadWidgetSnapshot(): WidgetSnapshot {
     val today = clock.today()

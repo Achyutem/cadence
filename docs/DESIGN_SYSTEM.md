@@ -32,30 +32,31 @@ saturation it reads as calm, and it stops every accent from looking dirty agains
 
 ### Accents
 
-Eleven shipped accents: red, orange, sepia, green, spotify, cyan, blue, magenta, grey, white and
+Ten shipped accents: red, orange, sepia, green, spotify, cyan, blue, magenta, grey and
 black-and-white. Each is a **hand-tuned pair of light and dark ramps**, not a generated seed.
 
 The original five were muted, chosen for restraint, and read as dull rather than calm. These are
 brighter, with light primaries around 45–55% lightness and dark primaries around 70–78%, which is
 the range where an accent stays legible on a near-black surface without glowing.
 
-Three need a word each:
+Two need a word each:
 
 - **Spotify** is the familiar `#1DB954`, darkened for light mode. The brand value against white is
   about 2.2:1, so white text on it would fail outright; dark mode gets the real thing.
-- **White** stays white wherever white can be read. In a light scheme a white primary on a white
-  surface is not a subtle choice, it is an invisible button, so it becomes the palest chip that
-  still reads as a shape with near-black text on it.
-- **Black and white** inverts instead: black on light, white on dark.
+- **Black and white** is the monochrome option: black on a light scheme, white on a dark one.
 
-A palette can name a separate `heatmapSeed`. The ramp normally walks from an empty grid cell to
-the primary, which needs contrast against the surface; white in a light scheme has none, and every
-level landed within a percent of the empty cell. It seeds the ramp from a mid grey instead, which
-`HeatmapRampTest` is what catches.
+A plain "white" accent shipped briefly and was withdrawn. In a light scheme a white primary on a
+white surface is an invisible button, and it collapsed the heatmap besides: the ramp walks from an
+empty grid cell to the primary, so every level landed within a percent of the empty one and
+`HeatmapRampTest` caught it. Every workaround turned out to be black-and-white wearing a hat.
 
-The picker is a **dropdown, not a grid**. Eleven swatches tiled across the screen turned the
-quietest section of Settings into its loudest thing, and a row of unlabelled dots makes you guess
-which one is "sepia". Collapsed it is one line: the current colour and its name.
+The picker is a **dropdown, not a grid**. Ten swatches tiled across the screen turned the quietest
+section of Settings into its loudest thing, and a row of unlabelled dots makes you guess which one
+is "sepia". Collapsed it is one line: the current colour and its name.
+
+The menu anchors to the **value**, not the row. `DropdownMenu` positions against its parent's
+top-left corner, so hanging it off a full-width row dropped it out of the far left of the screen,
+nowhere near the thing that was tapped.
 
 Renaming and merging accents is a stored-value problem, so `AccentColor.parse` maps every retired
 name to its nearest survivor rather than falling back to blue. Silently resetting the one visual

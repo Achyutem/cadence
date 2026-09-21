@@ -2,6 +2,9 @@ package dev.achyutem.cadence.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -94,9 +97,14 @@ class HabitCalendarWidget : GlanceAppWidget() {
 
         // A month grid needs the whole month plus the leading partial week.
         val days = if (period == HabitCalendarPeriod.MONTH) 40L else 14L
-        val snapshot = habitId?.let { container.loadHabitSnapshot(it, days) }
+        val initial = habitId?.let { container.loadHabitSnapshot(it, days) }
 
-        provideContent { Content(snapshot, period) }
+        provideContent {
+            val flow = remember(habitId, days) {
+                habitId?.let { container.habitSnapshotFlow(it, days) }
+            }
+            Content(flow?.collectAsState(initial)?.value ?: initial, period)
+        }
     }
 
     @Composable

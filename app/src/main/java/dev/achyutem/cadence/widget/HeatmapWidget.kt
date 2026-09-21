@@ -2,6 +2,9 @@ package dev.achyutem.cadence.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,8 +67,13 @@ class HeatmapWidget : GlanceAppWidget() {
         // exists still has something to show once one does.
         val habitId = prefs[HABIT_ID_KEY]
             ?: container.habitDao.observeActive().first().firstOrNull()?.id
-        val snapshot = habitId?.let { container.loadHabitSnapshot(it, WEEKS * 7L) }
-        provideContent { Content(snapshot) }
+        val initial = habitId?.let { container.loadHabitSnapshot(it, WEEKS * 7L) }
+        provideContent {
+            val flow = remember(habitId) {
+                habitId?.let { container.habitSnapshotFlow(it, WEEKS * 7L) }
+            }
+            Content(flow?.collectAsState(initial)?.value ?: initial)
+        }
     }
 
     @Composable

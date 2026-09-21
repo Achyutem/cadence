@@ -13,9 +13,9 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK }
  * ramps, not a single hue; see `designsystem/theme/Accent.kt`. A future custom accent would add
  * one `CUSTOM` case carrying a seed, without changing anything that reads this type.
  *
- * [WHITE] and [MONO] are both near-monochrome and both deliberate. White stays white wherever
- * white can be read, so in light mode it is a pale chip with dark text. Mono inverts instead:
- * black on a light scheme, white on a dark one.
+ * [MONO] is the monochrome option: black on a light scheme, white on a dark one. A plain "white"
+ * accent was offered briefly and withdrawn, because in a light scheme a white primary on a white
+ * surface is an invisible button, and every workaround for that is just [MONO] wearing a hat.
  *
  * Ordered roughly by hue, then the neutrals, because that is the order the picker shows them in.
  */
@@ -29,7 +29,6 @@ enum class AccentColor {
     BLUE,
     MAGENTA,
     GREY,
-    WHITE,
     MONO,
     ;
 
@@ -50,6 +49,7 @@ enum class AccentColor {
                 "AMBER" -> ORANGE
                 "EMERALD", "TEAL" -> GREEN
                 "SLATE" -> GREY
+                "WHITE" -> MONO
                 else -> BLUE
             }
         }

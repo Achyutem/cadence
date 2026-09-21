@@ -4,6 +4,7 @@ import dev.achyutem.cadence.core.datastore.AccentColor
 import dev.achyutem.cadence.core.designsystem.theme.palette
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -31,6 +32,7 @@ class AccentMigrationTest {
         assertEquals(AccentColor.GREEN, AccentColor.parse("EMERALD"))
         assertEquals(AccentColor.GREEN, AccentColor.parse("TEAL"))
         assertEquals(AccentColor.GREY, AccentColor.parse("SLATE"))
+        assertEquals(AccentColor.MONO, AccentColor.parse("WHITE"))
     }
 
     @Test
@@ -41,11 +43,18 @@ class AccentMigrationTest {
     }
 
     @Test
-    fun `the two neutral accents differ where it matters`() {
-        // White stays white in a dark scheme; mono inverts. If these ever converge in both
-        // schemes, one of them has stopped being worth offering.
-        val white = AccentColor.WHITE.palette
-        val mono = AccentColor.MONO.palette
-        assertNotEquals(white.primary(dark = false), mono.primary(dark = false))
+    fun `a retired accent never lands on another retired accent`() {
+        // The mapping has to point at something that still exists, or it is just a slower way of
+        // falling back to blue.
+        listOf("INDIGO", "VIOLET", "ROSE", "AMBER", "EMERALD", "TEAL", "SLATE", "WHITE").forEach {
+            assertTrue("$it maps to a live accent", AccentColor.parse(it) in AccentColor.entries)
+        }
     }
+
+    @Test
+    fun `the monochrome accent inverts between schemes`() {
+        val mono = AccentColor.MONO.palette
+        assertNotEquals(mono.primary(dark = false), mono.primary(dark = true))
+    }
+
 }

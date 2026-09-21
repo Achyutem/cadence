@@ -2,6 +2,9 @@ package dev.achyutem.cadence.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,9 +47,22 @@ class TodoListWidget : GlanceAppWidget() {
 
     override val sizeMode = SizeMode.Responsive(setOf(MEDIUM, LARGE))
 
+    /**
+     * Loads once for the first frame, then follows the database.
+     *
+     * The snapshot is collected **inside** `provideContent`, not captured outside it. Glance keeps
+     * a session alive while the widget is on screen and `update()` recomposes that session rather
+     * than re-running this function, so a value read out here is captured once and redrawn
+     * forever. See `widgetSnapshotFlow`.
+     */
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val snapshot = context.appContainer().loadWidgetSnapshot()
-        provideContent { Content(snapshot) }
+        val container = context.appContainer()
+        val initial = container.loadWidgetSnapshot()
+        provideContent {
+            val flow = remember { container.widgetSnapshotFlow() }
+            val snapshot by flow.collectAsState(initial)
+            Content(snapshot)
+        }
     }
 
     @Composable

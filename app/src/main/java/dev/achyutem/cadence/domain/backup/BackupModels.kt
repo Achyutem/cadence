@@ -83,6 +83,7 @@ data class BackupBreathing(
     @SerialName("box_rounds") val boxRounds: Int = 8,
     @SerialName("static_breathe_up_seconds") val staticBreatheUpSeconds: Int = 120,
     @SerialName("static_hold_seconds") val staticHoldSeconds: Int = 120,
+    @SerialName("static_hold_increment_seconds") val staticHoldIncrementSeconds: Int = 0,
     @SerialName("static_rounds") val staticRounds: Int = 1,
     @SerialName("co2_hold_seconds") val co2HoldSeconds: Int = 60,
     @SerialName("co2_start_rest_seconds") val co2StartRestSeconds: Int = 120,

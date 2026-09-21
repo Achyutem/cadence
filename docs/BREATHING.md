@@ -35,7 +35,7 @@ exercise means adding one `expand()` and nothing else.
 | | Hold | Rest | Progression |
 |---|---|---|---|
 | Box | = inhale |, | none; every round identical |
-| Static apnea | **constant** | **constant** | none; you set the numbers |
+| Static apnea | **constant, or grows** | **constant** | optional; a step you choose |
 | CO₂ table | **constant** | **shrinks** | CO₂ accumulates as recovery shortens |
 | O₂ table | **grows** | **constant** | less oxygen each round from a fixed recovery |
 
@@ -45,6 +45,11 @@ Two phases per round. An earlier version bolted a fixed four-second inhale and a
 exhale onto a single locked round, on the theory that the app should conduct the breath itself. It
 should not: people doing breath-hold work have their own breathe-up, the four seconds were a number
 the app invented, and one round made the exercise a stopwatch with extra steps.
+
+The hold can grow by a step you choose, defaulting to zero. At zero this is the plain one: same
+rest, same hold, repeat. Above zero it is a progression you set yourself, which is what "three
+rounds of a minute, ten seconds more each time" asks for. It overlaps with the O2 table on
+purpose; the difference is that the table is a prescribed protocol and this is a blank one.
 
 ## Every number is the user's
 
@@ -57,7 +62,7 @@ and an O₂ table share a settings screen and why a fifth exercise would need no
 | Exercise | Fields |
 |---|---|
 | Box | seconds per side, rounds |
-| Static apnea | breathe-up, hold |
+| Static apnea | rounds, hold, hold increment, breathe-up |
 | CO₂ table | rounds, hold, first rest, rest decrement |
 | O₂ table | rounds, first hold, hold increment, rest |
 

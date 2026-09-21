@@ -232,6 +232,7 @@ private fun UserPreferences.toBackup() = BackupPreferences(
         boxRounds = breathing.boxRounds,
         staticBreatheUpSeconds = breathing.staticBreatheUpSeconds,
         staticHoldSeconds = breathing.staticHoldSeconds,
+        staticHoldIncrementSeconds = breathing.staticHoldIncrementSeconds,
         staticRounds = breathing.staticRounds,
         co2HoldSeconds = breathing.co2HoldSeconds,
         co2StartRestSeconds = breathing.co2StartRestSeconds,
@@ -268,6 +269,8 @@ private fun BackupPreferences.toUserPreferences() = UserPreferences(
         boxRounds = BreathField.ROUNDS.clamp(breathing.boxRounds),
         staticBreatheUpSeconds = BreathField.BREATHE_UP.clamp(breathing.staticBreatheUpSeconds),
         staticHoldSeconds = BreathField.HOLD.clamp(breathing.staticHoldSeconds),
+        staticHoldIncrementSeconds =
+            BreathField.HOLD_INCREMENT.clamp(breathing.staticHoldIncrementSeconds),
         staticRounds = BreathField.ROUNDS.clamp(breathing.staticRounds),
         co2HoldSeconds = BreathField.HOLD.clamp(breathing.co2HoldSeconds),
         co2StartRestSeconds = BreathField.START_REST.clamp(breathing.co2StartRestSeconds),
