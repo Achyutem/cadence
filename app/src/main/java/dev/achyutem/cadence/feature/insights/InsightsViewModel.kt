@@ -2,6 +2,7 @@ package dev.achyutem.cadence.feature.insights
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.achyutem.cadence.core.time.UNSET_DATE
 import dev.achyutem.cadence.core.common.cadenceViewModelFactory
 import dev.achyutem.cadence.core.database.CadenceDatabase
 import dev.achyutem.cadence.core.time.CadenceClock
@@ -18,8 +19,8 @@ import java.time.LocalDate
 data class InsightsUiState(
     val insights: List<Insight> = emptyList(),
     val daysAnalysed: Int = 0,
-    val from: LocalDate = LocalDate.EPOCH,
-    val to: LocalDate = LocalDate.EPOCH,
+    val from: LocalDate = UNSET_DATE,
+    val to: LocalDate = UNSET_DATE,
     val loading: Boolean = true,
 )
 

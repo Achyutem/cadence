@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The `-v26` qualifier is required by the resource merger even though minSdk is 34: a bare
+  The `-v26` qualifier is required by the resource merger even though minSdk is well past 26: a bare
   `mipmap-anydpi` folder is not recognised and the resource fails to link. Lint's suggestion to
   drop it is wrong here, so the folder stays as-is.
 -->

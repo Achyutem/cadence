@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import dev.achyutem.cadence.core.time.UNSET_DATE
 import dev.achyutem.cadence.core.common.AppContainer
 import dev.achyutem.cadence.core.common.appContainer
 import dev.achyutem.cadence.core.database.dao.RecurrenceDao
@@ -35,7 +36,7 @@ data class TaskDetailUiState(
     val rule: RecurrenceRuleEntity? = null,
     val reminder: ReminderEntity? = null,
     val preferences: UserPreferences = UserPreferences.Default,
-    val today: LocalDate = LocalDate.EPOCH,
+    val today: LocalDate = UNSET_DATE,
     val loading: Boolean = true,
     val deleted: Boolean = false,
 )

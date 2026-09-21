@@ -2,6 +2,7 @@ package dev.achyutem.cadence.feature.today
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.achyutem.cadence.core.time.UNSET_DATE
 import dev.achyutem.cadence.core.common.cadenceViewModelFactory
 import dev.achyutem.cadence.core.database.dao.HabitDao
 import dev.achyutem.cadence.core.database.dao.RecurrenceDao
@@ -39,7 +40,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 data class TodayUiState(
-    val date: LocalDate = LocalDate.EPOCH,
+    val date: LocalDate = UNSET_DATE,
     val time: LocalTime = LocalTime.MIDNIGHT,
     val displayName: String = "",
     val dayPart: DayPart = DayPart.MORNING,

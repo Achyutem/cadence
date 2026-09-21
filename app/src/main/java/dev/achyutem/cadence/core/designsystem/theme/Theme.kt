@@ -90,7 +90,8 @@ fun CadenceTheme(
     val accentPalette = preferences.accentColor.palette
 
     val colorScheme: ColorScheme = remember(preferences.accentColor, preferences.useDynamicColor, dark) {
-        // minSdk is 34, so dynamic colour is always available; no version guard needed.
+        // Material You landed in API 31 and minSdk is 31, so it is always available here
+        // and needs no version guard.
         when {
             preferences.useDynamicColor && dark -> dynamicDarkColorScheme(context)
             preferences.useDynamicColor -> dynamicLightColorScheme(context)

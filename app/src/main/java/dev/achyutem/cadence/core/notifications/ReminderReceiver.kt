@@ -236,9 +236,6 @@ class ReminderReceiver : BroadcastReceiver() {
             ((target.ordinal * 31 + entityId.hashCode()) * 31 + date.toEpochDay().toInt())
 
         fun hasNotificationPermission(context: Context): Boolean =
-            ContextCompat.checkSelfPermission(
-                context,
-                android.Manifest.permission.POST_NOTIFICATIONS,
-            ) == PackageManager.PERMISSION_GRANTED
+            NotificationPermission.isGranted(context)
     }
 }

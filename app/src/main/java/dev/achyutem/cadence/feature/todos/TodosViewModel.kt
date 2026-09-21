@@ -2,6 +2,7 @@ package dev.achyutem.cadence.feature.todos
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.achyutem.cadence.core.time.UNSET_DATE
 import dev.achyutem.cadence.core.common.cadenceViewModelFactory
 import dev.achyutem.cadence.core.database.dao.TaskDao
 import dev.achyutem.cadence.core.database.entity.TaskEntity
@@ -30,7 +31,7 @@ import java.time.LocalTime
 enum class TaskFilter { TODAY, UPCOMING, ALL }
 
 data class TodosUiState(
-    val today: LocalDate = LocalDate.EPOCH,
+    val today: LocalDate = UNSET_DATE,
     val filter: TaskFilter = TaskFilter.TODAY,
     val overdue: List<Task> = emptyList(),
     val scheduled: List<Task> = emptyList(),

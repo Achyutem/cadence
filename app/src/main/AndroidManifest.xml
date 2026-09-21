@@ -37,6 +37,12 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
+    <!--
+      `enableOnBackInvokedCallback` opts into predictive back. It is only read from API 33, and
+      is inert on 31 and 32 rather than harmful, so it stays with a `tools:targetApi` rather than
+      being dropped: the alternative is no predictive back on any device, to keep lint quiet
+      about the two versions that ignore the attribute anyway.
+    -->
     <application
         android:name=".CadenceApplication"
         android:allowBackup="true"
@@ -45,8 +51,9 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:enableOnBackInvokedCallback="true"
-        android:theme="@style/Theme.Cadence">
+        android:theme="@style/Theme.Cadence"
+        tools:targetApi="33"
+        android:enableOnBackInvokedCallback="true">
 
         <activity
             android:name=".MainActivity"

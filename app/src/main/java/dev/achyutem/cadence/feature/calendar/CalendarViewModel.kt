@@ -2,6 +2,7 @@ package dev.achyutem.cadence.feature.calendar
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.achyutem.cadence.core.time.UNSET_DATE
 import dev.achyutem.cadence.core.common.cadenceViewModelFactory
 import dev.achyutem.cadence.core.database.dao.HabitDao
 import dev.achyutem.cadence.core.database.dao.RecurrenceDao
@@ -32,8 +33,8 @@ enum class CalendarView { MONTH, WEEK, DAY }
 
 data class CalendarUiState(
     val view: CalendarView = CalendarView.MONTH,
-    val anchor: LocalDate = LocalDate.EPOCH,
-    val today: LocalDate = LocalDate.EPOCH,
+    val anchor: LocalDate = UNSET_DATE,
+    val today: LocalDate = UNSET_DATE,
     /** Tasks in the visible range, grouped by the date they fall on. */
     val tasksByDate: Map<LocalDate, List<Task>> = emptyMap(),
     /** Dates in the visible range that have at least one habit due. */

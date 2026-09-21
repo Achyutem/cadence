@@ -37,7 +37,7 @@ set `JAVA_HOME` to a JDK first.
 
 Kotlin · Jetpack Compose · Material 3 · Room · DataStore · Navigation Compose · Glance ·
 kotlinx serialization. Gradle Kotlin DSL with a version catalog. AGP 8.13.2, Kotlin 2.2.21, compileSdk 36,
-minSdk 34.
+minSdk 31 (Android 12).
 
 No third-party libraries beyond Jetpack and kotlinx. That is a deliberate constraint, not an
 oversight; the Markdown parser, the heatmap and the charts are all hand-written rather than

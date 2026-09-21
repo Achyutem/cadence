@@ -72,3 +72,20 @@ an in-app toggle we invented.
 `POST_NOTIFICATIONS` is requested in context, the first time a reminder is switched on, never at
 launch. A permission prompt before the user has asked for anything is how people learn to deny by
 reflex.
+
+## Who rebuilds the horizon
+
+Alarms are laid down a week ahead, so something has to extend the window and something has to
+react when the answer changes. `rescheduleAll()` runs on app launch, after a reboot, package
+replace, time-zone change or clock change, and after any edit that changes *when* something
+should fire: a task edited in its detail screen, a habit's reminder or schedule, a habit archived
+or deleted, and a change of notification sound (which changes the channel id the alarm posts to).
+
+Habit reminders used to be missing from that list. Setting one wrote the reminder to the database
+and refreshed the widgets, and nothing armed an alarm: the reminder only started working after
+the next app launch happened to rebuild the horizon. Verified on device before and after, by
+checking `dumpsys alarm` for a `REMINDER_FIRE` entry and then waiting for it to arrive.
+
+Ordinary edits deliberately do **not** reschedule. Renaming a habit fires a write per keystroke,
+and rebuilding every alarm in the app on each one would be absurd.
+

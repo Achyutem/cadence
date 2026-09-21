@@ -65,6 +65,16 @@ fun LocalDate.isLastWeekdayOfMonth(): Boolean = plusDays(7).month != month
  * system language while the process is alive, every date in the app keeps rendering in the old
  * locale until the app is killed. Building one is cheap next to the recomposition that displays it.
  */
+/**
+ * The date a screen shows before its real one has loaded.
+ *
+ * `LocalDate.EPOCH` would say the same thing, but it only reached Android's `java.time` in API
+ * 34 and this app runs on 31. It is also less honest: nothing here means "the Unix epoch", it
+ * means "not answered yet", and every one of these is overwritten by the app clock within a
+ * frame. Never render it and never compare against it; see `CLAUDE.md` #15 for the real clock.
+ */
+val UNSET_DATE: LocalDate = LocalDate.of(1970, 1, 1)
+
 fun LocalDate.formatDayAndMonth(): String =
     format(DateTimeFormatter.ofPattern("d MMMM", Locale.getDefault()))
 

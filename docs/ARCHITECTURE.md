@@ -99,3 +99,30 @@ The brief is explicit about avoiding abstraction for its own sake, so:
 
 Recurrence and date maths are the parts most likely to be subtly wrong and least likely to fail
 loudly, so they carry the heaviest test weight.
+
+## Supported versions
+
+**minSdk 31, Android 12.** compileSdk and targetSdk are 36.
+
+Android 12 is the floor because it is the first version with everything the app is built out of:
+Material You, the modern widget sizing attributes (`targetCellWidth`, `previewLayout`) that make
+the Glance widgets resize properly, and `canScheduleExactAlarms`. Below it, several features
+would need a second implementation rather than a version check.
+
+Three things differ on 12 and 12L and are handled rather than ignored:
+
+- **`POST_NOTIFICATIONS` does not exist.** It is an Android 13 runtime permission, and asking
+  `checkSelfPermission` about it on 12 returns *denied*, because the platform has no such
+  permission to grant. Taking that at face value would silence every reminder on exactly the
+  devices that never needed to be asked. `NotificationPermission` answers the version question
+  instead, which also keeps the "Allow notifications" row out of Settings there, since there is
+  nothing to request.
+- **`LocalDate.EPOCH` is API 34.** It was only ever used as a "not loaded yet" placeholder, so it
+  is now `UNSET_DATE`, which says what it means and needs no desugaring.
+- **`Intent.getParcelableExtra(name, Class)` is API 33.** The ringtone picker result goes through
+  `IntentCompat` instead.
+
+`android:enableOnBackInvokedCallback` stays in the manifest behind a `tools:targetApi`. Predictive
+back is read from 33 and inert below it, and dropping it to keep lint quiet would cost the feature
+on every device that does support it.
+

@@ -63,6 +63,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.IntentCompat
 import androidx.core.net.toUri
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -80,6 +81,7 @@ import dev.achyutem.cadence.R
 import dev.achyutem.cadence.core.datastore.AccentColor
 import dev.achyutem.cadence.core.datastore.ButtonShape
 import dev.achyutem.cadence.core.datastore.NotificationSound
+import dev.achyutem.cadence.core.notifications.NotificationPermission
 import dev.achyutem.cadence.core.datastore.ThemeMode
 import dev.achyutem.cadence.core.datastore.UserPreferences
 import dev.achyutem.cadence.core.designsystem.component.ButtonTone
@@ -132,19 +134,11 @@ fun SettingsScreen(
 
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var notificationsAllowed by remember {
-        mutableStateOf(
-            androidx.core.content.ContextCompat.checkSelfPermission(
-                context,
-                android.Manifest.permission.POST_NOTIFICATIONS,
-            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        )
+        mutableStateOf(NotificationPermission.isGranted(context))
     }
     // Re-read on resume: the user may have granted it in system settings and come back.
     androidx.lifecycle.compose.LifecycleResumeEffect(Unit) {
-        notificationsAllowed = androidx.core.content.ContextCompat.checkSelfPermission(
-            context,
-            android.Manifest.permission.POST_NOTIFICATIONS,
-        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        notificationsAllowed = NotificationPermission.isGranted(context)
         onPauseOrDispose { }
     }
 
@@ -163,7 +157,7 @@ fun SettingsScreen(
         notificationsAllowed = notificationsAllowed,
         exactAlarmsAllowed = viewModel.canScheduleExact(),
         onRequestNotifications = {
-            notificationPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            notificationPermission.launch(NotificationPermission.NAME)
         },
         onRequestExactAlarms = {
             // There is no runtime prompt for exact alarms; the user grants it in system settings.
@@ -635,10 +629,14 @@ private fun SoundRow(sound: NotificationSound, onSelect: (NotificationSound) -> 
         ActivityResultContracts.StartActivityForResult(),
     ) { result ->
         if (result.resultCode != Activity.RESULT_OK) return@rememberLauncherForActivityResult
-        val uri = result.data?.getParcelableExtra(
-            RingtoneManager.EXTRA_RINGTONE_PICKED_URI,
-            Uri::class.java,
-        )
+        // IntentCompat rather than the typed overload, which is Android 13 and up.
+        val uri = result.data?.let {
+            IntentCompat.getParcelableExtra(
+                it,
+                RingtoneManager.EXTRA_RINGTONE_PICKED_URI,
+                Uri::class.java,
+            )
+        }
         onSelect(uri?.let { NotificationSound.Custom(it.toString()) } ?: NotificationSound.Silent)
     }
 

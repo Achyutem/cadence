@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import dev.achyutem.cadence.core.time.UNSET_DATE
 import dev.achyutem.cadence.core.common.appContainer
 import dev.achyutem.cadence.core.database.dao.HabitDao
 import dev.achyutem.cadence.core.database.dao.RecurrenceDao
@@ -37,9 +38,9 @@ data class HabitDetailUiState(
     val monthRate: CompletionRate = CompletionRate(0, 0),
     val averageValue: Double? = null,
     val heatmapLevels: Map<LocalDate, Int> = emptyMap(),
-    val heatmapStart: LocalDate = LocalDate.EPOCH,
-    val heatmapEnd: LocalDate = LocalDate.EPOCH,
-    val today: LocalDate = LocalDate.EPOCH,
+    val heatmapStart: LocalDate = UNSET_DATE,
+    val heatmapEnd: LocalDate = UNSET_DATE,
+    val today: LocalDate = UNSET_DATE,
     val preferences: UserPreferences = UserPreferences.Default,
     val loading: Boolean = true,
 )
@@ -52,6 +53,13 @@ class HabitDetailViewModel(
     private val settings: SettingsRepository,
     private val clock: CadenceClock,
     private val onDataChanged: suspend () -> Unit,
+    /**
+     * Rebuilds the alarm horizon.
+     *
+     * Only the edits that change *when* something should fire call this. Rescheduling on every
+     * write would mean rebuilding every alarm in the app on each keystroke of a rename.
+     */
+    private val onScheduleChanged: suspend () -> Unit,
 ) : ViewModel() {
 
     private val today = MutableStateFlow(clock.today())
@@ -159,7 +167,9 @@ class HabitDetailViewModel(
             current.recurrenceRuleId?.let { old ->
                 recurrence.getRule(old)?.let { recurrence.deleteRule(it) }
             }
+            // The schedule decides which days a reminder fires on, so the alarms are now wrong.
             bump()
+            onScheduleChanged()
         }
 
     fun setReminder(reminder: dev.achyutem.cadence.core.database.entity.ReminderEntity?) =
@@ -171,6 +181,10 @@ class HabitDetailViewModel(
                 recurrence.getReminder(old)?.let { recurrence.deleteReminder(it) }
             }
             bump()
+            // Without this the reminder sits in the database doing nothing until something else
+            // rebuilds the horizon, which in practice meant the next app launch. A reminder you
+            // set and then watched not arrive is worse than no reminder feature.
+            onScheduleChanged()
         }
 
     private suspend fun bump() {
@@ -180,12 +194,15 @@ class HabitDetailViewModel(
 
     fun archive(onDone: () -> Unit) = viewModelScope.launch {
         habits.setArchived(habitId, archived = true, at = clock.now())
+        // An archived habit must stop nudging.
+        onScheduleChanged()
         onDone()
     }
 
     fun delete(onDone: () -> Unit) = viewModelScope.launch {
         habits.getById(habitId)?.let { habits.delete(it) }
         onDataChanged()
+        onScheduleChanged()
         onDone()
     }
 
@@ -203,6 +220,7 @@ class HabitDetailViewModel(
                     container.settingsRepository,
                     container.clock,
                     container::refreshWidgets,
+                    container.reminderScheduler::rescheduleAll,
                 )
             }
         }
