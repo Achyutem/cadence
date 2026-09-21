@@ -20,6 +20,7 @@ data class BreathingPreferences(
 
     val staticBreatheUpSeconds: Int = 120,
     val staticHoldSeconds: Int = 120,
+    val staticRounds: Int = 1,
 
     val co2HoldSeconds: Int = 60,
     val co2StartRestSeconds: Int = 120,
@@ -37,6 +38,7 @@ data class BreathingPreferences(
         BreathingExercise.StaticApnea(
             breatheUpSeconds = staticBreatheUpSeconds,
             holdSeconds = staticHoldSeconds,
+            rounds = staticRounds,
         ),
         BreathingExercise.Co2Table(
             holdSeconds = co2HoldSeconds,
@@ -62,6 +64,7 @@ data class BreathingPreferences(
         is BreathingExercise.StaticApnea -> copy(
             staticBreatheUpSeconds = exercise.breatheUpSeconds,
             staticHoldSeconds = exercise.holdSeconds,
+            staticRounds = exercise.rounds,
         )
 
         is BreathingExercise.Co2Table -> copy(

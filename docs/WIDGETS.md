@@ -42,7 +42,7 @@ on someone else's surface. An explicit app override collapses both sides of the 
 | Todo list | Tasks | M / L | tick tasks |
 | Habits | Habits | M / L | step each habit |
 | Single habit | Single habit | 2×2 | step, ± |
-| Heatmap | Activity | M / L / wide | no |
+| Heatmap | Activity | M / L / wide | configurable habit |
 | Next task | Next up | 2×1 | tick |
 | Habit calendar | Habit calendar | 4×3, resizable | step |
 
@@ -58,6 +58,11 @@ widget.
 Every receiver carries an `android:label`. Without one the picker lists seven rows all called
 "Cadence", distinguishable only by their descriptions, and each widget has its own preview layout
 for the same reason: one shared placeholder made every entry look identical.
+
+Both habit grids ask which habit they are for. The Activity widget used to take the first active
+habit and give you no say, which is fine until you track more than one thing; a thirteen-week grid
+of the wrong habit is worse than no grid. Both reuse `SingleHabitConfigActivity` wholesale, so the
+list, the cancel-first contract and the fallback to the first active habit are defined once.
 
 ## The habit calendar
 

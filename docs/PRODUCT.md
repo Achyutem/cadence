@@ -26,6 +26,12 @@ is happening soon, unfinished scheduled tasks, and habits. Priority order: thing
 **Todos**, the full task list: create, edit, complete, subtask, prioritise, schedule, reorder.
 Creation is one tap and one line of text.
 
+Date and time on the composer are short menus, not cycling chips. Cycling through today, tomorrow
+and none was fast for the two dates it knew and offered no way at all to reach a third, and the
+time chip could only ever say 09:00. One tap opens, one tap chooses, and the last entry in each is
+the full picker. The composer dismisses when the keyboard does, since anything that closes the
+keyboard means the capture is over, but not while a menu or picker has taken focus on purpose.
+
 **Habits**, the habit list with today's state, and a detail screen carrying the heatmap, streaks
 and statistics.
 

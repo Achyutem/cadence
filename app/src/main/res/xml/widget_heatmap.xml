@@ -14,6 +14,7 @@
     android:targetCellHeight="2"
     android:description="@string/widget_heatmap_description"
     android:previewLayout="@layout/widget_preview_heatmap"
+    android:configure="dev.achyutem.cadence.widget.HeatmapConfigActivity"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="1800000"
     android:widgetCategory="home_screen" />

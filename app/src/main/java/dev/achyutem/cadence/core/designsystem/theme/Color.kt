@@ -103,7 +103,6 @@ data class CadenceColors(
 )
 
 fun cadenceColors(accent: AccentPalette, dark: Boolean): CadenceColors {
-    val primary = accent.primary(dark)
     val base = if (dark) Neutral.darkSurfaceLow else Neutral.lightSurfaceLow
     return CadenceColors(
         success = if (dark) Semantic.darkSuccess else Semantic.lightSuccess,
@@ -112,7 +111,7 @@ fun cadenceColors(accent: AccentPalette, dark: Boolean): CadenceColors {
         priorityLow = if (dark) Semantic.darkPriorityLow else Semantic.lightPriorityLow,
         priorityMedium = if (dark) Semantic.darkPriorityMedium else Semantic.lightPriorityMedium,
         priorityHigh = if (dark) Semantic.darkPriorityHigh else Semantic.lightPriorityHigh,
-        heatmapLevels = heatmapRamp(primary, base, dark),
+        heatmapLevels = heatmapRamp(accent.heatmapSeed(dark), base, dark),
         divider = if (dark) Neutral.darkOutlineVariant else Neutral.lightOutlineVariant,
         border = if (dark) Neutral.darkOutline else Neutral.lightOutlineVariant,
         borderStrong = if (dark) Color(0xFF3D3D3D) else Neutral.lightOutline,

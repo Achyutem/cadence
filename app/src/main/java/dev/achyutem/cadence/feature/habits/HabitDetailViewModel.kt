@@ -122,6 +122,31 @@ class HabitDetailViewModel(
 
     fun setUnit(value: String) = edit { it.copy(unit = value.trim().ifEmpty { null }) }
 
+    /**
+     * Apply the whole measurement in one write.
+     *
+     * Type, target, unit and direction are edited together in one sheet, so they are saved
+     * together: four separate `edit` calls would be four database round trips and four widget
+     * refreshes for one intention, and any of them could interleave.
+     *
+     * Past entries are untouched. An entry records the value logged and whether it counted at
+     * the time, so raising a target, or switching a habit from Done to Minutes, never rewrites
+     * a day that already happened. See `HabitEntities.kt`.
+     */
+    fun setMeasurement(
+        type: dev.achyutem.cadence.core.database.entity.HabitType,
+        target: Double,
+        unit: String?,
+        direction: dev.achyutem.cadence.core.database.entity.HabitGoalDirection,
+    ) = edit {
+        it.copy(
+            type = type,
+            targetValue = target.coerceAtLeast(1.0),
+            unit = unit?.trim()?.ifEmpty { null },
+            goalDirection = direction,
+        )
+    }
+
     fun setGoalDirection(direction: dev.achyutem.cadence.core.database.entity.HabitGoalDirection) =
         edit { it.copy(goalDirection = direction) }
 

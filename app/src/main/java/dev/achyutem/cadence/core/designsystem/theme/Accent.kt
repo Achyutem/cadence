@@ -9,7 +9,7 @@ import dev.achyutem.cadence.core.datastore.AccentColor
  *
  * These are hand-tuned rather than generated from a seed. Generated schemes drift: the "same"
  * blue produces a different container tone in light and dark, and contrast ratios wander. Since
- * Cadence ships five fixed accents, tuning them once buys predictable contrast everywhere,
+ * Cadence ships a fixed set, tuning them once buys predictable contrast everywhere,
  * including in Glance widgets, which cannot run Material's colour generation at all.
  *
  * Every `on*` colour below clears 4.5:1 against its pairing.
@@ -23,111 +23,103 @@ data class AccentPalette(
     val darkOnPrimary: Color,
     val darkContainer: Color,
     val darkOnContainer: Color,
+    /**
+     * What the heatmap ramps toward, when the primary itself will not do.
+     *
+     * The ramp normally walks from an empty grid cell to the primary, which works for any accent
+     * with contrast against the surface. A pale accent in a light scheme has none: every level
+     * lands within a percent of the empty cell and "once" and "four times" render identically.
+     * Those accents name a darker seed here; everything else leaves it null and uses the primary.
+     */
+    val lightHeatmapSeed: Color? = null,
+    val darkHeatmapSeed: Color? = null,
 ) {
     fun primary(dark: Boolean): Color = if (dark) darkPrimary else lightPrimary
+
+    fun heatmapSeed(dark: Boolean): Color =
+        (if (dark) darkHeatmapSeed else lightHeatmapSeed) ?: primary(dark)
     fun onPrimary(dark: Boolean): Color = if (dark) darkOnPrimary else lightOnPrimary
     fun container(dark: Boolean): Color = if (dark) darkContainer else lightContainer
     fun onContainer(dark: Boolean): Color = if (dark) darkOnContainer else lightOnContainer
 }
 
 /*
- * The ten accents.
+ * The eleven accents.
  *
- * The first five were tuned for restraint and came out muted: readable, but flat next to a white
- * surface. These are pitched brighter in light mode and clearly lighter in dark mode, where an
- * accent has to carry against near-black rather than white.
+ * Nine hues plus two neutrals. The first set was tuned for restraint and came out muted: readable,
+ * but flat next to a white surface. These are pitched brighter in light mode and clearly lighter
+ * in dark mode, where an accent has to carry against near-black rather than white.
  *
- * Every `on*` colour still clears 4.5:1 against its pairing, which is the constraint that keeps
- * "more vivid" from becoming "unreadable". Light primaries sit around 45-55% lightness, dark
- * primaries around 70-78%, which is where an accent reads as saturated in both schemes.
+ * Every `on*` colour clears 4.5:1 against its pairing, which is the constraint that keeps "more
+ * vivid" from becoming "unreadable". Light primaries sit around 45-55% lightness, dark primaries
+ * around 70-78%, which is where an accent reads as saturated in both schemes.
  */
 
-private val BluePalette = AccentPalette(
-    lightPrimary = Color(0xFF2563EB),
+private val RedPalette = AccentPalette(
+    lightPrimary = Color(0xFFDC2626),
     lightOnPrimary = Color(0xFFFFFFFF),
-    lightContainer = Color(0xFFDCE7FF),
-    lightOnContainer = Color(0xFF10265E),
-    darkPrimary = Color(0xFF7CA5FF),
-    darkOnPrimary = Color(0xFF041C52),
-    darkContainer = Color(0xFF1B336E),
-    darkOnContainer = Color(0xFFD9E5FF),
+    lightContainer = Color(0xFFFFDDDA),
+    lightOnContainer = Color(0xFF530A05),
+    darkPrimary = Color(0xFFFF9186),
+    darkOnPrimary = Color(0xFF520A04),
+    darkContainer = Color(0xFF7A1710),
+    darkOnContainer = Color(0xFFFFDEDA),
 )
 
-private val IndigoPalette = AccentPalette(
-    lightPrimary = Color(0xFF4F46E5),
+private val OrangePalette = AccentPalette(
+    lightPrimary = Color(0xFFEA580C),
     lightOnPrimary = Color(0xFFFFFFFF),
-    lightContainer = Color(0xFFE2E0FF),
-    lightOnContainer = Color(0xFF1D1663),
-    darkPrimary = Color(0xFFA8A0FF),
-    darkOnPrimary = Color(0xFF1B1259),
-    darkContainer = Color(0xFF2E2680),
-    darkOnContainer = Color(0xFFE6E3FF),
+    lightContainer = Color(0xFFFFE1CC),
+    lightOnContainer = Color(0xFF4C1D02),
+    darkPrimary = Color(0xFFFFA76B),
+    darkOnPrimary = Color(0xFF461A00),
+    darkContainer = Color(0xFF6E2E05),
+    darkOnContainer = Color(0xFFFFE3D1),
 )
 
-private val VioletPalette = AccentPalette(
-    lightPrimary = Color(0xFF7C3AED),
+/**
+ * Sepia: a warm brown for anyone who wants paper rather than screen.
+ *
+ * Lower saturation than the rest on purpose. It is the one accent chosen for how little it
+ * announces itself, and pushing it toward orange would make it a second orange.
+ */
+private val SepiaPalette = AccentPalette(
+    lightPrimary = Color(0xFF8A6134),
     lightOnPrimary = Color(0xFFFFFFFF),
-    lightContainer = Color(0xFFEDE0FF),
-    lightOnContainer = Color(0xFF2E1065),
-    darkPrimary = Color(0xFFC4A2FF),
-    darkOnPrimary = Color(0xFF2B0F63),
-    darkContainer = Color(0xFF431E87),
-    darkOnContainer = Color(0xFFEFE2FF),
+    lightContainer = Color(0xFFF2E2CE),
+    lightOnContainer = Color(0xFF32200C),
+    darkPrimary = Color(0xFFDCB587),
+    darkOnPrimary = Color(0xFF2E1D09),
+    darkContainer = Color(0xFF503617),
+    darkOnContainer = Color(0xFFF4E4D1),
 )
 
-private val MagentaPalette = AccentPalette(
-    lightPrimary = Color(0xFFC026D3),
+private val GreenPalette = AccentPalette(
+    lightPrimary = Color(0xFF16A34A),
     lightOnPrimary = Color(0xFFFFFFFF),
-    lightContainer = Color(0xFFFBDDFF),
-    lightOnContainer = Color(0xFF4A0B52),
-    darkPrimary = Color(0xFFEE9BFB),
-    darkOnPrimary = Color(0xFF430A4A),
-    darkContainer = Color(0xFF69166F),
-    darkOnContainer = Color(0xFFFCDFFF),
+    lightContainer = Color(0xFFC9F3D5),
+    lightOnContainer = Color(0xFF00351A),
+    darkPrimary = Color(0xFF63DC8E),
+    darkOnPrimary = Color(0xFF003018),
+    darkContainer = Color(0xFF00562B),
+    darkOnContainer = Color(0xFFC6F6D6),
 )
 
-private val RosePalette = AccentPalette(
-    lightPrimary = Color(0xFFE11D62),
+/**
+ * The familiar streaming green, `#1DB954`.
+ *
+ * Darkened for light mode: the brand value against white is about 2.2:1, so white text on it
+ * would fail outright. Dark mode gets the real thing, which is where it belongs anyway.
+ */
+private val SpotifyPalette = AccentPalette(
+    lightPrimary = Color(0xFF0F8A42),
     lightOnPrimary = Color(0xFFFFFFFF),
-    lightContainer = Color(0xFFFFDCE5),
-    lightOnContainer = Color(0xFF55001F),
-    darkPrimary = Color(0xFFFF93AF),
-    darkOnPrimary = Color(0xFF52001D),
-    darkContainer = Color(0xFF7D0F38),
-    darkOnContainer = Color(0xFFFFDDE5),
-)
-
-private val AmberPalette = AccentPalette(
-    lightPrimary = Color(0xFFD97706),
-    lightOnPrimary = Color(0xFFFFFFFF),
-    lightContainer = Color(0xFFFFE6C2),
-    lightOnContainer = Color(0xFF4A2400),
-    darkPrimary = Color(0xFFFFBC5C),
-    darkOnPrimary = Color(0xFF442300),
-    darkContainer = Color(0xFF6D3A00),
-    darkOnContainer = Color(0xFFFFE5C0),
-)
-
-private val EmeraldPalette = AccentPalette(
-    lightPrimary = Color(0xFF059669),
-    lightOnPrimary = Color(0xFFFFFFFF),
-    lightContainer = Color(0xFFC6F2DF),
-    lightOnContainer = Color(0xFF00351F),
-    darkPrimary = Color(0xFF4FDBA3),
-    darkOnPrimary = Color(0xFF00301C),
-    darkContainer = Color(0xFF005433),
-    darkOnContainer = Color(0xFFC3F5DE),
-)
-
-private val TealPalette = AccentPalette(
-    lightPrimary = Color(0xFF0D9488),
-    lightOnPrimary = Color(0xFFFFFFFF),
-    lightContainer = Color(0xFFC2F1EC),
-    lightOnContainer = Color(0xFF00322D),
-    darkPrimary = Color(0xFF4CD9CB),
-    darkOnPrimary = Color(0xFF002E29),
-    darkContainer = Color(0xFF00514A),
-    darkOnContainer = Color(0xFFBFF3ED),
+    lightContainer = Color(0xFFC6F1D4),
+    lightOnContainer = Color(0xFF002E16),
+    darkPrimary = Color(0xFF1DB954),
+    darkOnPrimary = Color(0xFF00220F),
+    darkContainer = Color(0xFF0B4F26),
+    darkOnContainer = Color(0xFFC8F4D6),
 )
 
 private val CyanPalette = AccentPalette(
@@ -141,52 +133,110 @@ private val CyanPalette = AccentPalette(
     darkOnContainer = Color(0xFFC3EFFC),
 )
 
-/**
- * The near-monochrome option.
- *
- * For anyone who wants the accent to disappear entirely. It still carries enough contrast to mark
- * a selection, which is the one thing an accent has to do.
- */
-private val SlatePalette = AccentPalette(
-    lightPrimary = Color(0xFF334155),
+private val BluePalette = AccentPalette(
+    lightPrimary = Color(0xFF2563EB),
     lightOnPrimary = Color(0xFFFFFFFF),
-    lightContainer = Color(0xFFE0E5EC),
-    lightOnContainer = Color(0xFF111820),
-    darkPrimary = Color(0xFFB3BECD),
-    darkOnPrimary = Color(0xFF151C25),
-    darkContainer = Color(0xFF2E3948),
-    darkOnContainer = Color(0xFFE2E8F0),
+    lightContainer = Color(0xFFDCE7FF),
+    lightOnContainer = Color(0xFF10265E),
+    darkPrimary = Color(0xFF7CA5FF),
+    darkOnPrimary = Color(0xFF041C52),
+    darkContainer = Color(0xFF1B336E),
+    darkOnContainer = Color(0xFFD9E5FF),
+)
+
+private val MagentaPalette = AccentPalette(
+    lightPrimary = Color(0xFFC026D3),
+    lightOnPrimary = Color(0xFFFFFFFF),
+    lightContainer = Color(0xFFFBDDFF),
+    lightOnContainer = Color(0xFF4A0B52),
+    darkPrimary = Color(0xFFEE9BFB),
+    darkOnPrimary = Color(0xFF430A4A),
+    darkContainer = Color(0xFF69166F),
+    darkOnContainer = Color(0xFFFCDFFF),
+)
+
+/** A true neutral grey, for anyone who wants the accent to stop shouting without disappearing. */
+private val GreyPalette = AccentPalette(
+    lightPrimary = Color(0xFF4B5563),
+    lightOnPrimary = Color(0xFFFFFFFF),
+    lightContainer = Color(0xFFE2E5EA),
+    lightOnContainer = Color(0xFF15181D),
+    darkPrimary = Color(0xFFBEC3CB),
+    darkOnPrimary = Color(0xFF181B20),
+    darkContainer = Color(0xFF353A42),
+    darkOnContainer = Color(0xFFE6E9ED),
+)
+
+/**
+ * White, as far as white can go.
+ *
+ * In dark mode this is literally white. In light mode a white primary on a white surface is not a
+ * subtle design choice, it is an invisible button, so it becomes the palest chip that still reads
+ * as a shape, with near-black text on it. The heatmap ramp that derives from it is quiet by
+ * definition; that is what choosing white in a light scheme asks for.
+ */
+private val WhitePalette = AccentPalette(
+    lightPrimary = Color(0xFFD4D4D8),
+    lightOnPrimary = Color(0xFF18181B),
+    lightContainer = Color(0xFFF1F1F3),
+    lightOnContainer = Color(0xFF27272A),
+    darkPrimary = Color(0xFFFFFFFF),
+    darkOnPrimary = Color(0xFF0A0A0A),
+    darkContainer = Color(0xFF3F3F46),
+    darkOnContainer = Color(0xFFFAFAFA),
+    // A near-white primary and a near-white grid cannot make a ramp. The heatmap reaches for a
+    // mid grey instead, which is as close to "white" as a legible light-scheme grid gets.
+    lightHeatmapSeed = Color(0xFF8E8E93),
+)
+
+/** Black on a light scheme, white on a dark one. Maximum contrast, no hue at all. */
+private val MonoPalette = AccentPalette(
+    lightPrimary = Color(0xFF18181B),
+    lightOnPrimary = Color(0xFFFFFFFF),
+    lightContainer = Color(0xFFE4E4E7),
+    lightOnContainer = Color(0xFF18181B),
+    darkPrimary = Color(0xFFFAFAFA),
+    darkOnPrimary = Color(0xFF0A0A0A),
+    darkContainer = Color(0xFF3F3F46),
+    darkOnContainer = Color(0xFFFAFAFA),
 )
 
 val AccentColor.palette: AccentPalette
     get() = when (this) {
-        AccentColor.BLUE -> BluePalette
-        AccentColor.INDIGO -> IndigoPalette
-        AccentColor.VIOLET -> VioletPalette
-        AccentColor.MAGENTA -> MagentaPalette
-        AccentColor.ROSE -> RosePalette
-        AccentColor.AMBER -> AmberPalette
-        AccentColor.EMERALD -> EmeraldPalette
-        AccentColor.TEAL -> TealPalette
+        AccentColor.RED -> RedPalette
+        AccentColor.ORANGE -> OrangePalette
+        AccentColor.SEPIA -> SepiaPalette
+        AccentColor.GREEN -> GreenPalette
+        AccentColor.SPOTIFY -> SpotifyPalette
         AccentColor.CYAN -> CyanPalette
-        AccentColor.SLATE -> SlatePalette
+        AccentColor.BLUE -> BluePalette
+        AccentColor.MAGENTA -> MagentaPalette
+        AccentColor.GREY -> GreyPalette
+        AccentColor.WHITE -> WhitePalette
+        AccentColor.MONO -> MonoPalette
     }
 
-/** The swatch shown in Settings; the light primary reads well on both backgrounds. */
-val AccentColor.swatch: Color
-    get() = palette.lightPrimary
+/**
+ * The swatch shown in the picker.
+ *
+ * Takes the scheme into account, unlike the rest of this file's accessors, because the two
+ * neutral accents are the two that differ most between schemes: showing Mono as a black dot in a
+ * dark theme would advertise the opposite of what selecting it does.
+ */
+fun AccentColor.swatch(dark: Boolean): Color = palette.primary(dark)
 
-/** Accessibility label for the swatch. Localised, because it is read aloud. */
+/** Accessibility label for the swatch, and the name shown next to it. Localised. */
 val AccentColor.labelRes: Int
     get() = when (this) {
-        AccentColor.BLUE -> R.string.accent_blue
-        AccentColor.INDIGO -> R.string.accent_indigo
-        AccentColor.VIOLET -> R.string.accent_violet
-        AccentColor.MAGENTA -> R.string.accent_magenta
-        AccentColor.ROSE -> R.string.accent_rose
-        AccentColor.AMBER -> R.string.accent_amber
-        AccentColor.EMERALD -> R.string.accent_emerald
-        AccentColor.TEAL -> R.string.accent_teal
+        AccentColor.RED -> R.string.accent_red
+        AccentColor.ORANGE -> R.string.accent_orange
+        AccentColor.SEPIA -> R.string.accent_sepia
+        AccentColor.GREEN -> R.string.accent_green
+        AccentColor.SPOTIFY -> R.string.accent_spotify
         AccentColor.CYAN -> R.string.accent_cyan
-        AccentColor.SLATE -> R.string.accent_slate
+        AccentColor.BLUE -> R.string.accent_blue
+        AccentColor.MAGENTA -> R.string.accent_magenta
+        AccentColor.GREY -> R.string.accent_grey
+        AccentColor.WHITE -> R.string.accent_white
+        AccentColor.MONO -> R.string.accent_mono
     }

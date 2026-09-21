@@ -95,3 +95,23 @@ writes to the database directly, so the common case never opens the app.
 - Battery optimisation / restricted app standby bucket → detect and explain.
 - A reminder whose time has already passed when scheduled → fire immediately or skip to the next
   occurrence, never schedule in the past.
+
+## The reminder sound
+
+One setting for the whole app, handed off to the system ringtone picker rather than a list of tones
+reimplemented in Settings. The picker already knows about the user's own files, Do Not Disturb and
+every sound the device ships.
+
+**A channel's sound cannot be changed after it is created.** Android freezes sound, vibration and
+importance at creation time precisely so an app cannot turn itself back up behind the user's back;
+`createNotificationChannel` on an existing id updates the name and description and silently ignores
+everything else. So changing the sound means retiring the channel and making a new one: each id
+ends in a short token derived from the chosen sound, and `ensureCreated` deletes every Cadence
+channel that is not one of the current pair, including the pair for a sound the user has moved on
+from.
+
+The cost is real, and the setting says so: recreating a channel drops whatever the user changed
+about it in system settings. That is the trade Android imposes for an in-app sound picker.
+
+Changing the sound also reschedules every alarm. An alarm already scheduled would otherwise fire
+into the channel that was just deleted.

@@ -74,6 +74,9 @@ class SettingsRepository(context: Context) {
 
     suspend fun setShowCompletedOnToday(show: Boolean) = put(Keys.showCompletedOnToday, show)
 
+    suspend fun setNotificationSound(sound: NotificationSound) =
+        put(Keys.notificationSound, sound.store())
+
     suspend fun setBreathingSoundEnabled(enabled: Boolean) = put(Keys.breathingSound, enabled)
 
     /**
@@ -105,6 +108,7 @@ class SettingsRepository(context: Context) {
             prefs[Keys.completedTaskBehavior] = preferences.completedTaskBehavior.name
             prefs[Keys.defaultTaskDuration] = preferences.defaultTaskDurationMinutes
             prefs[Keys.timeFormat] = preferences.timeFormat.name
+            prefs[Keys.notificationSound] = preferences.notificationSound.store()
             prefs[Keys.defaultReminderLead] = preferences.defaultReminderLeadMinutes
             prefs[Keys.quietHoursEnabled] = preferences.quietHoursEnabled
             prefs[Keys.quietHoursStart] = preferences.quietHoursStart.toString()
@@ -120,6 +124,7 @@ class SettingsRepository(context: Context) {
         this[Keys.boxRounds] = breathing.boxRounds
         this[Keys.staticBreatheUp] = breathing.staticBreatheUpSeconds
         this[Keys.staticHold] = breathing.staticHoldSeconds
+        this[Keys.staticRounds] = breathing.staticRounds
         this[Keys.co2Hold] = breathing.co2HoldSeconds
         this[Keys.co2StartRest] = breathing.co2StartRestSeconds
         this[Keys.co2RestDecrement] = breathing.co2RestDecrementSeconds
@@ -145,6 +150,7 @@ class SettingsRepository(context: Context) {
         val completedTaskBehavior = stringPreferencesKey("completed_task_behavior")
         val defaultTaskDuration = intPreferencesKey("default_task_duration")
         val timeFormat = stringPreferencesKey("time_format")
+        val notificationSound = stringPreferencesKey("notification_sound")
         val defaultReminderLead = intPreferencesKey("default_reminder_lead")
         val quietHoursEnabled = booleanPreferencesKey("quiet_hours_enabled")
         val quietHoursStart = stringPreferencesKey("quiet_hours_start")
@@ -155,6 +161,7 @@ class SettingsRepository(context: Context) {
         val boxRounds = intPreferencesKey("breathing_box_rounds")
         val staticBreatheUp = intPreferencesKey("breathing_static_breathe_up")
         val staticHold = intPreferencesKey("breathing_static_hold")
+        val staticRounds = intPreferencesKey("breathing_static_rounds")
         val co2Hold = intPreferencesKey("breathing_co2_hold")
         val co2StartRest = intPreferencesKey("breathing_co2_start_rest")
         val co2RestDecrement = intPreferencesKey("breathing_co2_rest_decrement")
@@ -170,7 +177,7 @@ class SettingsRepository(context: Context) {
         return UserPreferences(
             displayName = prefs[Keys.displayName] ?: defaults.displayName,
             themeMode = prefs[Keys.themeMode].toEnumOr(defaults.themeMode),
-            accentColor = prefs[Keys.accentColor].toEnumOr(defaults.accentColor),
+            accentColor = AccentColor.parse(prefs[Keys.accentColor]),
             useDynamicColor = prefs[Keys.useDynamicColor] ?: defaults.useDynamicColor,
             buttonShape = prefs[Keys.buttonShape].toEnumOr(defaults.buttonShape),
             reducedMotion = prefs[Keys.reducedMotion] ?: defaults.reducedMotion,
@@ -183,6 +190,7 @@ class SettingsRepository(context: Context) {
             defaultTaskDurationMinutes = prefs[Keys.defaultTaskDuration]
                 ?: defaults.defaultTaskDurationMinutes,
             timeFormat = prefs[Keys.timeFormat].toEnumOr(defaults.timeFormat),
+            notificationSound = NotificationSound.parse(prefs[Keys.notificationSound]),
             defaultReminderLeadMinutes = prefs[Keys.defaultReminderLead]
                 ?: defaults.defaultReminderLeadMinutes,
             quietHoursEnabled = prefs[Keys.quietHoursEnabled] ?: defaults.quietHoursEnabled,
@@ -201,6 +209,7 @@ class SettingsRepository(context: Context) {
             boxRounds = prefs[Keys.boxRounds] ?: defaults.boxRounds,
             staticBreatheUpSeconds = prefs[Keys.staticBreatheUp] ?: defaults.staticBreatheUpSeconds,
             staticHoldSeconds = prefs[Keys.staticHold] ?: defaults.staticHoldSeconds,
+            staticRounds = prefs[Keys.staticRounds] ?: defaults.staticRounds,
             co2HoldSeconds = prefs[Keys.co2Hold] ?: defaults.co2HoldSeconds,
             co2StartRestSeconds = prefs[Keys.co2StartRest] ?: defaults.co2StartRestSeconds,
             co2RestDecrementSeconds = prefs[Keys.co2RestDecrement]

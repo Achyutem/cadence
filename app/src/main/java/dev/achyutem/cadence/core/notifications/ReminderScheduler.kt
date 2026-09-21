@@ -46,9 +46,9 @@ class ReminderScheduler(
 
     suspend fun rescheduleAll() = withContext(Dispatchers.Default) {
         val manager = alarmManager ?: return@withContext
-        NotificationChannels.ensureCreated(context)
-
         val preferences = settings.preferences.first()
+        NotificationChannels.ensureCreated(context, preferences.notificationSound)
+
         val zone = clock.zone()
         val now = clock.now()
         val today = clock.today()

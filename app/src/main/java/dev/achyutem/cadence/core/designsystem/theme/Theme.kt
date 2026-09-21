@@ -65,6 +65,10 @@ object CadenceTheme {
     val controlShape: Shape
         @Composable @ReadOnlyComposable get() = LocalControlShape.current
 
+    /** 1f normally, 0f under reduced motion. Read it directly when scaling a whole animation. */
+    val motionScale: Float
+        @Composable @ReadOnlyComposable get() = LocalMotionScale.current
+
     /** Scale a duration token by the motion preference. */
     @Composable @ReadOnlyComposable
     fun duration(token: Int): Int = (token * LocalMotionScale.current).toInt()

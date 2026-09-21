@@ -9,6 +9,7 @@ import dev.achyutem.cadence.core.datastore.AccentColor
 import dev.achyutem.cadence.core.datastore.SettingsRepository
 import dev.achyutem.cadence.core.datastore.ThemeMode
 import dev.achyutem.cadence.core.datastore.UserPreferences
+import dev.achyutem.cadence.core.datastore.NotificationSound
 import dev.achyutem.cadence.domain.backup.BackupEngine
 import dev.achyutem.cadence.domain.backup.BackupResult
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,6 +44,21 @@ class SettingsViewModel(
      * notification permission is granted.
      */
     fun rescheduleReminders() = viewModelScope.launch { reminders.rescheduleAll() }
+
+    /**
+     * Change the reminder tone.
+     *
+     * Rebuilds the notification channels immediately rather than waiting for the next reminder
+     * to be scheduled, so opening system notification settings right afterwards shows the sound
+     * that was just chosen.
+     */
+    fun setNotificationSound(sound: NotificationSound) = viewModelScope.launch {
+        settings.setNotificationSound(sound)
+        // The scheduler rebuilds the channels as it goes, and the channel id depends on the
+        // sound, so already-scheduled alarms have to be rebuilt too or they would fire into
+        // the channel that was just deleted.
+        reminders.rescheduleAll()
+    }
 
     fun setQuietHoursEnabled(enabled: Boolean) = viewModelScope.launch {
         settings.setQuietHoursEnabled(enabled)

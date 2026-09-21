@@ -79,13 +79,13 @@ fun widgetColors(accent: AccentColor, themeMode: ThemeMode): WidgetColors {
     val lightRamp = ramp(
         WidgetNeutral.lightHeatmapEmpty,
         WidgetNeutral.lightSurface,
-        palette.lightPrimary,
+        palette.heatmapSeed(dark = false),
         listOf(0.20f, 0.42f, 0.70f, 1f),
     )
     val darkRamp = ramp(
         WidgetNeutral.darkHeatmapEmpty,
         WidgetNeutral.darkSurface,
-        palette.darkPrimary,
+        palette.heatmapSeed(dark = true),
         listOf(0.32f, 0.54f, 0.77f, 1f),
     )
 

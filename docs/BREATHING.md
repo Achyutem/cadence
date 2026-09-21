@@ -16,8 +16,9 @@ Two design decisions follow from the same concern:
   a training table and becomes one continuous breath-hold, useless as a stimulus and the most
   dangerous thing this screen could generate. `BreathingExerciseTest` asserts the floor holds even
   for a configuration that would otherwise cross it.
-- **Static apnea is one round.** Repeated maximal holds are what the tables are for; stacking them
-  freehand is how people get hurt.
+- **Static apnea defaults to one round**, and the round count is the user's. Repeated maximal
+  holds are what the tables are for, but refusing to count past one did not make anyone safer, it
+  just meant restarting the exercise by hand between efforts.
 
 There is also a **Skip** control on every phase. That is the honest thing for a hold: people
 should come up when they need to, not stare at a countdown they are no longer doing. A skipped
@@ -34,9 +35,16 @@ exercise means adding one `expand()` and nothing else.
 | | Hold | Rest | Progression |
 |---|---|---|---|
 | Box | = inhale |, | none; every round identical |
-| Static apnea | fixed | breathe-up before | single round |
+| Static apnea | **constant** | **constant** | none; you set the numbers |
 | CO₂ table | **constant** | **shrinks** | CO₂ accumulates as recovery shortens |
 | O₂ table | **grows** | **constant** | less oxygen each round from a fixed recovery |
+
+### Static apnea is rest and hold, and nothing else
+
+Two phases per round. An earlier version bolted a fixed four-second inhale and an eight-second
+exhale onto a single locked round, on the theory that the app should conduct the breath itself. It
+should not: people doing breath-hold work have their own breathe-up, the four seconds were a number
+the app invented, and one round made the exercise a stopwatch with extra steps.
 
 ## Every number is the user's
 
@@ -112,6 +120,15 @@ tells you what to do, which is the state most of these exercises are done in.
 Its size is driven directly by phase progress rather than by an infinite looping animation, so it
 can never drift out of step with the countdown: they are the same number. Holds shift the colour
 to the warning tone, because a hold is a different thing from a breath.
+
+The ring around it **sweeps like a clock hand rather than ticking**. The runner only moves once a
+second, so the sweep animates linearly over exactly one second: the target lands on each tick and
+the animation carries the eye between them. Linear, not eased, because an eased second stalls at
+its own edges and a clock that hesitates every second looks broken. A new phase resets the hand
+instead of unwinding it backwards through the whole dial.
+
+Measured on device across a five-second phase, the arc read 9°, 54°, 113°, 130° and 154° in
+successive frames; a stepping timer could only ever have shown multiples of 72°.
 
 The countdown text is excluded from the accessibility tree; a value changing every second makes a
 screen reader unusable.

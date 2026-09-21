@@ -32,13 +32,35 @@ saturation it reads as calm, and it stops every accent from looking dirty agains
 
 ### Accents
 
-Ten shipped accents: blue, indigo, violet, magenta, rose, amber, emerald, teal, cyan, slate. Each
-is a **hand-tuned pair of light and dark ramps**, not a generated seed.
+Eleven shipped accents: red, orange, sepia, green, spotify, cyan, blue, magenta, grey, white and
+black-and-white. Each is a **hand-tuned pair of light and dark ramps**, not a generated seed.
 
-The first set of five was muted, chosen for restraint, and read as dull rather than calm. The
-current set is brighter, with light primaries around 45–55% lightness and dark primaries around
-70–78%, which is the range where an accent stays legible on a near-black surface without glowing.
-Slate stays deliberately quiet: some people want no colour at all.
+The original five were muted, chosen for restraint, and read as dull rather than calm. These are
+brighter, with light primaries around 45–55% lightness and dark primaries around 70–78%, which is
+the range where an accent stays legible on a near-black surface without glowing.
+
+Three need a word each:
+
+- **Spotify** is the familiar `#1DB954`, darkened for light mode. The brand value against white is
+  about 2.2:1, so white text on it would fail outright; dark mode gets the real thing.
+- **White** stays white wherever white can be read. In a light scheme a white primary on a white
+  surface is not a subtle choice, it is an invisible button, so it becomes the palest chip that
+  still reads as a shape with near-black text on it.
+- **Black and white** inverts instead: black on light, white on dark.
+
+A palette can name a separate `heatmapSeed`. The ramp normally walks from an empty grid cell to
+the primary, which needs contrast against the surface; white in a light scheme has none, and every
+level landed within a percent of the empty cell. It seeds the ramp from a mid grey instead, which
+`HeatmapRampTest` is what catches.
+
+The picker is a **dropdown, not a grid**. Eleven swatches tiled across the screen turned the
+quietest section of Settings into its loudest thing, and a row of unlabelled dots makes you guess
+which one is "sepia". Collapsed it is one line: the current colour and its name.
+
+Renaming and merging accents is a stored-value problem, so `AccentColor.parse` maps every retired
+name to its nearest survivor rather than falling back to blue. Silently resetting the one visual
+choice most people make is a small betrayal and an avoidable one; `AccentMigrationTest` pins the
+mapping.
 
 Seed generation was rejected deliberately. Generated schemes drift, the "same" blue yields a
 different container tone in each scheme and contrast ratios wander, and Glance widgets cannot run

@@ -7,12 +7,54 @@ import java.time.LocalTime
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
 /**
- * The five shipped accents. This is an enum rather than a stored ARGB value because each accent
- * is a hand-tuned pair of light/dark ramps, not a single hue; see `designsystem/theme/Accent.kt`.
- * A future custom accent would add one `CUSTOM` case carrying a seed, without changing anything
- * that reads this type.
+ * The shipped accents.
+ *
+ * An enum rather than a stored ARGB value because each accent is a hand-tuned pair of light/dark
+ * ramps, not a single hue; see `designsystem/theme/Accent.kt`. A future custom accent would add
+ * one `CUSTOM` case carrying a seed, without changing anything that reads this type.
+ *
+ * [WHITE] and [MONO] are both near-monochrome and both deliberate. White stays white wherever
+ * white can be read, so in light mode it is a pale chip with dark text. Mono inverts instead:
+ * black on a light scheme, white on a dark one.
+ *
+ * Ordered roughly by hue, then the neutrals, because that is the order the picker shows them in.
  */
-enum class AccentColor { BLUE, INDIGO, VIOLET, MAGENTA, ROSE, AMBER, EMERALD, TEAL, CYAN, SLATE }
+enum class AccentColor {
+    RED,
+    ORANGE,
+    SEPIA,
+    GREEN,
+    SPOTIFY,
+    CYAN,
+    BLUE,
+    MAGENTA,
+    GREY,
+    WHITE,
+    MONO,
+    ;
+
+    companion object {
+        /**
+         * Read a stored or backed-up accent name.
+         *
+         * Unknown names fall back to [BLUE], but an accent that this version renamed or merged is
+         * mapped to its nearest surviving neighbour first. Silently resetting someone's accent to
+         * blue because the palette was reworked is a small betrayal, and it is avoidable.
+         */
+        fun parse(name: String?): AccentColor {
+            if (name == null) return BLUE
+            entries.firstOrNull { it.name == name }?.let { return it }
+            return when (name) {
+                "INDIGO", "VIOLET" -> BLUE
+                "ROSE" -> RED
+                "AMBER" -> ORANGE
+                "EMERALD", "TEAL" -> GREEN
+                "SLATE" -> GREY
+                else -> BLUE
+            }
+        }
+    }
+}
 
 /**
  * The shape of buttons and the segmented control.
@@ -36,6 +78,37 @@ enum class CompletedTaskBehavior {
 }
 
 enum class TimeFormat { SYSTEM, TWELVE_HOUR, TWENTY_FOUR_HOUR }
+
+/**
+ * What a reminder sounds like.
+ *
+ * Three cases rather than a nullable string, because "use whatever the system plays" and "play
+ * nothing" are genuinely different answers and a null would have to stand in for one of them.
+ *
+ * Stored as a string: the empty string is silence, the literal `system` is the default, and
+ * anything else is a content URI from the system ringtone picker.
+ */
+sealed interface NotificationSound {
+    data object SystemDefault : NotificationSound
+    data object Silent : NotificationSound
+    data class Custom(val uri: String) : NotificationSound
+
+    fun store(): String = when (this) {
+        SystemDefault -> SYSTEM
+        Silent -> ""
+        is Custom -> uri
+    }
+
+    companion object {
+        private const val SYSTEM = "system"
+
+        fun parse(stored: String?): NotificationSound = when {
+            stored == null || stored == SYSTEM -> SystemDefault
+            stored.isEmpty() -> Silent
+            else -> Custom(stored)
+        }
+    }
+}
 
 /**
  * Every user-facing preference, as one immutable snapshot. The UI observes a single
@@ -67,6 +140,7 @@ data class UserPreferences(
     val timeFormat: TimeFormat = TimeFormat.SYSTEM,
 
     // Notifications
+    val notificationSound: NotificationSound = NotificationSound.SystemDefault,
     val defaultReminderLeadMinutes: Int = 0,
     val quietHoursEnabled: Boolean = false,
     val quietHoursStart: LocalTime = LocalTime.of(22, 0),

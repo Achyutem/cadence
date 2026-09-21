@@ -13,6 +13,8 @@ import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.state.getAppWidgetState
+import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.background
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -57,7 +59,11 @@ class HeatmapWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val container = context.appContainer()
-        val habitId = container.habitDao.observeActive().first().firstOrNull()?.id
+        val prefs = getAppWidgetState(context, PreferencesGlanceStateDefinition, id)
+        // Configured habit first, then the first active one. A widget placed before any habit
+        // exists still has something to show once one does.
+        val habitId = prefs[HABIT_ID_KEY]
+            ?: container.habitDao.observeActive().first().firstOrNull()?.id
         val snapshot = habitId?.let { container.loadHabitSnapshot(it, WEEKS * 7L) }
         provideContent { Content(snapshot) }
     }
@@ -156,6 +162,8 @@ class HeatmapWidget : GlanceAppWidget() {
     }
 
     companion object {
+        val HABIT_ID_KEY = longPreferencesKey("heatmap_habit_id")
+
         /** 13 weeks × 7 = 91 cells. See the class note on the RemoteViews size limit. */
         const val WEEKS = 13
         const val GAP = 3f
@@ -175,6 +183,11 @@ class HeatmapWidget : GlanceAppWidget() {
         val MEDIUM = DpSize(250.dp, 110.dp)
         val LARGE = DpSize(250.dp, 180.dp)
         val WIDE = DpSize(340.dp, 200.dp)
+
+        suspend fun configure(context: Context, glanceId: GlanceId, habitId: Long) {
+            updateAppWidgetState(context, glanceId) { prefs -> prefs[HABIT_ID_KEY] = habitId }
+            HeatmapWidget().update(context, glanceId)
+        }
     }
 }
 

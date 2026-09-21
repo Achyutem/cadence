@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -81,6 +83,9 @@ import dev.achyutem.cadence.core.designsystem.token.Spacing
  *
  * There is no save button. See [NoteEditorViewModel].
  */
+// See the format bar below: `isImeVisible` is the only way to ask Compose whether the keyboard
+// is up, and it is still experimental.
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun NoteEditorScreen(
     noteId: Long,
@@ -209,8 +214,12 @@ fun NoteEditorScreen(
         // Pinned below the scrolling content and inside the screen's imePadding, so it rides
         // above the keyboard rather than being buried behind it. Hidden in view mode, where
         // there is nothing to format.
+        //
+        // It also goes when the keyboard goes. It is a keyboard accessory: with the IME down it
+        // is a strip of buttons stuck to the bottom of the screen, over the top of the dock,
+        // formatting a field that no longer has focus.
         AnimatedVisibility(
-            visible = !state.previewMode,
+            visible = !state.previewMode && WindowInsets.isImeVisible,
             enter = fadeIn(tween(modeFadeMillis)),
             exit = fadeOut(tween(modeFadeMillis)),
         ) {

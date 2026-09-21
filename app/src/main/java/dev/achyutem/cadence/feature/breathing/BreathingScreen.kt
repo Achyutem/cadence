@@ -397,6 +397,7 @@ private fun SessionView(
                 kind = run.phase.kind,
                 phaseProgress = run.phaseProgress,
                 secondsLeft = run.secondsLeft,
+                phaseIndex = run.phaseIndex,
             )
             Spacer(Modifier.height(Spacing.xxl))
 

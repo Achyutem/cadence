@@ -50,6 +50,32 @@ class BreathingSettingsTest {
     }
 
     @Test
+    fun `static apnea is rest and hold, with no invented breath in between`() {
+        val phases = BreathingExercise.StaticApnea(rounds = 3).expand()
+
+        // A lead-in, then two phases per round. An earlier version wedged a fixed four-second
+        // inhale and an eight-second exhale around a single hold; both were the app deciding how
+        // someone should breathe.
+        assertEquals(1 + 3 * 2, phases.size)
+        assertEquals(
+            listOf(
+                BreathPhaseKind.PREPARE,
+                BreathPhaseKind.RECOVER, BreathPhaseKind.HOLD_FULL,
+                BreathPhaseKind.RECOVER, BreathPhaseKind.HOLD_FULL,
+                BreathPhaseKind.RECOVER, BreathPhaseKind.HOLD_FULL,
+            ),
+            phases.map { it.kind },
+        )
+    }
+
+    @Test
+    fun `static apnea rounds are the users to set`() {
+        val five = BreathingExercise.StaticApnea().with(BreathField.ROUNDS, 5)
+        assertEquals(5, five.valueOf(BreathField.ROUNDS))
+        assertEquals(5, five.expand().count { it.kind == BreathPhaseKind.HOLD_FULL })
+    }
+
+    @Test
     fun `editing a field returns a new exercise with only that field changed`() {
         val before = BreathingExercise.Co2Table()
         val after = before.with(BreathField.ROUNDS, 12)

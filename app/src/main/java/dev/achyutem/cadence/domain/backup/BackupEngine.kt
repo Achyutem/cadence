@@ -21,6 +21,7 @@ import dev.achyutem.cadence.core.database.entity.TaskTagCrossRef
 import dev.achyutem.cadence.core.datastore.AccentColor
 import dev.achyutem.cadence.core.datastore.ButtonShape
 import dev.achyutem.cadence.core.datastore.CompletedTaskBehavior
+import dev.achyutem.cadence.core.datastore.NotificationSound
 import dev.achyutem.cadence.core.datastore.SettingsRepository
 import dev.achyutem.cadence.core.datastore.ThemeMode
 import dev.achyutem.cadence.core.datastore.TimeFormat
@@ -218,6 +219,7 @@ private fun UserPreferences.toBackup() = BackupPreferences(
     completedTaskBehavior = completedTaskBehavior.name,
     defaultTaskDurationMinutes = defaultTaskDurationMinutes,
     timeFormat = timeFormat.name,
+    notificationSound = notificationSound.store(),
     defaultReminderLeadMinutes = defaultReminderLeadMinutes,
     quietHoursEnabled = quietHoursEnabled,
     quietHoursStart = quietHoursStart.toString(),
@@ -230,6 +232,7 @@ private fun UserPreferences.toBackup() = BackupPreferences(
         boxRounds = breathing.boxRounds,
         staticBreatheUpSeconds = breathing.staticBreatheUpSeconds,
         staticHoldSeconds = breathing.staticHoldSeconds,
+        staticRounds = breathing.staticRounds,
         co2HoldSeconds = breathing.co2HoldSeconds,
         co2StartRestSeconds = breathing.co2StartRestSeconds,
         co2RestDecrementSeconds = breathing.co2RestDecrementSeconds,
@@ -245,13 +248,14 @@ private fun UserPreferences.toBackup() = BackupPreferences(
 private fun BackupPreferences.toUserPreferences() = UserPreferences(
     displayName = displayName.take(UserPreferences.MAX_NAME_LENGTH),
     themeMode = themeMode.toEnumOr(ThemeMode.SYSTEM),
-    accentColor = accentColor.toEnumOr(AccentColor.BLUE),
+    accentColor = AccentColor.parse(accentColor),
     useDynamicColor = useDynamicColor,
     reducedMotion = reducedMotion,
     weekStartsOn = weekStartsOn.takeIf { it in 1..7 }?.let(DayOfWeek::of) ?: DayOfWeek.MONDAY,
     completedTaskBehavior = completedTaskBehavior.toEnumOr(CompletedTaskBehavior.MOVE_TO_BOTTOM),
     defaultTaskDurationMinutes = defaultTaskDurationMinutes.coerceIn(5, 8 * 60),
     timeFormat = timeFormat.toEnumOr(TimeFormat.SYSTEM),
+    notificationSound = NotificationSound.parse(notificationSound),
     defaultReminderLeadMinutes = defaultReminderLeadMinutes.coerceIn(0, 24 * 60),
     quietHoursEnabled = quietHoursEnabled,
     quietHoursStart = quietHoursStart.toLocalTimeOr(LocalTime.of(22, 0)),
@@ -264,6 +268,7 @@ private fun BackupPreferences.toUserPreferences() = UserPreferences(
         boxRounds = BreathField.ROUNDS.clamp(breathing.boxRounds),
         staticBreatheUpSeconds = BreathField.BREATHE_UP.clamp(breathing.staticBreatheUpSeconds),
         staticHoldSeconds = BreathField.HOLD.clamp(breathing.staticHoldSeconds),
+        staticRounds = BreathField.ROUNDS.clamp(breathing.staticRounds),
         co2HoldSeconds = BreathField.HOLD.clamp(breathing.co2HoldSeconds),
         co2StartRestSeconds = BreathField.START_REST.clamp(breathing.co2StartRestSeconds),
         co2RestDecrementSeconds =

@@ -18,6 +18,7 @@ import dev.achyutem.cadence.domain.habit.isValueComplete
 import dev.achyutem.cadence.core.database.entity.HabitEntryEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -61,7 +62,10 @@ class ReminderReceiver : BroadcastReceiver() {
             ?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: return
 
         if (!hasNotificationPermission(context)) return
-        NotificationChannels.ensureCreated(context)
+        // Read the sound here rather than trusting whatever channel existed at boot: the setting
+        // may have changed since, and the channel id depends on it.
+        val sound = container.settingsRepository.preferences.first().notificationSound
+        NotificationChannels.ensureCreated(context, sound)
 
         when (target) {
             ReminderTarget.TASK -> {
@@ -72,7 +76,7 @@ class ReminderReceiver : BroadcastReceiver() {
                 notify(
                     context,
                     id = notificationId(target, entityId, date),
-                    channel = NotificationChannels.TASKS,
+                    channel = NotificationChannels.tasksChannel(sound),
                     title = task.title,
                     body = task.notes?.takeIf { it.isNotBlank() },
                     actions = listOf(
@@ -90,7 +94,7 @@ class ReminderReceiver : BroadcastReceiver() {
                 notify(
                     context,
                     id = notificationId(target, entityId, date),
-                    channel = NotificationChannels.HABITS,
+                    channel = NotificationChannels.habitsChannel(sound),
                     title = context.getString(R.string.notification_habit_title, habit.name),
                     body = context.getString(R.string.notification_habit_body),
                     actions = listOf(

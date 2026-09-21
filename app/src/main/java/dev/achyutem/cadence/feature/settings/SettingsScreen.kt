@@ -1,5 +1,9 @@
 package dev.achyutem.cadence.feature.settings
 
+import android.app.Activity
+import android.content.Intent
+import android.media.RingtoneManager
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -28,11 +32,23 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,6 +78,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.achyutem.cadence.R
 import dev.achyutem.cadence.core.datastore.AccentColor
 import dev.achyutem.cadence.core.datastore.ButtonShape
+import dev.achyutem.cadence.core.datastore.NotificationSound
 import dev.achyutem.cadence.core.datastore.ThemeMode
 import dev.achyutem.cadence.core.datastore.UserPreferences
 import dev.achyutem.cadence.core.designsystem.component.ButtonTone
@@ -141,6 +158,7 @@ fun SettingsScreen(
         onReducedMotion = viewModel::setReducedMotion,
         onWeekStart = viewModel::setWeekStart,
         onQuietHours = viewModel::setQuietHoursEnabled,
+        onNotificationSound = viewModel::setNotificationSound,
         notificationsAllowed = notificationsAllowed,
         exactAlarmsAllowed = viewModel.canScheduleExact(),
         onRequestNotifications = {
@@ -205,6 +223,7 @@ private fun SettingsContent(
     onReducedMotion: (Boolean) -> Unit,
     onWeekStart: (DayOfWeek) -> Unit,
     onQuietHours: (Boolean) -> Unit,
+    onNotificationSound: (NotificationSound) -> Unit,
     notificationsAllowed: Boolean,
     exactAlarmsAllowed: Boolean,
     onRequestNotifications: () -> Unit,
@@ -333,6 +352,9 @@ private fun SettingsContent(
                 Spacer(Modifier.height(Spacing.xs))
             }
 
+            SoundRow(sound = preferences.notificationSound, onSelect = onNotificationSound)
+            Spacer(Modifier.height(Spacing.sm))
+
             ToggleRow(
                 title = stringResource(R.string.settings_quiet_hours),
                 description = stringResource(R.string.settings_quiet_hours_body),
@@ -408,8 +430,29 @@ private fun SettingsContent(
     }
 }
 
+/**
+ * The name field.
+ *
+ * Holds its own [TextFieldValue] rather than rendering the stored preference directly. The stored
+ * value round-trips through DataStore on every keystroke, so drawing it straight meant the field
+ * was always a frame or two behind the keyboard: the caret jumped back, the placeholder flickered
+ * in and out, and typing anything longer than a first name was a fight.
+ *
+ * Upstream changes are still adopted, but only while the field is not focused, which is the only
+ * time they can be something other than an echo of what was just typed. That is what makes an
+ * import or a restore show up here without stealing the caret mid-word.
+ */
 @Composable
 private fun NameField(value: String, onValueChange: (String) -> Unit) {
+    var field by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
+    var focused by remember { mutableStateOf(false) }
+
+    LaunchedEffect(value, focused) {
+        if (!focused && field.text != value) {
+            field = TextFieldValue(value, TextRange(value.length))
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -420,7 +463,7 @@ private fun NameField(value: String, onValueChange: (String) -> Unit) {
             .padding(horizontal = Spacing.sm),
         contentAlignment = Alignment.CenterStart,
     ) {
-        if (value.isEmpty()) {
+        if (field.text.isEmpty()) {
             Text(
                 text = stringResource(R.string.settings_name_placeholder),
                 style = MaterialTheme.typography.bodyMedium,
@@ -428,8 +471,19 @@ private fun NameField(value: String, onValueChange: (String) -> Unit) {
             )
         }
         BasicTextField(
-            value = value,
-            onValueChange = { onValueChange(it.take(UserPreferences.MAX_NAME_LENGTH)) },
+            value = field,
+            onValueChange = { next ->
+                val clipped = if (next.text.length <= UserPreferences.MAX_NAME_LENGTH) {
+                    next
+                } else {
+                    // Truncating the text without moving the selection leaves the caret past the
+                    // end of the string, which throws.
+                    val text = next.text.take(UserPreferences.MAX_NAME_LENGTH)
+                    next.copy(text = text, selection = TextRange(text.length))
+                }
+                field = clipped
+                onValueChange(clipped.text)
+            },
             singleLine = true,
             textStyle = MaterialTheme.typography.bodyMedium.copy(
                 color = MaterialTheme.colorScheme.onSurface,
@@ -438,16 +492,19 @@ private fun NameField(value: String, onValueChange: (String) -> Unit) {
             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                 imeAction = ImeAction.Done,
             ),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .onFocusChanged { focused = it.isFocused },
         )
     }
 }
 
 /**
- * Accent swatches.
+ * The accent picker.
  *
- * Selection is a ring that grows around the swatch rather than a tick drawn on top of it, the
- * colour is the content here, and covering it up to say "this one" defeats the purpose.
+ * A dropdown rather than a grid of swatches. Eleven of them tiled across the screen turned the
+ * quietest section of Settings into its loudest thing, and a row of unlabelled dots makes you
+ * guess which one is "sepia". Collapsed it is one line: the current colour and its name.
  */
 @Composable
 private fun AccentRow(
@@ -456,85 +513,176 @@ private fun AccentRow(
     onSelect: (AccentColor) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Ten swatches do not fit one row on a phone, and a horizontally scrolling colour picker
-    // hides half the options behind a gesture nobody knows is there. Two rows of five shows
-    // everything at once.
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .selectableGroup(),
-        verticalArrangement = Arrangement.spacedBy(Spacing.xxs),
-    ) {
-        AccentColor.entries.chunked(5).forEach { row ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                row.forEach { accent ->
-                    AccentSwatch(
-                        accent = accent,
-                        selected = accent == selected,
-                        enabled = enabled,
-                        onClick = { onSelect(accent) },
-                    )
-                }
+    var expanded by remember { mutableStateOf(false) }
+    val dark = isSystemInDarkTheme()
+
+    Box(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(Radius.shapeMd)
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                .border(Borders.hairline, CadenceTheme.colors.border, Radius.shapeMd)
+                .clickable(enabled = enabled) { expanded = true }
+                .padding(horizontal = Spacing.sm, vertical = Spacing.xs),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.settings_accent),
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (enabled) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                modifier = Modifier.weight(1f),
+            )
+            AccentDot(accent = selected, enabled = enabled, dark = dark)
+            Spacer(Modifier.width(Spacing.xs))
+            Text(
+                text = stringResource(selected.labelRes),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Icon(
+                imageVector = Icons.Rounded.ExpandMore,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = Radius.shapeMd,
+        ) {
+            AccentColor.entries.forEach { accent ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(accent.labelRes),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    },
+                    leadingIcon = { AccentDot(accent = accent, enabled = true, dark = dark) },
+                    trailingIcon = {
+                        if (accent == selected) {
+                            Icon(
+                                imageVector = Icons.Rounded.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        }
+                    },
+                    onClick = {
+                        onSelect(accent)
+                        expanded = false
+                    },
+                )
             }
         }
     }
 }
 
+/**
+ * One colour dot.
+ *
+ * Outlined, because two of the accents are near-white and an unoutlined white dot on a white
+ * sheet is not a swatch, it is nothing.
+ */
 @Composable
-private fun AccentSwatch(
-    accent: AccentColor,
-    selected: Boolean,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
-    val haptics = LocalHapticFeedback.current
-    val accentLabel = stringResource(accent.labelRes)
+private fun AccentDot(accent: AccentColor, enabled: Boolean, dark: Boolean) {
+    val fill = accent.swatch(dark).let { if (enabled) it else it.copy(alpha = 0.3f) }
+    val outline = CadenceTheme.colors.border
+    Canvas(modifier = Modifier.size(18.dp)) {
+        val radius = size.minDimension / 2f - 1.dp.toPx()
+        drawCircle(color = fill, radius = radius)
+        drawCircle(color = outline, radius = radius, style = Stroke(width = 1.dp.toPx()))
+    }
+}
 
-    // The ring is drawn, not bordered. `Modifier.border` animated to 0.dp still strokes a
-    // hairline, which put a faint outline around every *unselected* swatch.
-    val ringColor = MaterialTheme.colorScheme.onSurface
-    val ringProgress by animateFloatAsState(
-        targetValue = if (selected) 1f else 0f,
-        animationSpec = tween(CadenceTheme.duration(Motion.QUICK)),
-        label = "accentRing",
-    )
-    val fill = if (enabled) accent.swatch else accent.swatch.copy(alpha = 0.3f)
+/**
+ * The reminder sound.
+ *
+ * Hands off to the system ringtone picker rather than listing tones in-app: the picker already
+ * knows about the user's own files, Do Not Disturb, and every sound the device ships with, and
+ * reimplementing a worse version of it inside Settings would be a lot of code to end up behind.
+ *
+ * The caption is not boilerplate. Android freezes a channel's sound at creation, so changing it
+ * means recreating the channel, which discards any per-channel tweaks the user made in system
+ * settings. Someone who has already tuned the channel deserves to know that before tapping.
+ */
+@Composable
+private fun SoundRow(sound: NotificationSound, onSelect: (NotificationSound) -> Unit) {
+    val context = LocalContext.current
+    val picker = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        if (result.resultCode != Activity.RESULT_OK) return@rememberLauncherForActivityResult
+        val uri = result.data?.getParcelableExtra(
+            RingtoneManager.EXTRA_RINGTONE_PICKED_URI,
+            Uri::class.java,
+        )
+        onSelect(uri?.let { NotificationSound.Custom(it.toString()) } ?: NotificationSound.Silent)
+    }
 
-    Box(
+    Column(
         modifier = Modifier
-            .size(TouchTarget.min)
-            .clip(CircleShape)
-            .clickable(enabled = enabled, role = Role.RadioButton) {
-                haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                onClick()
-            }
-            .semantics {
-                this.selected = selected
-                this.role = Role.RadioButton
-                contentDescription = accentLabel
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        // The ring is drawn *outside* a constant-size swatch rather than inside it. Insetting the
-        // fill to make room made the selected colour visibly smaller than its neighbours, a
-        // bullseye, when the swatch is the one thing that should not change.
-        Canvas(modifier = Modifier.size(34.dp)) {
-            val centre = size.minDimension / 2f
-            val swatchRadius = 13.dp.toPx()
-            val ringStroke = 1.5.dp.toPx()
-            drawCircle(color = fill, radius = swatchRadius)
-            if (ringProgress > 0f) {
-                drawCircle(
-                    color = ringColor.copy(alpha = ringProgress),
-                    radius = swatchRadius + 3.dp.toPx() * ringProgress,
-                    style = Stroke(width = ringStroke),
+            .fillMaxWidth()
+            .clip(Radius.shapeMd)
+            .clickable {
+                picker.launch(
+                    Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, context.getString(R.string.settings_sound))
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
+                        putExtra(
+                            RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
+                            (sound as? NotificationSound.Custom)?.uri?.toUri(),
+                        )
+                    },
                 )
             }
+            .padding(vertical = Spacing.xs),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.settings_sound),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = sound.displayName(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
+        Text(
+            text = stringResource(R.string.settings_sound_body),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** The tone's own title, straight from the system, so it matches what the picker showed. */
+@Composable
+private fun NotificationSound.displayName(): String {
+    val context = LocalContext.current
+    return when (this) {
+        NotificationSound.SystemDefault -> stringResource(R.string.settings_sound_default)
+        NotificationSound.Silent -> stringResource(R.string.settings_sound_silent)
+        is NotificationSound.Custom -> remember(uri) {
+            runCatching {
+                RingtoneManager.getRingtone(context, uri.toUri())?.getTitle(context)
+            }.getOrNull()
+        } ?: stringResource(R.string.settings_sound_custom)
     }
 }
 
@@ -646,6 +794,7 @@ private fun SettingsPreviewLight() = CadencePreviewTheme {
         onReducedMotion = {},
         onWeekStart = {},
         onQuietHours = {},
+        onNotificationSound = {},
         notificationsAllowed = true,
         exactAlarmsAllowed = true,
         onRequestNotifications = {},
@@ -658,10 +807,10 @@ private fun SettingsPreviewLight() = CadencePreviewTheme {
 
 @Preview(name = "Settings, dark", showBackground = true)
 @Composable
-private fun SettingsPreviewDark() = CadencePreviewTheme(dark = true, accent = AccentColor.EMERALD) {
+private fun SettingsPreviewDark() = CadencePreviewTheme(dark = true, accent = AccentColor.GREEN) {
     SettingsContent(
         preferences = UserPreferences.Default.copy(
-            accentColor = AccentColor.EMERALD,
+            accentColor = AccentColor.GREEN,
             themeMode = ThemeMode.DARK,
         ),
         transfer = DataTransferState.Idle,
@@ -673,6 +822,7 @@ private fun SettingsPreviewDark() = CadencePreviewTheme(dark = true, accent = Ac
         onReducedMotion = {},
         onWeekStart = {},
         onQuietHours = {},
+        onNotificationSound = {},
         notificationsAllowed = false,
         exactAlarmsAllowed = false,
         onRequestNotifications = {},

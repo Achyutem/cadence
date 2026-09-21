@@ -50,8 +50,11 @@
     <string name="quick_add_submit">Add task</string>
     <string name="quick_add_no_date">No date</string>
     <string name="quick_add_no_time">No time</string>
+    <string name="quick_add_pick_date">Pick a date…</string>
+    <string name="quick_add_pick_time">Pick a time…</string>
     <string name="date_today">Today</string>
     <string name="date_tomorrow">Tomorrow</string>
+    <string name="date_next_week">Next week</string>
     <string name="priority_none">Priority</string>
     <string name="priority_none_short">None</string>
     <string name="priority_low">Low</string>
@@ -76,6 +79,10 @@
     <string name="habit_measure">How is it measured?</string>
     <string name="habit_schedule">Schedule</string>
     <string name="habit_target_placeholder">Target</string>
+    <string name="habit_target_title">What counts as done?</string>
+    <string name="habit_target_save">Save</string>
+    <string name="habit_target_history_note">Days already logged keep the result they were recorded with. Changing the target from here on does not rewrite them.</string>
+    <string name="habit_unit_minutes">min</string>
     <string name="habit_unit_placeholder">Unit</string>
     <string name="habit_create">Create</string>
     <string name="habit_type_boolean">Done</string>
@@ -107,6 +114,7 @@
     <string name="settings_name_placeholder">Your name</string>
     <string name="settings_name_description">Used only for the greeting on Today. Never leaves this device.</string>
     <string name="settings_appearance">Appearance</string>
+    <string name="settings_accent">Accent</string>
     <string name="settings_data">Data</string>
     <string name="settings_data_description">Export everything to a JSON file you control, or restore from one.</string>
     <string name="settings_export">Export</string>
@@ -128,16 +136,17 @@
     <string name="theme_dark">Dark</string>
 
     <!-- Accent colour names, used as accessibility labels for the swatches -->
-    <string name="accent_blue">Blue</string>
-    <string name="accent_indigo">Indigo</string>
-    <string name="accent_violet">Violet</string>
-    <string name="accent_magenta">Magenta</string>
-    <string name="accent_rose">Rose</string>
-    <string name="accent_amber">Amber</string>
-    <string name="accent_emerald">Emerald</string>
-    <string name="accent_teal">Teal</string>
+    <string name="accent_red">Red</string>
+    <string name="accent_orange">Orange</string>
+    <string name="accent_sepia">Sepia</string>
+    <string name="accent_green">Green</string>
+    <string name="accent_spotify">Spotify</string>
     <string name="accent_cyan">Cyan</string>
-    <string name="accent_slate">Slate</string>
+    <string name="accent_blue">Blue</string>
+    <string name="accent_magenta">Magenta</string>
+    <string name="accent_grey">Grey</string>
+    <string name="accent_white">White</string>
+    <string name="accent_mono">Black and white</string>
     <string name="settings_button_shape">Button shape</string>
     <string name="button_shape_rounded">Rounded</string>
     <string name="button_shape_pill">Pill</string>
@@ -265,6 +274,11 @@
     <string name="settings_notifications_permission_body">Cadence needs permission before it can remind you about anything.</string>
     <string name="settings_exact_alarms">Allow exact timing</string>
     <string name="settings_exact_alarms_body">Without this, reminders may arrive late when the device is idle.</string>
+    <string name="settings_sound">Reminder sound</string>
+    <string name="settings_sound_body">Changing this rebuilds the notification channels, which resets anything you have adjusted for Cadence in system settings.</string>
+    <string name="settings_sound_default">Default</string>
+    <string name="settings_sound_silent">Silent</string>
+    <string name="settings_sound_custom">Custom</string>
     <string name="settings_quiet_hours">Quiet hours</string>
     <string name="settings_quiet_hours_body">Reminders inside this window wait until it ends rather than being dropped.</string>
     <string name="action_grant">Allow</string>

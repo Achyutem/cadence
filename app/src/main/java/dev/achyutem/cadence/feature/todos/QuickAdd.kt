@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,6 +46,10 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import dev.achyutem.cadence.R
 import dev.achyutem.cadence.core.database.entity.TaskPriority
 import dev.achyutem.cadence.core.designsystem.component.ButtonTone
@@ -55,8 +60,13 @@ import dev.achyutem.cadence.core.designsystem.token.Elevation
 import dev.achyutem.cadence.core.designsystem.token.Motion
 import dev.achyutem.cadence.core.designsystem.token.Radius
 import dev.achyutem.cadence.core.designsystem.token.Spacing
+import dev.achyutem.cadence.core.datastore.TimeFormat
+import dev.achyutem.cadence.core.designsystem.component.CadenceDatePickerDialog
+import dev.achyutem.cadence.core.designsystem.component.CadenceTimePickerDialog
+import dev.achyutem.cadence.core.time.formatHourMinute
 import dev.achyutem.cadence.core.time.formatShort
 import androidx.compose.ui.draw.shadow
+import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -71,6 +81,9 @@ import java.time.LocalTime
  * four things in a row should be four sentences, not four round trips through a dialog. The
  * keyboard never dismisses until the user is finished.
  */
+// `isImeVisible` is the only way to observe the keyboard from Compose and has been experimental
+// for years. Reading it is the whole fix for a composer that outlives its keyboard.
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun QuickAddBar(
     visible: Boolean,
@@ -81,13 +94,51 @@ fun QuickAddBar(
     modifier: Modifier = Modifier,
     defaultDate: LocalDate? = null,
 ) {
+    val use24Hour = CadenceTheme.preferences.timeFormat != TimeFormat.TWELVE_HOUR
     var text by remember { mutableStateOf("") }
     var date by remember(defaultDate) { mutableStateOf(defaultDate) }
     var time by remember { mutableStateOf<LocalTime?>(null) }
     var priority by remember { mutableStateOf(TaskPriority.NONE) }
 
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    /**
+     * How many chip menus are open.
+     *
+     * A count rather than a flag: tapping one chip while another's menu is open closes the first
+     * and opens the second, and the two callbacks can arrive in either order. A flag would end up
+     * false with a menu still on screen.
+     */
+    var openMenus by remember { mutableIntStateOf(0) }
+
+    // Anything that legitimately takes the keyboard away without ending the capture.
+    val holdingFocus = showDatePicker || showTimePicker || openMenus > 0
+
     val focusRequester = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
+
+    if (showDatePicker) {
+        CadenceDatePickerDialog(
+            initial = date ?: defaultDate ?: today,
+            onDismiss = { showDatePicker = false },
+            onSelect = {
+                date = it
+                showDatePicker = false
+            },
+        )
+    }
+    if (showTimePicker) {
+        CadenceTimePickerDialog(
+            initial = time,
+            use24Hour = use24Hour,
+            onDismiss = { showTimePicker = false },
+            onSelect = {
+                time = it
+                showTimePicker = false
+            },
+        )
+    }
 
     // Back closes the composer before it closes the screen. Without this the first back press
     // leaves the app entirely while a half-typed task is on screen, which is the worst possible
@@ -98,13 +149,59 @@ fun QuickAddBar(
     }
 
     LaunchedEffect(visible) {
-        if (visible) {
-            focusRequester.requestFocus()
-            keyboard?.show()
-        } else {
+        if (!visible) {
             text = ""
             time = null
             priority = TaskPriority.NONE
+        }
+    }
+
+    /**
+     * Dismissing the keyboard dismisses the composer.
+     *
+     * The system back gesture hides the IME without reaching [BackHandler], which left the
+     * composer stranded: an empty input floating above the dock, with the dock drawn over it,
+     * and no obvious way to get rid of it. Anything that closes the keyboard is someone saying
+     * they are done typing.
+     *
+     * Guarded on the keyboard having actually been up, so this cannot fire on the frame between
+     * the composer appearing and the IME animating in, and suspended while [holdingFocus] is
+     * true. A date picker or a chip menu takes the keyboard away as a matter of course; treating
+     * that as "done typing" threw away the half-typed task the moment anyone touched a chip.
+     *
+     * When the interruption ends, the caret and the keyboard come back, so choosing a date leaves
+     * you exactly where you were.
+     */
+    val imeVisible = WindowInsets.isImeVisible
+    var keyboardWasUp by remember { mutableStateOf(false) }
+    LaunchedEffect(visible, imeVisible, holdingFocus) {
+        if (!visible) {
+            keyboardWasUp = false
+            return@LaunchedEffect
+        }
+        if (holdingFocus) {
+            // Disarm. The keyboard is about to go for a reason, and it has to come back up
+            // before an absence means anything again.
+            keyboardWasUp = false
+            return@LaunchedEffect
+        }
+        if (imeVisible) {
+            keyboardWasUp = true
+            return@LaunchedEffect
+        }
+        if (!keyboardWasUp) return@LaunchedEffect
+
+        // Settle first. The IME reports itself hidden for a frame or two while a menu closes and
+        // focus comes back, and dismissing on that flicker takes the composer away mid-gesture.
+        // A keyboard that returns changes the keys and cancels this before it fires.
+        delay(SETTLE_MILLIS)
+        onDismiss()
+    }
+
+    LaunchedEffect(visible, holdingFocus) {
+        if (visible && !holdingFocus) {
+            focusRequester.requestFocus()
+            keyboard?.show()
         }
     }
 
@@ -179,30 +276,54 @@ fun QuickAddBar(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(Spacing.xxs),
                 ) {
-                    QuickChip(
+                    // Menus, not cycles. Tapping through today → tomorrow → none was fast for
+                    // the two dates it knew and offered no way at all to reach a third, and the
+                    // time chip could only ever say 09:00. One tap opens, one tap chooses, and
+                    // the last item in each is the full picker.
+                    ChipMenu(
                         label = date?.let { dateChipLabel(it, today) }
                             ?: stringResource(R.string.quick_add_no_date),
                         active = date != null,
-                        onClick = {
-                            // Cycles today → tomorrow → none: three taps cover almost every
-                            // capture, without opening a picker mid-thought.
-                            val base = defaultDate ?: today
-                            date = when (date) {
-                                null -> base
-                                base -> base.plusDays(1)
-                                else -> null
+                        onExpandedChange = { open -> openMenus += if (open) 1 else -1 },
+                        options = buildList {
+                            add(ChipOption(stringResource(R.string.date_today)) { date = today })
+                            add(
+                                ChipOption(stringResource(R.string.date_tomorrow)) {
+                                    date = today.plusDays(1)
+                                },
+                            )
+                            add(
+                                ChipOption(stringResource(R.string.date_next_week)) {
+                                    date = today.plusWeeks(1)
+                                },
+                            )
+                            add(
+                                ChipOption(stringResource(R.string.quick_add_pick_date)) {
+                                    showDatePicker = true
+                                },
+                            )
+                            if (date != null) {
+                                add(ChipOption(stringResource(R.string.quick_add_no_date)) { date = null })
                             }
                         },
                     )
-                    QuickChip(
-                        label = time?.let { "%02d:%02d".format(it.hour, it.minute) }
+                    ChipMenu(
+                        label = time?.formatHourMinute(use24Hour)
                             ?: stringResource(R.string.quick_add_no_time),
                         icon = Icons.Rounded.Schedule,
                         active = time != null,
-                        onClick = {
-                            time = when (time) {
-                                null -> LocalTime.of(9, 0)
-                                else -> null
+                        onExpandedChange = { open -> openMenus += if (open) 1 else -1 },
+                        options = buildList {
+                            TIME_PRESETS.forEach { preset ->
+                                add(ChipOption(preset.formatHourMinute(use24Hour)) { time = preset })
+                            }
+                            add(
+                                ChipOption(stringResource(R.string.quick_add_pick_time)) {
+                                    showTimePicker = true
+                                },
+                            )
+                            if (time != null) {
+                                add(ChipOption(stringResource(R.string.quick_add_no_time)) { time = null })
                             }
                         },
                     )
@@ -217,6 +338,63 @@ fun QuickAddBar(
                         },
                     )
                 }
+            }
+        }
+    }
+}
+
+/** How long the keyboard has to stay away before the composer believes it. */
+private const val SETTLE_MILLIS = 350L
+
+/** One row in a [ChipMenu]. */
+private data class ChipOption(val label: String, val onSelect: () -> Unit)
+
+/**
+ * A chip that opens a short menu.
+ *
+ * The menu is anchored to the chip rather than presented as a sheet, so the composer and the
+ * half-typed title stay on screen behind it. Losing sight of what you were writing in order to
+ * say "next Tuesday" is the thing this whole bar exists to avoid.
+ */
+@Composable
+private fun ChipMenu(
+    label: String,
+    active: Boolean,
+    options: List<ChipOption>,
+    /** Reported so the composer knows the keyboard went for a reason. */
+    onExpandedChange: (Boolean) -> Unit,
+    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    fun setExpanded(open: Boolean) {
+        if (expanded == open) return
+        expanded = open
+        onExpandedChange(open)
+    }
+
+    Box {
+        QuickChip(label = label, active = active, icon = icon, onClick = { setExpanded(true) })
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { setExpanded(false) },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = Radius.shapeMd,
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = option.label,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    },
+                    onClick = {
+                        setExpanded(false)
+                        option.onSelect()
+                    },
+                )
             }
         }
     }
@@ -281,6 +459,15 @@ private fun priorityLabel(priority: TaskPriority): String = stringResource(
         TaskPriority.MEDIUM -> R.string.priority_medium
         TaskPriority.HIGH -> R.string.priority_high
     }
+)
+
+/** Times worth one tap. Anything else is two, through the picker. */
+private val TIME_PRESETS = listOf(
+    LocalTime.of(8, 0),
+    LocalTime.of(9, 0),
+    LocalTime.of(12, 0),
+    LocalTime.of(18, 0),
+    LocalTime.of(21, 0),
 )
 
 @Composable

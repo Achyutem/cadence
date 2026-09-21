@@ -32,6 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.achyutem.cadence.R
+import dev.achyutem.cadence.domain.habit.Habit
+import dev.achyutem.cadence.core.database.entity.HabitType
+import dev.achyutem.cadence.core.database.entity.HabitGoalDirection
 import dev.achyutem.cadence.core.designsystem.component.ButtonTone
 import dev.achyutem.cadence.core.designsystem.component.CadenceCard
 import dev.achyutem.cadence.core.designsystem.component.CadenceIconButton
@@ -67,6 +70,7 @@ fun HabitDetailScreen(
     val habitOrNull = state.habit
     var showRecurrence by remember { mutableStateOf(false) }
     var showReminderTime by remember { mutableStateOf(false) }
+    var showTarget by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -132,23 +136,13 @@ fun HabitDetailScreen(
                 value = state.rule?.describe() ?: stringResource(R.string.habit_schedule_daily),
                 onClick = { showRecurrence = true },
             )
-            if (habit.type != dev.achyutem.cadence.core.database.entity.HabitType.BOOLEAN) {
-                SettingRow(
-                    label = stringResource(R.string.habit_target_placeholder),
-                    value = habit.targetValue.trim() + (habit.unit?.let { " $it" } ?: ""),
-                    onClick = {
-                        // Steps through the useful targets rather than opening a keyboard for a
-                        // number most people set once.
-                        val next = when {
-                            habit.targetValue < 3 -> habit.targetValue + 1
-                            habit.targetValue < 10 -> habit.targetValue + 1
-                            habit.targetValue < 60 -> habit.targetValue + 5
-                            else -> 1.0
-                        }
-                        viewModel.setTarget(next)
-                    },
-                )
-            }
+            // Shown for every habit, including Done ones. "Change the target" of a Done habit
+            // means "make this a count", and hiding the row was the only thing stopping that.
+            SettingRow(
+                label = stringResource(R.string.habit_target_placeholder),
+                value = habit.measurementSummary(),
+                onClick = { showTarget = true },
+            )
             SettingRow(
                 label = stringResource(R.string.task_field_reminder),
                 value = state.reminder?.timeOfDay?.toString()
@@ -212,6 +206,16 @@ fun HabitDetailScreen(
         }
     }
 
+    if (showTarget && habitOrNull != null) {
+        HabitTargetSheet(
+            type = habitOrNull.type,
+            target = habitOrNull.targetValue,
+            unit = habitOrNull.unit,
+            goalDirection = habitOrNull.goalDirection,
+            onDismiss = { showTarget = false },
+            onApply = viewModel::setMeasurement,
+        )
+    }
     if (showRecurrence && habitOrNull != null) {
         RecurrencePickerSheet(
             current = state.rule,
@@ -306,5 +310,27 @@ private fun StatTile(
                 )
             }
         }
+    }
+}
+
+/**
+ * What this habit measures, in one line: "30 min", "8 glasses", "At most 2", "Done".
+ *
+ * The direction is only mentioned when it is the unusual one. Almost every habit is "at least",
+ * and prefixing every row with it would make the exceptions harder to spot, not easier.
+ */
+@Composable
+private fun Habit.measurementSummary(): String {
+    if (type == HabitType.BOOLEAN) return stringResource(R.string.habit_type_boolean)
+    val amount = targetValue.trim()
+    val suffix = when (type) {
+        HabitType.DURATION -> " " + stringResource(R.string.habit_unit_minutes)
+        HabitType.QUANTITY -> unit?.let { " $it" }.orEmpty()
+        else -> ""
+    }
+    return if (goalDirection == HabitGoalDirection.AT_MOST) {
+        stringResource(R.string.habit_goal_at_most) + " " + amount + suffix
+    } else {
+        amount + suffix
     }
 }

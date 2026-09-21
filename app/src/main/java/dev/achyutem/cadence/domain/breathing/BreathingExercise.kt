@@ -125,39 +125,62 @@ sealed interface BreathingExercise {
     }
 
     /**
-     * A single static hold, with a breathe-up before it.
+     * Static apnea: breathe, then hold, for as many rounds as you ask for.
      *
-     * One round by design. Repeated maximal holds are what the tables are for; stacking them
-     * freehand is how people get hurt.
+     * Two phases per round and nothing else. An earlier version bolted a fixed four-second inhale
+     * and an eight-second exhale onto a single round, on the theory that the app should conduct
+     * the breath itself. It should not: people doing breath-hold work have their own breathe-up,
+     * the four seconds were the app inventing a number, and one locked round made the whole
+     * exercise a stopwatch with extra steps.
+     *
+     * The rest and the hold are both constant here. A shrinking rest is a CO2 table and a growing
+     * hold is an O2 table; this is the one where you decide.
      */
     data class StaticApnea(
         val breatheUpSeconds: Int = 120,
         val holdSeconds: Int = 120,
+        val rounds: Int = 1,
     ) : BreathingExercise {
         override val title = "Static apnea"
-        override val subtitle = "Hold ${holdSeconds.asClock()}"
+        override val subtitle = if (rounds == 1) {
+            "Hold ${holdSeconds.asClock()}"
+        } else {
+            "$rounds × ${holdSeconds.asClock()} hold"
+        }
 
-        override val fields = listOf(BreathField.BREATHE_UP, BreathField.HOLD)
+        override val fields = listOf(
+            BreathField.ROUNDS,
+            BreathField.HOLD,
+            BreathField.BREATHE_UP,
+        )
 
         override fun valueOf(field: BreathField): Int = when (field) {
-            BreathField.BREATHE_UP -> breatheUpSeconds
+            BreathField.ROUNDS -> rounds
             BreathField.HOLD -> holdSeconds
+            BreathField.BREATHE_UP -> breatheUpSeconds
             else -> 0
         }
 
         override fun with(field: BreathField, value: Int): BreathingExercise = when (field) {
-            BreathField.BREATHE_UP -> copy(breatheUpSeconds = field.clamp(value))
+            BreathField.ROUNDS -> copy(rounds = field.clamp(value))
             BreathField.HOLD -> copy(holdSeconds = field.clamp(value))
+            BreathField.BREATHE_UP -> copy(breatheUpSeconds = field.clamp(value))
             else -> this
         }
 
-        override fun expand(): List<BreathPhase> = listOf(
-            BreathPhase(BreathPhaseKind.PREPARE, PREPARE_SECONDS),
-            BreathPhase(BreathPhaseKind.RECOVER, BreathField.BREATHE_UP.clamp(breatheUpSeconds), 1, 1),
-            BreathPhase(BreathPhaseKind.INHALE, INHALE_SECONDS, 1, 1),
-            BreathPhase(BreathPhaseKind.HOLD_FULL, BreathField.HOLD.clamp(holdSeconds), 1, 1),
-            BreathPhase(BreathPhaseKind.EXHALE, RECOVERY_EXHALE_SECONDS, 1, 1),
-        )
+        override fun expand(): List<BreathPhase> {
+            val n = BreathField.ROUNDS.clamp(rounds)
+            val breatheUp = BreathField.BREATHE_UP.clamp(breatheUpSeconds)
+            val hold = BreathField.HOLD.clamp(holdSeconds)
+            return buildList {
+                add(BreathPhase(BreathPhaseKind.PREPARE, PREPARE_SECONDS))
+                repeat(n) { index ->
+                    val round = index + 1
+                    add(BreathPhase(BreathPhaseKind.RECOVER, breatheUp, round, n))
+                    add(BreathPhase(BreathPhaseKind.HOLD_FULL, hold, round, n))
+                }
+            }
+        }
     }
 
     /**
@@ -285,8 +308,6 @@ sealed interface BreathingExercise {
     companion object {
         /** A moment to put the phone down and settle before anything is timed. */
         const val PREPARE_SECONDS = 5
-        const val INHALE_SECONDS = 4
-        const val RECOVERY_EXHALE_SECONDS = 8
 
         /**
          * Rest never reaches zero in a CO2 table.
