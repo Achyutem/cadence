@@ -93,12 +93,12 @@ private val GreenPalette = AccentPalette(
 )
 
 /**
- * The familiar streaming green, `#1DB954`.
+ * A vivid blue-green, `#1DB954`, brighter and cooler than [GreenPalette].
  *
- * Darkened for light mode: the brand value against white is about 2.2:1, so white text on it
- * would fail outright. Dark mode gets the real thing, which is where it belongs anyway.
+ * Darkened for light mode: the bright value against white is about 2.2:1, so white text on it
+ * would fail outright. Dark mode gets the full-strength version, which is where it belongs anyway.
  */
-private val SpotifyPalette = AccentPalette(
+private val JadePalette = AccentPalette(
     lightPrimary = Color(0xFF0F8A42),
     lightOnPrimary = Color(0xFFFFFFFF),
     lightContainer = Color(0xFFC6F1D4),
@@ -172,7 +172,7 @@ val AccentColor.palette: AccentPalette
         AccentColor.ORANGE -> OrangePalette
         AccentColor.SEPIA -> SepiaPalette
         AccentColor.GREEN -> GreenPalette
-        AccentColor.SPOTIFY -> SpotifyPalette
+        AccentColor.JADE -> JadePalette
         AccentColor.CYAN -> CyanPalette
         AccentColor.BLUE -> BluePalette
         AccentColor.MAGENTA -> MagentaPalette
@@ -196,7 +196,7 @@ val AccentColor.labelRes: Int
         AccentColor.ORANGE -> R.string.accent_orange
         AccentColor.SEPIA -> R.string.accent_sepia
         AccentColor.GREEN -> R.string.accent_green
-        AccentColor.SPOTIFY -> R.string.accent_spotify
+        AccentColor.JADE -> R.string.accent_jade
         AccentColor.CYAN -> R.string.accent_cyan
         AccentColor.BLUE -> R.string.accent_blue
         AccentColor.MAGENTA -> R.string.accent_magenta

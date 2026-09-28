@@ -33,6 +33,7 @@ class AccentMigrationTest {
         assertEquals(AccentColor.GREEN, AccentColor.parse("TEAL"))
         assertEquals(AccentColor.GREY, AccentColor.parse("SLATE"))
         assertEquals(AccentColor.MONO, AccentColor.parse("WHITE"))
+        assertEquals(AccentColor.JADE, AccentColor.parse("SPOTIFY"))
     }
 
     @Test
@@ -46,7 +47,9 @@ class AccentMigrationTest {
     fun `a retired accent never lands on another retired accent`() {
         // The mapping has to point at something that still exists, or it is just a slower way of
         // falling back to blue.
-        listOf("INDIGO", "VIOLET", "ROSE", "AMBER", "EMERALD", "TEAL", "SLATE", "WHITE").forEach {
+        listOf(
+            "INDIGO", "VIOLET", "ROSE", "AMBER", "EMERALD", "TEAL", "SLATE", "WHITE", "SPOTIFY",
+        ).forEach {
             assertTrue("$it maps to a live accent", AccentColor.parse(it) in AccentColor.entries)
         }
     }

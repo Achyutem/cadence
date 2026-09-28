@@ -24,7 +24,7 @@ enum class AccentColor {
     ORANGE,
     SEPIA,
     GREEN,
-    SPOTIFY,
+    JADE,
     CYAN,
     BLUE,
     MAGENTA,
@@ -49,6 +49,7 @@ enum class AccentColor {
                 "AMBER" -> ORANGE
                 "EMERALD", "TEAL" -> GREEN
                 "SLATE" -> GREY
+                "SPOTIFY" -> JADE
                 "WHITE" -> MONO
                 else -> BLUE
             }

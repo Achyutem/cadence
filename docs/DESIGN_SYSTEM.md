@@ -32,7 +32,7 @@ saturation it reads as calm, and it stops every accent from looking dirty agains
 
 ### Accents
 
-Ten shipped accents: red, orange, sepia, green, spotify, cyan, blue, magenta, grey and
+Ten shipped accents: red, orange, sepia, green, jade, cyan, blue, magenta, grey and
 black-and-white. Each is a **hand-tuned pair of light and dark ramps**, not a generated seed.
 
 The original five were muted, chosen for restraint, and read as dull rather than calm. These are
@@ -41,7 +41,7 @@ the range where an accent stays legible on a near-black surface without glowing.
 
 Two need a word each:
 
-- **Spotify** is the familiar `#1DB954`, darkened for light mode. The brand value against white is
+- **Jade** is `#1DB954`, darkened for light mode. The full-strength value against white is
   about 2.2:1, so white text on it would fail outright; dark mode gets the real thing.
 - **Black and white** is the monochrome option: black on a light scheme, white on a dark one.
 
