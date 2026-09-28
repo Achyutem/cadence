@@ -11,7 +11,7 @@ network access**.
 four metric types with streaks, consistency and a contribution heatmap · calendar in month, week
 and day views · reminders with notification actions that work without opening the app · Markdown
 notes · breath training (box, static apnea, CO₂ and O₂ tables) · local insights
-engine · six interactive home-screen widgets · one shared recurrence engine · light/dark × five
+engine · seven interactive home-screen widgets · one shared recurrence engine · light/dark × ten
 accents × Material You · JSON export and import.
 
 ## Build
@@ -63,8 +63,20 @@ Lint runs with `warningsAsErrors`; every suppression in `app/lint.xml` carries a
 | [`docs/WIDGETS.md`](docs/WIDGETS.md) | Widget architecture |
 | [`docs/INSIGHTS.md`](docs/INSIGHTS.md) | Local analytics, and the rules that keep it honest |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | Phased plan and definition of done per phase |
+| [`docs/FDROID.md`](docs/FDROID.md) | Publishing on F-Droid, and what a release consists of |
 
 ## Privacy
 
 Cadence declares no `INTERNET` permission. All data stays in a local SQLite database and a local
 DataStore file. There is no telemetry, no analytics and no crash reporting.
+
+## Licence
+
+[GPL-3.0-or-later](LICENSE). Copyright (C) 2026 Achyutem.
+
+Fork it, change it, ship it. The one thing the licence does not allow is taking Cadence closed,
+adding the tracking it was built to avoid, and distributing that. For an app whose entire promise
+is the absence of a network permission, a licence that lets someone quietly add one would make
+the promise worthless.
+
+Geist Variable is bundled under the SIL Open Font License; the text is in [`licenses/`](licenses/).
