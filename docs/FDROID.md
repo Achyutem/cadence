@@ -20,6 +20,25 @@ possible for someone who has never seen this project.
 `gradle/wrapper/gradle-wrapper.jar` is a tracked binary. This is expected and is not a blocker:
 F-Droid's build server replaces the wrapper with its own Gradle before building.
 
+## Toolchain, checked against the buildserver rather than assumed
+
+Three things routinely stall a first submission. None of them apply here, and each was checked
+against `fdroidserver` itself rather than guessed at:
+
+- **Gradle version.** `gradlew-fdroid` reads `distributionUrl` from `gradle-wrapper.properties`
+  and downloads that version against a checksum. Gradle 8.14.3, which this project pins, is in
+  its built-in list, and it also consults a live transparency log for anything newer.
+- **compileSdk 36.** `buildserver/provision-android-sdk` preinstalls older platforms but
+  deliberately leaves `platforms/` and `build-tools/` group-writable so Gradle can fetch newer
+  ones during the build. A recent compileSdk is not a blocker.
+- **Java toolchains.** The buildserver sets `org.gradle.java.installations.auto-download=false`,
+  so a build that declares a Java toolchain it does not have fails outright. This project sets
+  `compileOptions` and `jvmTarget` instead and declares no toolchain, so there is nothing to
+  provision.
+
+Keep it that way. Adding `jvmToolchain(...)` would break the F-Droid build without breaking
+anything locally, which is the worst kind of regression to find out about from a reviewer.
+
 ## Anti-features
 
 None apply. Cadence has no ads, no tracking, no non-free dependencies, no non-free assets, no
@@ -50,18 +69,21 @@ F-Droid extracts the adaptive icon from the APK, which is fine.
 ## The metadata file
 
 This lives in F-Droid's own [`fdroiddata`](https://gitlab.com/fdroid/fdroiddata) repository, not
-here, and is submitted as a merge request adding `metadata/dev.achyutem.cadence.yml`:
+here, and is submitted as a merge request adding `metadata/dev.achyutem.cadence.yml`.
+
+Replace `OWNER` with whichever account this repository ends up published under. It must be the
+public URL F-Droid will clone from, not a personal remote.
 
 ```yaml
 Categories:
   - Time
 License: GPL-3.0-or-later
 AuthorName: Achyutem
-SourceCode: https://github.com/Achyutem/cadence
-IssueTracker: https://github.com/Achyutem/cadence/issues
+SourceCode: https://github.com/OWNER/cadence
+IssueTracker: https://github.com/OWNER/cadence/issues
 
 RepoType: git
-Repo: https://github.com/Achyutem/cadence.git
+Repo: https://github.com/OWNER/cadence.git
 
 Builds:
   - versionName: 0.1.0
