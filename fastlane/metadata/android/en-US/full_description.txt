@@ -1,0 +1,43 @@
+Cadence is a personal daily operating system: tasks, habits, a calendar, notes, reminders,
+breath training and home screen widgets, in one app that never touches the network.
+
+It declares no INTERNET permission. That is the guarantee everything else rests on. There is
+no account, no backend, no sync, no telemetry, no analytics and no crash reporting. Your data
+lives in a local database on your device, and the only way it leaves is a JSON file you
+export yourself.
+
+FEATURES
+
+Today: one screen for what is due, what you are maintaining and what is next.
+
+Tasks: subtasks, priorities, scheduling, recurrence, and a backlog for anything without a date.
+
+Habits: four measurement types (done, count, quantity, duration), goals in either direction,
+streaks, consistency and a contribution heatmap.
+
+Calendar: month, week and day views over the same data.
+
+Notes: Markdown, autosaved, with checkboxes you can tick in the rendered view.
+
+Reminders: local notifications with actions that work without opening the app.
+
+Breath training: box breathing, static apnea, CO2 and O2 tables, every one configurable in
+rounds, hold, rest and increment, with optional audio cues so you can keep your eyes closed.
+
+Widgets: seven interactive home screen widgets. Tick a task or step a habit from the home
+screen without launching the app.
+
+Insights: completion rates, patterns and trends, computed on device from your own rows.
+
+NO GAMIFICATION
+
+No XP, no levels, no badges, no points, no confetti, no streak rewards. A streak is
+information, never a prize and never a threat. An empty day is not a failed day, and nothing
+in the app is written to make you feel otherwise.
+
+DESIGN
+
+Material 3 with light and dark themes, ten accent colours and Material You. Geist Variable is
+the only bundled asset. Beyond Jetpack and kotlinx there are no third party libraries: the
+Markdown parser, the heatmap and the charts are all written for this app rather than pulled
+in as dependencies.

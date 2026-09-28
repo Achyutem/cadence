@@ -1,0 +1,8 @@
+First release.
+
+Tasks with subtasks, priorities, scheduling and recurrence. Habits in four measurement types
+with streaks and a heatmap. Month, week and day calendar. Markdown notes. Local reminders
+with notification actions. Configurable breath training with audio cues. Seven interactive
+home screen widgets. On device insights. JSON export and import.
+
+Light and dark, ten accents, Material You. Android 12 and up.
