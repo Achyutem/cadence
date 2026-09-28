@@ -51,7 +51,6 @@ Lint runs with `warningsAsErrors`; every suppression in `app/lint.xml` carries a
 
 | | |
 |---|---|
-| [`CLAUDE.md`](CLAUDE.md) | Non-negotiable engineering and product principles |
 | [`docs/PRODUCT.md`](docs/PRODUCT.md) | What the app is and is not |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Module shape, state, DI, testing strategy |
 | [`docs/DATABASE.md`](docs/DATABASE.md) | Schema, storage contract, migration procedure |

@@ -1,5 +1,6 @@
 *.iml
 .gradle/
+.kotlin/
 local.properties
 .idea/
 .DS_Store
@@ -10,3 +11,10 @@ captures/
 *.apk
 *.aab
 *.keystore
+*.jks
+*.hprof
+
+# Personal working notes and assistant configuration. Engineering principles that outlive a
+# session belong in docs/, not here.
+/CLAUDE.md
+/.claude/
