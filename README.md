@@ -14,6 +14,12 @@ notes · breath training (box, static apnea, CO₂ and O₂ tables) · local ins
 engine · seven interactive home-screen widgets · one shared recurrence engine · light/dark × ten
 accents × Material You · JSON export and import.
 
+## Preview
+![Preview1](./fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg)
+![Preview2](./fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg)
+![Preview3](./fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg)
+![Preview4](./fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg)
+
 ## Build
 
 Requires JDK 17+ and an Android SDK with platform 36.
