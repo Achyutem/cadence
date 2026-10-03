@@ -79,11 +79,11 @@ Categories:
   - Time
 License: GPL-3.0-or-later
 AuthorName: Achyutem
-SourceCode: https://github.com/OWNER/cadence
-IssueTracker: https://github.com/OWNER/cadence/issues
+SourceCode: https://github.com/achyutem/cadence
+IssueTracker: https://github.com/achyutem/cadence/issues
 
 RepoType: git
-Repo: https://github.com/OWNER/cadence.git
+Repo: https://github.com/achyutem/cadence.git
 
 Builds:
   - versionName: 0.1.0
@@ -127,7 +127,7 @@ CurrentVersionCode: 1
    the file for you, which is less error prone than typing it:
 
    ```bash
-   fdroid import --url https://github.com/OWNER/cadence
+   fdroid import --url https://github.com/achyutem/cadence
    ```
 
    Then open `metadata/dev.achyutem.cadence.yml` and reconcile it against the block below. Import
