@@ -14,7 +14,6 @@ captures/
 *.jks
 *.hprof
 
-# Personal working notes and assistant configuration. Engineering principles that outlive a
-# session belong in docs/, not here.
+# Personal
 /CLAUDE.md
 /.claude/

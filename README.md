@@ -51,6 +51,7 @@ Lint runs with `warningsAsErrors`; every suppression in `app/lint.xml` carries a
 
 | | |
 |---|---|
+| [`docs/BUILDING.md`](docs/BUILDING.md) | Building from a clean machine, and signing your own APK |
 | [`docs/PRODUCT.md`](docs/PRODUCT.md) | What the app is and is not |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Module shape, state, DI, testing strategy |
 | [`docs/DATABASE.md`](docs/DATABASE.md) | Schema, storage contract, migration procedure |

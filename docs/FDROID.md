@@ -99,16 +99,64 @@ CurrentVersion: 0.1.0
 CurrentVersionCode: 1
 ```
 
-Before opening the merge request, run F-Droid's own checks against it:
+## Step by step, the first time
 
-```bash
-fdroid readmeta && fdroid rewritemeta dev.achyutem.cadence && fdroid lint dev.achyutem.cadence
-```
+1. **Publish the repository.** The URL must be publicly cloneable without credentials. F-Droid's
+   buildserver has no account on your forge.
 
-```bash
-fdroid build -v -l dev.achyutem.cadence
-```
+2. **Tag the release you want built**, and push the tag. F-Droid builds a tag, never a branch:
 
-The second command builds the app the way the server will. If it passes locally it will almost
-certainly pass on the buildserver, and a build that fails there is the most common reason a
-submission stalls.
+   ```bash
+   git tag -a v0.1.0 -m "Cadence 0.1.0" && git push --tags
+   ```
+
+3. **Install `fdroidserver`.** On Arch, keep it out of the system Python:
+
+   ```bash
+   sudo pacman -S --needed python-pipx && pipx install fdroidserver
+   ```
+
+4. **Fork and clone `fdroiddata`.** This is F-Droid's package index, and it is on GitLab even if
+   your app lives on GitHub:
+
+   ```bash
+   git clone https://gitlab.com/YOUR_GITLAB_USER/fdroiddata.git && cd fdroiddata
+   ```
+
+5. **Scaffold the metadata.** `fdroid import` reads the repository and writes a first draft of
+   the file for you, which is less error prone than typing it:
+
+   ```bash
+   fdroid import --url https://github.com/OWNER/cadence
+   ```
+
+   Then open `metadata/dev.achyutem.cadence.yml` and reconcile it against the block below. Import
+   guesses; it does not always guess right about `subdir` or the version fields.
+
+6. **Check it, then build it the way the server will.** The second command is the one that
+   matters. A submission that fails here fails there too, and that is the most common reason a
+   first merge request sits for weeks:
+
+   ```bash
+   fdroid readmeta && fdroid rewritemeta dev.achyutem.cadence && fdroid lint dev.achyutem.cadence
+   ```
+
+   ```bash
+   fdroid build -v -l dev.achyutem.cadence
+   ```
+
+7. **Open the merge request** against `fdroid/fdroiddata`, with the single new metadata file in
+   it. Say in the description that you are the upstream author.
+
+8. **Expect review, not silence.** A maintainer will look at the licence, the dependencies and
+   the build. Answer on the merge request. Once it merges, the app appears in the index at the
+   next build cycle, usually within a day or two.
+
+After the first acceptance, releases are just tags. `UpdateCheckMode: Tags` means F-Droid notices
+a new tag and builds it without any further submission.
+
+## Updating the listing
+
+Changing the description or the screenshots does not need a merge request. F-Droid reads
+`fastlane/metadata/` straight out of your repository at build time, so an edit here plus a new
+tag is the whole process.
