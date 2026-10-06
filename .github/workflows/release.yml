@@ -3,6 +3,8 @@ name: Release
 on:
   push:
     tags: ['v*']
+  # The Run workflow button in the Actions tab: tags v<versionName> from build.gradle.kts itself.
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,6 +14,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Work out the tag
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            TAG="v$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts | head -1)"
+            if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null; then
+              echo "::error::$TAG already exists. Bump versionCode and versionName first."
+              exit 1
+            fi
+          else
+            TAG="$GITHUB_REF_NAME"
+          fi
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
 
       - uses: actions/setup-java@v4
         with:
@@ -37,11 +52,11 @@ jobs:
             --ks-pass env:KEYSTORE_PASSWORD \
             --ks-key-alias "$KEY_ALIAS" \
             --key-pass env:KEY_PASSWORD \
-            --out "Cadence-${GITHUB_REF_NAME}.apk" \
+            --out "Cadence-${TAG}.apk" \
             app/build/outputs/apk/release/app-release-unsigned.apk
-          "$APKSIGNER" verify --print-certs "Cadence-${GITHUB_REF_NAME}.apk"
+          "$APKSIGNER" verify --print-certs "Cadence-${TAG}.apk"
           shred -u "$RUNNER_TEMP/ks.jks"
-          sha256sum "Cadence-${GITHUB_REF_NAME}.apk" > "Cadence-${GITHUB_REF_NAME}.apk.sha256"
+          sha256sum "Cadence-${TAG}.apk" > "Cadence-${TAG}.apk.sha256"
 
       - name: Publish the release
         env:
@@ -50,9 +65,9 @@ jobs:
           CODE=$(grep -oP 'versionCode\s*=\s*\K[0-9]+' app/build.gradle.kts | head -1)
           NOTES="fastlane/metadata/android/en-US/changelogs/$CODE.txt"
           if [ -f "$NOTES" ]; then
-            gh release create "$GITHUB_REF_NAME" --title "Cadence $GITHUB_REF_NAME" --notes-file "$NOTES" \
-              "Cadence-${GITHUB_REF_NAME}.apk" "Cadence-${GITHUB_REF_NAME}.apk.sha256"
+            gh release create "$TAG" --target "$GITHUB_SHA" --title "Cadence $TAG" --notes-file "$NOTES" \
+              "Cadence-${TAG}.apk" "Cadence-${TAG}.apk.sha256"
           else
-            gh release create "$GITHUB_REF_NAME" --title "Cadence $GITHUB_REF_NAME" --generate-notes \
-              "Cadence-${GITHUB_REF_NAME}.apk" "Cadence-${GITHUB_REF_NAME}.apk.sha256"
+            gh release create "$TAG" --target "$GITHUB_SHA" --title "Cadence $TAG" --generate-notes \
+              "Cadence-${TAG}.apk" "Cadence-${TAG}.apk.sha256"
           fi

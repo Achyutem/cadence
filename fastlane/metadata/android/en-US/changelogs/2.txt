@@ -1,0 +1,2 @@
+Widgets can now have a transparent background (Settings > Appearance > Widget background).
+Todos, Habits and Notes have a floating + button above the navbar.
