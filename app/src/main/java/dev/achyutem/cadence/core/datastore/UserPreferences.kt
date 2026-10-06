@@ -133,6 +133,8 @@ data class UserPreferences(
     val buttonShape: ButtonShape = ButtonShape.ROUNDED,
     /** Honours the system "remove animations" setting when true; user can force it on. */
     val reducedMotion: Boolean = false,
+    /** Home screen widget background opacity, as a percentage. 0 draws no background at all. */
+    val widgetOpacity: Int = 100,
 
     // Behaviour
     val weekStartsOn: DayOfWeek = DayOfWeek.MONDAY,

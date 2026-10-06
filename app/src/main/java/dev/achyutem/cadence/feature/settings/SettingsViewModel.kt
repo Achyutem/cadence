@@ -32,6 +32,7 @@ class SettingsViewModel(
     private val settings: SettingsRepository,
     private val backup: BackupEngine,
     private val reminders: dev.achyutem.cadence.core.notifications.ReminderScheduler,
+    private val refreshWidgets: suspend () -> Unit,
 ) : ViewModel() {
 
     /** Whether the system will honour an exact alarm right now. */
@@ -96,6 +97,12 @@ class SettingsViewModel(
     fun setReducedMotion(enabled: Boolean) =
         viewModelScope.launch { settings.setReducedMotion(enabled) }
 
+    // Widgets only redraw while their session is alive, so push the change out explicitly.
+    fun setWidgetOpacity(percent: Int) = viewModelScope.launch {
+        settings.setWidgetOpacity(percent)
+        refreshWidgets()
+    }
+
     fun setWeekStart(day: DayOfWeek) = viewModelScope.launch { settings.setWeekStartsOn(day) }
 
     fun suggestedFileName(): String = backup.suggestedFileName()
@@ -140,6 +147,7 @@ class SettingsViewModel(
                 container.settingsRepository,
                 container.backupEngine,
                 container.reminderScheduler,
+                container::refreshWidgets,
             )
         }
     }

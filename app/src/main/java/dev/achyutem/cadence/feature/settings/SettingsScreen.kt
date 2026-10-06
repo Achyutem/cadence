@@ -151,6 +151,7 @@ fun SettingsScreen(
         onDynamicColor = viewModel::setDynamicColor,
         onButtonShape = viewModel::setButtonShape,
         onReducedMotion = viewModel::setReducedMotion,
+        onWidgetOpacity = viewModel::setWidgetOpacity,
         onWeekStart = viewModel::setWeekStart,
         onQuietHours = viewModel::setQuietHoursEnabled,
         onNotificationSound = viewModel::setNotificationSound,
@@ -212,6 +213,8 @@ fun SettingsScreen(
     }
 }
 
+private val WidgetOpacityOptions = listOf(100, 75, 50, 25, 0)
+
 @Composable
 private fun SettingsContent(
     preferences: UserPreferences,
@@ -222,6 +225,7 @@ private fun SettingsContent(
     onDynamicColor: (Boolean) -> Unit,
     onButtonShape: (ButtonShape) -> Unit,
     onReducedMotion: (Boolean) -> Unit,
+    onWidgetOpacity: (Int) -> Unit,
     onWeekStart: (DayOfWeek) -> Unit,
     onQuietHours: (Boolean) -> Unit,
     onNotificationSound: (NotificationSound) -> Unit,
@@ -301,6 +305,20 @@ private fun SettingsContent(
                 selected = preferences.buttonShape,
                 onSelect = onButtonShape,
                 label = { stringResource(it.labelRes()) },
+            )
+            Spacer(Modifier.height(Spacing.md))
+            Text(
+                text = stringResource(R.string.settings_widget_opacity),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(Spacing.xs))
+            SegmentedControl(
+                options = WidgetOpacityOptions,
+                // A value restored from a hand-edited backup snaps to the nearest step shown.
+                selected = WidgetOpacityOptions.minBy { kotlin.math.abs(it - preferences.widgetOpacity) },
+                onSelect = onWidgetOpacity,
+                label = { "$it%" },
             )
             Spacer(Modifier.height(Spacing.sm))
 
@@ -821,6 +839,7 @@ private fun SettingsPreviewLight() = CadencePreviewTheme {
         onDynamicColor = {},
         onButtonShape = {},
         onReducedMotion = {},
+        onWidgetOpacity = {},
         onWeekStart = {},
         onQuietHours = {},
         onNotificationSound = {},
@@ -849,6 +868,7 @@ private fun SettingsPreviewDark() = CadencePreviewTheme(dark = true, accent = Ac
         onDynamicColor = {},
         onButtonShape = {},
         onReducedMotion = {},
+        onWidgetOpacity = {},
         onWeekStart = {},
         onQuietHours = {},
         onNotificationSound = {},

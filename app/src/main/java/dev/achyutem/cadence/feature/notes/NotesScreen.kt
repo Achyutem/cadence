@@ -21,7 +21,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.PushPin
 import androidx.compose.material.icons.rounded.Search
@@ -43,6 +42,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.achyutem.cadence.R
 import dev.achyutem.cadence.core.database.dao.NoteSummary
 import dev.achyutem.cadence.core.designsystem.component.ButtonTone
+import dev.achyutem.cadence.core.designsystem.component.CadenceAddFab
 import dev.achyutem.cadence.core.designsystem.component.CadenceButton
 import dev.achyutem.cadence.core.designsystem.component.CadenceIconButton
 import dev.achyutem.cadence.core.designsystem.component.FullScreenEmptyState
@@ -66,14 +66,21 @@ fun NotesScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val query by viewModel.queryText.collectAsStateWithLifecycle()
-    NotesContent(
-        state = state,
-        query = query,
-        onQueryChange = viewModel::setQuery,
-        onOpenNote = onOpenNote,
-        onTogglePin = viewModel::togglePinned,
-        modifier = modifier,
-    )
+    Box(modifier = modifier.fillMaxSize()) {
+        NotesContent(
+            state = state,
+            query = query,
+            onQueryChange = viewModel::setQuery,
+            onOpenNote = onOpenNote,
+            onTogglePin = viewModel::togglePinned,
+        )
+
+        CadenceAddFab(
+            contentDescription = stringResource(R.string.notes_new),
+            onClick = { onOpenNote(0L) },
+            modifier = Modifier.align(Alignment.BottomEnd),
+        )
+    }
 }
 
 @Composable
@@ -106,12 +113,6 @@ private fun NotesContent(
                 text = stringResource(R.string.notes_title),
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.onSurface,
-            )
-            CadenceButton(
-                text = stringResource(R.string.notes_new),
-                onClick = { onOpenNote(0L) },
-                tone = ButtonTone.Primary,
-                icon = Icons.Rounded.Add,
             )
         }
 
@@ -147,7 +148,7 @@ private fun NotesContent(
                 contentPadding = PaddingValues(
                     start = Spacing.screenGutter,
                     end = Spacing.screenGutter,
-                    bottom = Spacing.dockClearance,
+                    bottom = Spacing.fabClearance,
                 ),
                 verticalArrangement = Arrangement.spacedBy(Spacing.xs),
             ) {

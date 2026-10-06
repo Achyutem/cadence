@@ -284,7 +284,7 @@ class HabitCalendarWidget : GlanceAppWidget() {
                     .cornerRadius(4.dp)
                     .background(
                         when {
-                            future -> colors.background
+                            future -> colors.clear
                             else -> colors.heatmap[level.coerceIn(0, colors.heatmap.lastIndex)]
                         },
                     ),

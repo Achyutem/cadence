@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -30,6 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.achyutem.cadence.R
 import dev.achyutem.cadence.core.designsystem.component.ButtonTone
+import dev.achyutem.cadence.core.designsystem.component.CadenceAddFab
 import dev.achyutem.cadence.core.designsystem.component.CadenceButton
 import dev.achyutem.cadence.core.designsystem.component.CadenceIconButton
 import dev.achyutem.cadence.core.designsystem.component.FullScreenEmptyState
@@ -67,6 +67,12 @@ fun HabitsScreen(
             onMove = viewModel::moveHabit,
             onSettle = viewModel::commitOrder,
             onAddClick = viewModel::openEditor,
+        )
+
+        CadenceAddFab(
+            contentDescription = stringResource(R.string.habits_add),
+            onClick = viewModel::openEditor,
+            modifier = Modifier.align(Alignment.BottomEnd),
         )
 
         if (editorOpen) {
@@ -119,12 +125,6 @@ private fun HabitsContent(
                     contentDescription = stringResource(R.string.insights_open),
                     onClick = onOpenInsights,
                 )
-                CadenceButton(
-                    text = stringResource(R.string.habits_add),
-                    onClick = onAddClick,
-                    tone = ButtonTone.Primary,
-                    icon = Icons.Rounded.Add,
-                )
             }
         }
 
@@ -156,7 +156,7 @@ private fun HabitsContent(
                 contentPadding = PaddingValues(
                     start = Spacing.screenGutter,
                     end = Spacing.screenGutter,
-                    bottom = Spacing.dockClearance,
+                    bottom = Spacing.fabClearance,
                 ),
             ) {
                 item(key = "today-header") {

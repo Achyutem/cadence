@@ -67,6 +67,7 @@ data class BackupPreferences(
     @SerialName("quiet_hours_end") val quietHoursEnd: String = "07:00",
     @SerialName("show_completed_on_today") val showCompletedOnToday: Boolean = true,
     @SerialName("button_shape") val buttonShape: String = "ROUNDED",
+    @SerialName("widget_opacity") val widgetOpacity: Int = 100,
     val breathing: BackupBreathing = BackupBreathing(),
 )
 
