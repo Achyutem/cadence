@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.achyutem.cadence.R
 import dev.achyutem.cadence.core.datastore.TimeFormat
 import dev.achyutem.cadence.core.designsystem.component.ButtonTone
+import dev.achyutem.cadence.core.designsystem.component.CadenceAddFab
 import dev.achyutem.cadence.core.designsystem.component.CadenceButton
 import dev.achyutem.cadence.core.designsystem.component.FullScreenEmptyState
 import dev.achyutem.cadence.core.designsystem.component.SectionHeader
@@ -54,6 +54,14 @@ fun TodosScreen(
             onOpenTask = onOpenTask,
             onAddClick = viewModel::showQuickAdd,
         )
+
+        if (!quickAddVisible) {
+            CadenceAddFab(
+                contentDescription = stringResource(R.string.todos_add),
+                onClick = viewModel::showQuickAdd,
+                modifier = Modifier.align(Alignment.BottomEnd),
+            )
+        }
 
         QuickAddBar(
             visible = quickAddVisible,
@@ -99,12 +107,6 @@ private fun TodosContent(
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
-            CadenceButton(
-                text = stringResource(R.string.todos_add),
-                onClick = onAddClick,
-                tone = ButtonTone.Primary,
-                icon = Icons.Rounded.Add,
-            )
         }
 
         SegmentedControl(
@@ -136,7 +138,7 @@ private fun TodosContent(
                 contentPadding = PaddingValues(
                     start = Spacing.screenGutter,
                     end = Spacing.screenGutter,
-                    bottom = Spacing.dockClearance,
+                    bottom = Spacing.fabClearance,
                 ),
             ) {
                 taskSection(

@@ -50,6 +50,8 @@ class SettingsRepository(context: Context) {
 
     suspend fun setReducedMotion(enabled: Boolean) = put(Keys.reducedMotion, enabled)
 
+    suspend fun setWidgetOpacity(percent: Int) = put(Keys.widgetOpacity, percent.coerceIn(0, 100))
+
     suspend fun setWeekStartsOn(day: DayOfWeek) = put(Keys.weekStartsOn, day.value)
 
     suspend fun setCompletedTaskBehavior(behavior: CompletedTaskBehavior) =
@@ -104,6 +106,7 @@ class SettingsRepository(context: Context) {
             prefs[Keys.useDynamicColor] = preferences.useDynamicColor
             prefs[Keys.buttonShape] = preferences.buttonShape.name
             prefs[Keys.reducedMotion] = preferences.reducedMotion
+            prefs[Keys.widgetOpacity] = preferences.widgetOpacity
             prefs[Keys.weekStartsOn] = preferences.weekStartsOn.value
             prefs[Keys.completedTaskBehavior] = preferences.completedTaskBehavior.name
             prefs[Keys.defaultTaskDuration] = preferences.defaultTaskDurationMinutes
@@ -147,6 +150,7 @@ class SettingsRepository(context: Context) {
         val useDynamicColor = booleanPreferencesKey("use_dynamic_color")
         val buttonShape = stringPreferencesKey("button_shape")
         val reducedMotion = booleanPreferencesKey("reduced_motion")
+        val widgetOpacity = intPreferencesKey("widget_opacity")
         val weekStartsOn = intPreferencesKey("week_starts_on")
         val completedTaskBehavior = stringPreferencesKey("completed_task_behavior")
         val defaultTaskDuration = intPreferencesKey("default_task_duration")
@@ -183,6 +187,7 @@ class SettingsRepository(context: Context) {
             useDynamicColor = prefs[Keys.useDynamicColor] ?: defaults.useDynamicColor,
             buttonShape = prefs[Keys.buttonShape].toEnumOr(defaults.buttonShape),
             reducedMotion = prefs[Keys.reducedMotion] ?: defaults.reducedMotion,
+            widgetOpacity = prefs[Keys.widgetOpacity]?.coerceIn(0, 100) ?: defaults.widgetOpacity,
             weekStartsOn = prefs[Keys.weekStartsOn]
                 ?.takeIf { it in 1..7 }
                 ?.let(DayOfWeek::of)

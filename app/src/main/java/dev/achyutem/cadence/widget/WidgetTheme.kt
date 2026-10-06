@@ -27,7 +27,10 @@ import dev.achyutem.cadence.core.designsystem.theme.palette
  * honoured only when it is an explicit override.
  */
 data class WidgetColors(
+    /** The widget's own background, with the user's opacity applied. */
     val background: ColorProvider,
+    /** Fully transparent, for cells that should show whatever is behind the widget. */
+    val clear: ColorProvider,
     val surface: ColorProvider,
     val onSurface: ColorProvider,
     val onSurfaceVariant: ColorProvider,
@@ -58,7 +61,8 @@ private object WidgetNeutral {
     val darkHeatmapEmpty = Color(0xFF1F1F1F)
 }
 
-fun widgetColors(accent: AccentColor, themeMode: ThemeMode): WidgetColors {
+fun widgetColors(accent: AccentColor, themeMode: ThemeMode, opacity: Int = 100): WidgetColors {
+    val alpha = opacity.coerceIn(0, 100) / 100f
     val palette = accent.palette
 
     // When the user has pinned the app to Light or Dark, both sides of each pair collapse to that
@@ -90,7 +94,11 @@ fun widgetColors(accent: AccentColor, themeMode: ThemeMode): WidgetColors {
     )
 
     return WidgetColors(
-        background = pair(WidgetNeutral.lightBackground, WidgetNeutral.darkBackground),
+        background = pair(
+            WidgetNeutral.lightBackground.copy(alpha = alpha),
+            WidgetNeutral.darkBackground.copy(alpha = alpha),
+        ),
+        clear = ColorProvider(Color.Transparent, Color.Transparent),
         surface = pair(WidgetNeutral.lightSurface, WidgetNeutral.darkSurface),
         onSurface = pair(WidgetNeutral.lightOnSurface, WidgetNeutral.darkOnSurface),
         onSurfaceVariant = pair(
@@ -106,4 +114,5 @@ fun widgetColors(accent: AccentColor, themeMode: ThemeMode): WidgetColors {
     )
 }
 
-fun UserPreferences.widgetColors(): WidgetColors = widgetColors(accentColor, themeMode)
+fun UserPreferences.widgetColors(): WidgetColors =
+    widgetColors(accentColor, themeMode, widgetOpacity)

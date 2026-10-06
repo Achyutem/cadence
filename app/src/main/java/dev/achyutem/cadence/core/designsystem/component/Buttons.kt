@@ -12,9 +12,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,13 +29,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.achyutem.cadence.core.designsystem.theme.CadenceTheme
+import dev.achyutem.cadence.core.datastore.ButtonShape
 import dev.achyutem.cadence.core.designsystem.token.Borders
+import dev.achyutem.cadence.core.designsystem.token.Elevation
 import dev.achyutem.cadence.core.designsystem.token.Motion
 import dev.achyutem.cadence.core.designsystem.token.Radius
 import dev.achyutem.cadence.core.designsystem.token.Spacing
@@ -185,6 +192,59 @@ fun CadenceIconButton(
             modifier = Modifier
                 .size(19.dp)
                 .scale(scale),
+        )
+    }
+}
+
+/**
+ * The floating add button, bottom right, just above the dock. Callers align it to the bottom end
+ * of a full-screen Box and give their list [Spacing.fabClearance] so the last row scrolls clear.
+ */
+@Composable
+fun CadenceAddFab(
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 0.94f else 1f,
+        animationSpec = spring(
+            dampingRatio = Motion.SPRING_DAMPING,
+            stiffness = Motion.SPRING_STIFFNESS,
+        ),
+        label = "fabPress",
+    )
+    val shape = if (CadenceTheme.preferences.buttonShape == ButtonShape.PILL) {
+        CircleShape
+    } else {
+        Radius.shapeXl
+    }
+
+    Box(
+        modifier = modifier
+            .navigationBarsPadding()
+            // The dock sits 16dp off the bottom and is 56dp tall; 12dp gap above it.
+            .padding(end = Spacing.screenGutter, bottom = 84.dp)
+            .scale(scale)
+            .size(56.dp)
+            .shadow(Elevation.dock, shape, clip = false)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.primary)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                role = Role.Button,
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Add,
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.size(24.dp),
         )
     }
 }

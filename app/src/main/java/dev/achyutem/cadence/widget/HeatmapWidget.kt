@@ -155,7 +155,7 @@ class HeatmapWidget : GlanceAppWidget() {
                                                             ),
                                                         ]
                                                     } else {
-                                                        colors.background
+                                                        colors.clear
                                                     },
                                                 ),
                                         ) {}

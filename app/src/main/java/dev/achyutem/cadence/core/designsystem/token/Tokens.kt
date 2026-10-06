@@ -29,6 +29,9 @@ object Spacing {
 
     /** Bottom padding reserved so content can scroll clear of the floating dock. */
     val dockClearance: Dp = 104.dp
+
+    /** Bottom padding for screens that also float an add button above the dock. */
+    val fabClearance: Dp = 156.dp
 }
 
 /**

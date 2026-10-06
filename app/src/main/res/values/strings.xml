@@ -147,6 +147,7 @@
     <string name="accent_grey">Grey</string>
     <string name="accent_mono">Black and white</string>
     <string name="settings_button_shape">Button shape</string>
+    <string name="settings_widget_opacity">Widget background</string>
     <string name="button_shape_rounded">Rounded</string>
     <string name="button_shape_pill">Pill</string>
 
